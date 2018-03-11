@@ -1,0 +1,36 @@
+<form (ngSubmit)=" onSubmitRegisterForm( $event ) ">
+  <div>
+    <label>Email:</label>
+    <span>
+      <input type="email" name="email" [(ngModel)]="user.email">
+    </span>
+  </div>
+  <div>
+    <label>Password:</label>
+    <span>
+      <input type="password" name="password" [(ngModel)]="user.password">
+    </span>
+  </div>
+
+  <div>
+    <label>Name:</label>
+    <span>
+      <input type="text" name="displayName" [(ngModel)]="user.displayName">
+    </span>
+  </div>
+  <div>
+    <label>Mobile No.:</label>
+    <span>
+      <input type="number" name="mobile" [(ngModel)]="user.mobile">
+    </span>
+  </div>
+  <div>
+    <label>City:</label>
+    <span>
+      <input type="text" name="city" [(ngModel)]="user.city">
+    </span>
+  </div>
+  <button type="submit">Register</button>
+  <button type="button" [routerLink]="'/'">Cancel</button>
+
+</form>

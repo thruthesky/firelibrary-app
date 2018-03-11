@@ -1,10 +1,47 @@
 # Firelibrary
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.7.2.
+Firebase CMS Library for Frontend
 
-## Development server
+## TODO
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+* user update with email/password login.
+* Authentication social login and profile update.
+* resign.
+* User profile photo update.
+ * Check if `photoURL` is erased every login. then `photoURL` should be saved in `users` collection.
+
+
+
+## Documents
+
+* Github - https://github.com/thruthesky/firelibrary
+* Npm - https://www.npmjs.com/package/firelibrary
+* Webiste - www.firelibrary.net
+
+
+## Development
+
+* Simple clone this git repository and run `ng serve`
+* `src/app/modules/firelibrary` is the `firelibrary` folder. It uses `ng-packagr` to package and distribute.
+* Please submit your `pull request` if you want to update.
+
+
+## How to install firelibrary into another project
+
+
+* npm i firebase firelibrary
+
+* initialize `firebae` app.
+
+* set the `firebase` app onto `firelibrary` like below
+````
+import * as firebase from 'firebase';
+import "firebase/firestore";
+firebase.initializeApp(config.firebase);
+
+````
+
+
 
 ## Code scaffolding
 

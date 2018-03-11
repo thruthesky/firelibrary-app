@@ -1,0 +1,6 @@
+<h1>Home</h1>
+
+<div *ngIf="fire.user.auth.currentUser">
+  Display name: {{ fire.user.displayName }}
+  {{ fire.user.auth.currentUser | json }}
+</div>
