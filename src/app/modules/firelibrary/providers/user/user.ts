@@ -28,6 +28,10 @@ export class User extends Base {
 
     }
 
+    login( email: string, password: string ): Promise<any> {
+        return this.auth.signInWithEmailAndPassword( email, password );
+    }
+
     logout() {
         this.auth.signOut();
     }

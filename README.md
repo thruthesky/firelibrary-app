@@ -9,7 +9,11 @@ Firebase CMS Library for Frontend
 * resign.
 * User profile photo update.
  * Check if `photoURL` is erased every login. then `photoURL` should be saved in `users` collection.
+* Update rules
 
+* Create posts under `posts` collection.
+ * Anonymous can post with `Firebase Authentication Anonymous Login`
+ 
 
 
 ## Documents
