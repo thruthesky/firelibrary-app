@@ -6,14 +6,11 @@ import { } from './define';
 export * from './define';
 
 
-
-
 export class Base {
-    static firebase: firebase.app.App;
-
-    auth: firebase.auth.Auth;
-    db: firebase.firestore.Firestore;
-    storage: firebase.storage.Storage;
+    static firebase: firebase.app.App = null;
+    auth: firebase.auth.Auth = null;
+    db: firebase.firestore.Firestore = null;
+    storage: firebase.storage.Storage = null;
     constructor(public collectionName = '') {
 
         this.auth = Base.firebase.auth();
@@ -26,9 +23,6 @@ export class Base {
     version() {
         return '0.0.2';
     }
-
-
-
 
     get collection(): firebase.firestore.CollectionReference {
         if (this.collectionName) {
