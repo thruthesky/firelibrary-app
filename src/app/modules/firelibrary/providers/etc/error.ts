@@ -15,3 +15,4 @@ export const DOCUMENT_DOES_NOT_EXIST = 'document does not exists';
 
 export const CATEGORY_ID_IS_EMPTY = 'category id is empty';
 export const CATEGORY_EXISTS = 'category id is already exist';
+export const CATEGORY_DOES_NOT_EXIST = 'category id does not exist';

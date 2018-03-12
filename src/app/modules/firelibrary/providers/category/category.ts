@@ -1,4 +1,6 @@
-import { Base, _, COLLECTIONS, CATEGORY, CATEGORY_ID_IS_EMPTY, DOCUMENT_DOES_NOT_EXIST, CATEGORY_EXISTS } from './../etc/base';
+import { Base, _, COLLECTIONS, CATEGORY,
+    CATEGORY_ID_IS_EMPTY, DOCUMENT_DOES_NOT_EXIST, CATEGORY_EXISTS, CATEGORY_DOES_NOT_EXIST
+} from './../etc/base';
 export class Category extends Base {
 
 
@@ -40,7 +42,7 @@ export class Category extends Base {
             if (doc.exists) {
                 return <any>doc.data();
             } else {
-                return Promise.reject(new Error(DOCUMENT_DOES_NOT_EXIST));
+                return Promise.reject(new Error(CATEGORY_DOES_NOT_EXIST));
             }
         });
     }
