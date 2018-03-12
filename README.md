@@ -103,3 +103,33 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 * If you want to use functions,
  * set `functions: true` on module importing
  * and install the functions in `firelibrary/functions/index.js`
+
+## Unit Testing
+
+* We have a test page component in which all tests are written.
+ * You can simply click the link and the app will load test component page.
+
+
+### What happen to Karma & Jasmine.
+
+* Well, We decided not to use Karma & Jasmine.
+ * If you want to pursue using Karma & Jasmine, you can look into `providers/fire.service.spect.ts` and `providers/category/category.spect.ts` for sample test codes.
+ * Run `npm run test` and you will see the results.
+
+## How to handle errors.
+* `e.code` is a string of error code.
+* `e.message` should be translated already and ready to be used with alert();
+* you can `console.error(e)` to view the call stack.
+````
+  category() {
+    this.fire.category.create(<any>{})
+      .then(re => {
+        this.failure('Creating category should be failed');
+      })
+      .catch(e => {
+        console.log('error code: ', e.code);
+        console.log('error message: ', e.message);
+        console.error('error stack log: ', e);
+      });
+  }
+````

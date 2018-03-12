@@ -1,8 +1,7 @@
 import * as firebase from 'firebase';
-import { } from './interface';
+import { RESPONSE, SYSTEM_CONFIG } from './interface';
 export * from './interface';
 export { Library as _ } from './library';
-import { SYSTEM_CONFIG } from './define';
 export * from './define';
 export * from './error';
 
@@ -41,6 +40,19 @@ export class Base {
         } else {
             return null;
         }
+    }
+
+
+    success(data?): any {
+        return {
+            code: null,
+            data: data
+        };
+    }
+    failure(e: Error): any {
+        e['code'] = e.message;
+        e['message'] = e.message; /// @todo translate it.
+        return Promise.reject( e );
     }
 
 

@@ -22,6 +22,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { CategoryComponent } from './components/category/category.component';
 import { PostComponent } from './components/post/post.component';
+import { TestComponent } from './components/test/test.component';
 
 
 
@@ -32,6 +33,7 @@ const appRoutes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'category', component: CategoryComponent },
   { path: 'post', component: PostComponent },
+  { path: 'test', component: TestComponent },
   { path: '', component: HomeComponent },
   { path: '**', component: HomeComponent }
 ];
@@ -44,7 +46,8 @@ const appRoutes: Routes = [
     LoginComponent,
     RegisterComponent,
     CategoryComponent,
-    PostComponent
+    PostComponent,
+    TestComponent
   ],
   imports: [
     BrowserModule,

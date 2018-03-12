@@ -98,3 +98,22 @@ export interface POST {
 
 
 
+export interface SYSTEM_CONFIG {
+    firebaseApp: firebase.app.App;
+    functions: boolean;
+}
+
+
+
+export interface RESPONSE {
+    code: string;           // if it is error, it will be string or null.
+    message?: string;           // only exists if there is error.
+    data?: any;                 // result data.
+}
+
+export interface CATEGORY_CREATE extends RESPONSE {
+    data: string;
+}
+export interface CATEGORY_GET extends RESPONSE {
+    data: CATEGORY;
+}

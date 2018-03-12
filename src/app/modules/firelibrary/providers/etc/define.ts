@@ -1,11 +1,5 @@
 
 
-export interface SYSTEM_CONFIG {
-    firebaseApp: firebase.app.App;
-    functions: boolean;
-}
-
-
 
 
 export const COLLECTIONS = {
