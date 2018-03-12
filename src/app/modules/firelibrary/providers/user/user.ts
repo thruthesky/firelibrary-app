@@ -7,6 +7,24 @@ export class User extends Base {
 
     }
 
+
+    get isLogin(): boolean {
+        if (this.auth.currentUser) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    get isLogout(): boolean {
+        return !this.isLogin;
+    }
+    get uid(): string {
+        if (this.auth.currentUser) {
+            return this.auth.currentUser.uid;
+        } else {
+            return null;
+        }
+    }
     get displayName(): string {
         if (this.auth.currentUser) {
             return this.auth.currentUser.displayName;
@@ -28,8 +46,8 @@ export class User extends Base {
 
     }
 
-    login( email: string, password: string ): Promise<any> {
-        return this.auth.signInWithEmailAndPassword( email, password );
+    login(email: string, password: string): Promise<any> {
+        return this.auth.signInWithEmailAndPassword(email, password);
     }
 
     logout() {

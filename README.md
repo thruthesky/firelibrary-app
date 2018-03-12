@@ -86,13 +86,13 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ### Solution
 
-#### Solution #1. Let it go.
+#### Solution #1. Let it be
 * This is the default.
 * Just let it be. Ignore what will happen. Users can edit what they can on Client Side. Even if they mess up, that's not a big problem.
 
 
 #### Solution #2. Functions
-* Protect editing for the doucments and properties in `Firebase Firestore Rules`.
+* Protect editing for those doucments and properties with `Firebase Firestore Rules`.
 * And do it on functions.
  * `FireLibrary` comes with this option. 
  * @see `Functions` section on how to do it.

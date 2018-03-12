@@ -9,6 +9,7 @@
 
 /// General error code
 export const DOCUMENT_DOES_NOT_EXIST = 'document does not exists';
+export const USER_IS_NOT_LOGGED_IN = 'You are not logged in';
 
 
 /// Categories
@@ -16,3 +17,5 @@ export const DOCUMENT_DOES_NOT_EXIST = 'document does not exists';
 export const CATEGORY_ID_IS_EMPTY = 'category id is empty';
 export const CATEGORY_EXISTS = 'category id is already exist';
 export const CATEGORY_DOES_NOT_EXIST = 'category id does not exist';
+
+export const POST_ID_EXISTS = 'post id exists';

@@ -35,7 +35,7 @@ export interface CATEGORY {
     description?: string; // to display as long description.
     subcategories?: string; // separated by comma.
     tags?: string; // Allowable tags separated by comma.
-                    // If it is set, only this tags are allowed. otherwise, any tags can be put in the post.
+    // If it is set, only this tags are allowed. otherwise, any tags can be put in the post.
     header?: string;
     footer?: string;
     numberOfPostsPerPage?: number;
@@ -59,6 +59,41 @@ export interface CATEGORY {
     updated: any; ///
 }
 
+
+/**
+* POST data to create/update/delete.
+*
+* @desc You can update more.
+*
+*
+*/
+export interface POST {
+    id?: string;                    // Document ID. This is needed only on accessing. It does not need to be saved.
+    uid: string;                    // author
+    title?: string;
+    content?: string;
+    category?: string;              // This is category's 'Document ID'.
+    subcategory?: string;           // Sub category to categorize in detail.
+    tags?: string;                  // Tags to search
+    displayName?: string;
+    email?: string;
+    password?: string;              // Anonymous need to put a password to update/delete.
+    phoneNumber?: string;
+    country?: string;
+    province?: string;
+    city?: string;
+    address?: string;
+    zipCode?: string;
+    files?: Array<string>;
+    numberOfComments?: number;
+    numberOfLikes?: number;
+    numberOfDislikes?: number;
+    numberOfViews?: number;
+    private?: boolean;
+    reminder?: number; // higher number will be listed on top.
+    created?: any;
+    updated?: any;
+}
 
 
 

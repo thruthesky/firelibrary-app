@@ -1,3 +1,36 @@
-<p>
-  post works!
-</p>
+<h2 class="p-0 m-0">Forum (Post)</h2>
+<section class="form">
+  <form (ngSubmit)=" onSubmit( $event ) ">
+    <div>
+      Select Category :
+      <select name="category" [(ngModel)]="post.category" *ngIf="categoryIds.length">
+        <option value="" selected>Select Category</option>
+        <option *ngFor=" let id of categoryIds " [value]=" id ">{{ categories[id].name ? categories[id].name : id }}</option>
+      </select>
+      <div *ngIf="categoryIds.length && post.category && subcategories">
+        Select Sub Category :
+        <select name="subcategory" [(ngModel)]="post.subcategory">
+          <option *ngFor=" let categoryName of subcategories " [value]=" categoryName ">{{ categoryName }}</option>
+        </select>
+      </div>
+    </div>
+    <div>Title:
+      <input name="name" [(ngModel)]="post.title">
+    </div>
+    <div>Content:
+      <input name="description" [(ngModel)]="post.content">
+    </div>
+    <button type="submit" *ngIf=" ! loader.creating ">Create a Post</button>
+    <span class="loader" *ngIf=" loader.creating ">Loading...</span>
+  </form>
+</section>
+
+<hr> Forums:
+<button *ngFor=" let id of categoryIds " (click)=" loadPage( id ) ">{{ categories[id].name ? categories[id].name : id }}</button>
+<hr>
+<ul>
+  <li *ngFor=" let id of postIds">
+    {{ posts[id].category }} / {{ posts[id].title }} / {{ posts[id].date }}
+  </li>
+</ul>
+<button (click)=" loadPage() ">Load Next Page</button>
