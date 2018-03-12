@@ -50,7 +50,7 @@ const appRoutes: Routes = [
     BrowserModule,
     FormsModule,
     RouterModule.forRoot( appRoutes ),
-    FirelibraryModule.forRoot( firebase.app() )
+    FirelibraryModule.forRoot( { firebaseApp: firebase.app(), functions: false } )
   ],
   providers: [  ],
   bootstrap: [AppComponent]

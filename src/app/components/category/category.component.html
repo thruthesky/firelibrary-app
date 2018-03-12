@@ -1,4 +1,8 @@
 <h1>Categories</h1>
+
+<div>
+  <h2 *ngIf="show.create">Create Category</h2>
+  <h2 *ngIf="show.edit">Edit Category</h2>
   <form (ngSubmit)=" onSubmitCategoryCreateForm( $event ) ">
     <div>Category ID:
       <input name="id" [(ngModel)]="category.id">
@@ -16,9 +20,29 @@
     <div>numberOfPostsPerPage:
       <input name="numberOfPostsPerPage" size="3" [(ngModel)]="category.numberOfPostsPerPage">
     </div>
-    <button type="submit" *ngIf=" ! progress ">Create a Category</button>
-    <button type="submit" (click)=" show.createForm = false ">Cancel</button>
-    <span class="loader" *ngIf=" progress ">Loading...</span>
-  </form>
 
-  
+    <div *ngIf="show.create">
+        <button type="submit" *ngIf=" ! loader.create ">Create a Category</button>
+        <span class="loader" *ngIf=" loader.create ">Creating...</span>
+      </div>
+      <div *ngIf="show.edit">
+          <button type="submit" *ngIf=" ! loader.edit ">Edit</button>
+          <button type="button" (click)="show.edit=false; show.create=true; category={};" *ngIf=" ! loader.edit ">Cancel</button>
+          <span class="loader" *ngIf=" loader.edit ">Editing...</span>
+        </div>
+  </form>
+</div>
+
+
+<ul>
+  <li *ngFor="let c of categories">
+    {{ c.id }} / {{ c.name }} / {{ c.description }} / {{ c.subcategories }} / {{ c.numberOfPostsPerPage }}
+    <ng-container *ngIf="!c['delete']">
+      <button (click)="onClickEditCategory(c)">EDIT</button>
+      <button (click)="onClickDeleteCategory( c )">[ X ]</button>
+    </ng-container>
+    <ng-container *ngIf="c['delete']">
+      <span class="loader">Deleting...</span>
+    </ng-container>
+  </li>
+</ul>

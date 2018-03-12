@@ -2,12 +2,18 @@ import * as firebase from 'firebase';
 import { } from './interface';
 export * from './interface';
 export { Library as _ } from './library';
-import { } from './define';
+import { SYSTEM_CONFIG } from './define';
 export * from './define';
+export * from './error';
+
+
+
+
 
 
 export class Base {
     static firebase: firebase.app.App = null;
+    static functions = false;
     auth: firebase.auth.Auth = null;
     db: firebase.firestore.Firestore = null;
     storage: firebase.storage.Storage = null;
@@ -18,6 +24,10 @@ export class Base {
         this.storage = Base.firebase.storage();
 
 
+    }
+    static configure(config: SYSTEM_CONFIG) {
+        Base.firebase = config.firebaseApp;
+        Base.functions = config.functions;
     }
 
     version() {

@@ -149,6 +149,23 @@ export class Library {
         return obj;
     }
 
+    /**
+     * Removes space(s) between the separator in `separator`
+     * @description
+     *      If the input str is given with `a, b, c c ,d `, then the return will be `a,b,c c,d`.
+     * @param separator separator in string
+     * @param str string to remove space from.
+     *
+     * @returns a string after removing spaces between the `separator`.
+     *      - if the string is falsy, it returns the input `str` itself.
+     */
+    static removeSpaceBetween(separator: string, str: string): string {
+        if ( ! str ) {
+            return str;
+        } else {
+            return str.split(separator).map(s => s.trim()).join(separator);
+        }
+    }
 }
 
 
