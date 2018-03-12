@@ -1,4 +1,5 @@
-import { Base, _, COLLECTIONS, CATEGORY,
+import {
+    Base, _, COLLECTIONS, CATEGORY,
     CATEGORY_ID_IS_EMPTY, DOCUMENT_DOES_NOT_EXIST, CATEGORY_EXISTS, CATEGORY_DOES_NOT_EXIST
 } from './../etc/base';
 export class Category extends Base {
@@ -51,7 +52,9 @@ export class Category extends Base {
         if (!id) {
             return Promise.reject(new Error(CATEGORY_ID_IS_EMPTY));
         }
-        return this.collection.doc(id).delete();
+        return this.collection.doc(id).delete().catch(e => {
+            return e;
+        });
     }
 
     categories(): Promise<Array<CATEGORY>> {

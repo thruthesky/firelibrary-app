@@ -32,12 +32,6 @@ describe('Category', () => {
     expect( re['message'] ).toBe( CATEGORY_DOES_NOT_EXIST );
   }));
 
-  it('should categories.length to be 3', inject([FireService], async (fire: FireService) => {
-    const categories = await fire.category.categories().then(re => re);
-    // console.log(categories);
-    expect(categories.length).toBe(3);
-  }));
-
 });
 
 

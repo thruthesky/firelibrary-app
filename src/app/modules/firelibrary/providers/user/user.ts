@@ -33,17 +33,24 @@ export class User extends Base {
         }
     }
 
+    /**
+     * User regigration with email and password.
+     * @desc this method get user data from HTML FORM including email, password, displayName, gender, birthday, etc.
+     * @desc `Firebase Authentication` needs to create an `Authentication` in their `Authentication Service`.
+     *      The app
+     *          1. Create an Authentication (on the Authentication Service)
+     *          2. Update the profile on the Authentication with displayName and photoURL.
+     *          3. Sets other information on `users` collection.
+     */
     register(data: USER): Promise<firebase.User> {
 
-        return this.auth.createUserWithEmailAndPassword(data.email, data.password)
-            .then((user: firebase.User) => {
-                return this.updateProfile(user, data);
+        return this.auth.createUserWithEmailAndPassword(data.email, data.password) // 1. create authentication.
+            .then((user: firebase.User) => { // 2. update Authentication(profile) with `dispalyName` and `photoURL`
+                return this.updateAuthentication(user, data);
             })
-            .then((user: firebase.User) => {
-                // newUser;
+            .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
                 return this.set(user, data);
             });
-
     }
 
     login(email: string, password: string): Promise<any> {
@@ -55,13 +62,18 @@ export class User extends Base {
     }
     /**
      * Update `displayName`, `photoURL` on Authentication.
+     * @desc it does not update other information.
+     * @see `this.updateProfile()` for updating user information.
      */
-    updateProfile(user: firebase.User, data: USER): Promise<firebase.User> {
+    updateAuthentication(user: firebase.User, data: USER): Promise<firebase.User> {
         const up = {
             displayName: user.displayName,
             photoURL: user.photoURL
         };
         return user.updateProfile(_.sanitize(up)).then(x => user);
+    }
+    updateProfile() {
+
     }
 
     /**
