@@ -160,12 +160,89 @@ export class Library {
      *      - if the string is falsy, it returns the input `str` itself.
      */
     static removeSpaceBetween(separator: string, str: string): string {
-        if ( ! str ) {
+        if (!str) {
             return str;
         } else {
             return str.split(separator).map(s => s.trim()).join(separator);
         }
     }
+
+    /**
+     * Returns browser language
+     *
+     * @param full If it is true, then it returns the full language string like 'en-US'.
+     *              Otherwise, it returns the first two letters like 'en'.
+     *
+     * @returns
+     *      - the browser language like 'en', 'en-US', 'ko', 'ko-KR'
+     *      - null if it cannot detect a language.
+     */
+    static getBrowserLanguage(full = false): string {
+        const nav = window.navigator;
+        const browserLanguagePropertyKeys = ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'];
+        let ln: string = null;
+        // support for HTML 5.1 "navigator.languages"
+        if (Array.isArray(nav.languages)) {
+            for (let i = 0; i < nav.languages.length; i++) {
+                const language = nav.languages[i];
+                if (language && language.length) {
+                    ln = language;
+                    break;
+                }
+            }
+        }
+
+        // support for other well known properties in browsers
+        for (let i = 0; i < browserLanguagePropertyKeys.length; i++) {
+            const language = nav[browserLanguagePropertyKeys[i]];
+            if (language && language.length) {
+                ln = language;
+                break;
+            }
+        }
+
+        if (ln) {
+            if (full === false) {
+                ln = ln.substring(0, 2);
+            }
+        }
+
+        return ln;
+    }
+
+
+
+    /**
+     *
+     * Returns a string after patching error information.
+     * @param str Error string
+     * @param info Error information to patch into the string
+     *
+     *
+     *
+     * @return patched string
+     *
+     * @code
+     *      _.patchmarker( 'Unknown #no', {no: 123} ) // returns 'Unknown 123'
+     *
+     */
+    static patchMarker(str, info: object = null): string {
+
+        if (info === null || typeof info !== 'object') {
+            return str;
+        }
+        const keys = Object.keys(info);
+        if (!keys.length) {
+            return str;
+        }
+
+        for (const k of keys) {
+            str = str.replace('#' + k, (<string>info[k]));
+        }
+        return str;
+    }
+
+
 }
 
 

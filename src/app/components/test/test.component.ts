@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FireService, _, CATEGORY_ID_IS_EMPTY, CATEGORY_DOES_NOT_EXIST } from '../../modules/firelibrary/core';
+import {
+  FireService,
+  _,
+  CATEGORY_ID_IS_EMPTY, CATEGORY_DOES_NOT_EXIST, UNKNOWN
+} from '../../modules/firelibrary/core';
 
 
 
@@ -30,12 +34,15 @@ export class TestComponent implements OnInit {
   success(...params) {
     this.count.test++;
     this.count.success++;
-    console.log(`Success: [${this.count.success}/${this.count.test}]: `);
-    if (params && params.length) {
-      for (const p of params) {
-        console.log(p);
-      }
-    }
+    const str = `Success: [${this.count.success}/${this.count.test}]: `;
+    // params.unshift( str );
+    params = [ str, ...params];
+    // if (params && params.length) {
+    //   for (const p of params) {
+    //     console.log(p);
+    //   }
+    // }
+    console.log(params);
   }
   failure(...params) {
     this.count.test++;
@@ -69,8 +76,32 @@ export class TestComponent implements OnInit {
 
   }
   category() {
+    this.library();
+    this.translateError();
     this.categoryCreateWrongID();
     this.categoryGetWrongID();
+  }
+
+  library() {
+    let re = _.getBrowserLanguage();
+    this.test(re && typeof re === 'string', 'Language should be thruthy and string');
+    this.test(re.length === 2, 'Language test: 2 lettetr in short', re);
+
+    re = _.getBrowserLanguage(true);
+    this.test(re.length === 5, 'Language should be 5 letter', re);
+
+  }
+  async translateError() {
+    const old = this.fire.getLanguage();
+    this.fire.setLanguage('en');
+    try {
+      const re = await this.fire.failure(<any>{ message: UNKNOWN }, { info: 'what' });
+    } catch (e) {
+      // console.log(e);
+      const text = this.fire.getText( UNKNOWN ).replace('#info', 'what');
+      this.test(e.message ===  this.fire.translate(UNKNOWN, { info: 'what' }), 'Error translation test', e);
+      this.test(e.message === text, 'Unknown error translation test');
+    }
   }
 
   categoryCreateWrongID() {

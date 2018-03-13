@@ -8,6 +8,7 @@
 
 
 /// General error code
+export const UNKNOWN = 'unknown error';
 export const DOCUMENT_DOES_NOT_EXIST = 'document does not exists';
 export const USER_IS_NOT_LOGGED_IN = 'You are not logged in';
 

@@ -116,7 +116,16 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
  * If you want to pursue using Karma & Jasmine, you can look into `providers/fire.service.spect.ts` and `providers/category/category.spect.ts` for sample test codes.
  * Run `npm run test` and you will see the results.
 
-## How to handle errors.
+## Response of FireLibrary. How to handle the return.
+
+All the calls to the `firelibrary` return a Promise of `RESPONSE` type.
+
+If there is no error, then `.then( (re: RESPONSE) => { ... })` would be followed by `firelibrary` call.
+
+If there is error, then `.catch( (re: RESPONSE) => { ... })` would be followed by `firelibrary` call.
+
+
+### How to handle errors.
 * `e.code` is a string of error code.
 * `e.message` should be translated already and ready to be used with alert();
 * you can `console.error(e)` to view the call stack.
@@ -124,7 +133,7 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
   category() {
     this.fire.category.create(<any>{})
       .then(re => {
-        this.failure('Creating category should be failed');
+        console.log( re.data );
       })
       .catch(e => {
         console.log('error code: ', e.code);
@@ -133,3 +142,13 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
       });
   }
 ````
+
+
+## Language Translation
+
+* By default, the language is `en` and the text of `en` language is saved in Typescript while other language files are saved in separately in JSON file.
+
+* `en` language is saved in `firelibrary/etc/languages/en.ts` and is loaded in memory by default.
+ * So, any language code that is not exist in other language will use `en` language as fallback.
+ * All other language text is saved in `assets/lang` folder by default like `assets/lang/ko.json`, `assets/lang/cn.json`.
+ * JOSN language files are loaded dynamically through `http.get`. So it does not affects the booting speed.

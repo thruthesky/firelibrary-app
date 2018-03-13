@@ -1,4 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import * as firebase from 'firebase';
 import { Base } from './etc/base';
 import { User } from './user/user';
@@ -15,13 +16,14 @@ export class FireService extends Base {
 
   /** This runs only one time. contructor of Service will run only one time and re-used by container. */
   constructor(
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    http: HttpClient
   ) {
     super();
     this.user = new User();
     this.category = new Category();
     this.post = new Post();
-
+    Base.http = http;
     this.initUser();
   }
 

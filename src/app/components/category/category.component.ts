@@ -91,7 +91,7 @@ export class CategoryComponent implements OnInit {
     this.show.edit = true;
     this.loader.edit = true;
     this.fire.category.get(category.id).then(re => {
-      this.category = re;
+      this.category = re.data;
       this.loader.edit = false;
     }).catch(e => alert(e.message));
   }
