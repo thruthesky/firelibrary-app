@@ -20,3 +20,8 @@ export const CATEGORY_EXISTS = 'category id is already exist';
 export const CATEGORY_DOES_NOT_EXIST = 'category id does not exist';
 
 export const POST_ID_EXISTS = 'post id exists';
+
+
+// User
+export const EMAIL_ALREADY_IN_USE = 'auth/email-already-in-use'; // from firebase
+export const USER_NOT_FOUND = 'auth/user-not-found'; // from firebase
