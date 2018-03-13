@@ -1,8 +1,9 @@
 export const en = {
     'HOME': 'Home',
-    'UNKNOWN': 'Unkown error. #info',
-    'DOCUMENT_DOES_NOT_EXIST': 'Document ID does not exist. Document ID: #documentID',
-    'CATEGORY_EXISTS': 'Category is already exists. Category ID: #categoryID'
+    'unknown-error': 'Unkown error. #info',
+    'CATEGORY_EXISTS': 'Category is already exists. Category ID: #categoryID',
+    // 'not-found': 'Document was not found. Document ID: #documentID',
+    'category-id-empty': 'Category ID is empty.'
 };
 
 

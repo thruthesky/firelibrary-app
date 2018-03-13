@@ -14,6 +14,9 @@ Firebase CMS Library for Frontend
 * Create posts under `posts` collection.
  * Anonymous can post with `Firebase Authentication Anonymous Login`
 
+* Rule update
+ * Check query data to meet condition.
+  * When a user create a post, categoryId must exist in categories collection.
 
 
 ## Documents
@@ -146,9 +149,18 @@ If there is error, then `.catch( (re: RESPONSE) => { ... })` would be followed b
 
 ## Language Translation
 
-* By default, the language is `en` and the text of `en` language is saved in Typescript while other language files are saved in separately in JSON file.
+* By default, the language is set to English(`en`) and the text is saved in Typescript while other language texts are saved separately in JSON file.
 
 * `en` language is saved in `firelibrary/etc/languages/en.ts` and is loaded in memory by default.
  * So, any language code that is not exist in other language will use `en` language as fallback.
  * All other language text is saved in `assets/lang` folder by default like `assets/lang/ko.json`, `assets/lang/cn.json`.
  * JOSN language files are loaded dynamically through `http.get`. So it does not affects the booting speed.
+
+* **@warning** The key of the language JSON file is case sensitive. So, becareful on the case.
+
+
+* It needs sometime for the JSON language files to be loaded since they are loaded by `http.get()`.
+ * If you are going to use the language file immediately before loading the language file, English text will be used.
+
+* If error code should be defined in language file so it can be translated to end user.
+ * if there is any error that is not translated, you will see a message like `"Error code - not-found - is not translated. Please translate it. It may be firebase error."`.

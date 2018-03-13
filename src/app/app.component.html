@@ -1,20 +1,19 @@
 <section>
 
-  <a [routerLink]="['/']">{{ fire.translate('home') }}</a> |
+  <a [routerLink]="['/']">{{ fire.translate('HOME') }}</a> |
   <a [routerLink]="['/register']">Register</a> |
   <a [routerLink]="'login'">Login</a> |
- 
-  <button (click)="fire.user.logout()">Logout</button> |
-  Profile Update |
+
+  <button (click)="fire.user.logout()">Logout</button> | Profile Update |
   <a [routerLink]="'post'">Post</a> |
   <a [routerLink]="'category'">Category</a> |
   <a [routerLink]="'test'">Unit Test</a>
 
 
 
-   <div class="outer-outlet">
-     <router-outlet></router-outlet>
-   </div>
+  <div class="outer-outlet">
+    <router-outlet></router-outlet>
+  </div>
 
 
 

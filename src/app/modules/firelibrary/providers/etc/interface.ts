@@ -55,8 +55,8 @@ export interface CATEGORY {
     footerOnView?: string;
     numberOfPosts?: number;
     numberOfComment?: number;
-    created: any; ///
-    updated: any; ///
+    created?: any; ///
+    updated?: any; ///
 }
 
 
@@ -112,7 +112,10 @@ export interface RESPONSE {
 }
 
 export interface CATEGORY_CREATE extends RESPONSE {
-    data: string;
+    data: string; // Category id.
+}
+export interface CATEGORY_EDIT extends RESPONSE {
+    data: string; // Category id.
 }
 export interface CATEGORY_GET extends RESPONSE {
     data: CATEGORY;

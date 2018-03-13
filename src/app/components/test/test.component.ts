@@ -4,7 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import {
   FireService,
   _,
-  CATEGORY_ID_IS_EMPTY, CATEGORY_DOES_NOT_EXIST, UNKNOWN
+  CATEGORY_ID_EMPTY, CATEGORY_DOES_NOT_EXIST, UNKNOWN
 } from '../../modules/firelibrary/core';
 
 
@@ -22,7 +22,7 @@ export class TestComponent implements OnInit {
   };
   constructor(
     public fire: FireService
-  ) {}
+  ) { }
   ngOnInit() {
     this.run();
   }
@@ -35,13 +35,14 @@ export class TestComponent implements OnInit {
     this.count.success++;
     const str = `Success: [${this.count.success}/${this.count.test}]: `;
     // params.unshift( str );
-    params = [ str, ...params];
+    // params = [str, ...params];
     // if (params && params.length) {
     //   for (const p of params) {
     //     console.log(p);
     //   }
     // }
-    console.log(params);
+    // params.unshift( str );
+    console.log(str, ...params);
   }
   /**
    *
@@ -72,12 +73,15 @@ export class TestComponent implements OnInit {
   /**
    * Runs the all service testing.
    */
-  run() {
-    this.version();
-    this.user();
-    this.category();
-    this.post();
+  async run() {
+    // this.version();
+    // this.library();
+    this.translate();
+    // await this.user();
+    // this.category();
+    // this.post();
   }
+
   /**
    * Tests current version
    */
@@ -85,85 +89,106 @@ export class TestComponent implements OnInit {
     const version = this.fire.version();
     this.test(_.isString(version), `Version: ${version}`);
   }
+
+
+
+
   /**
-  * Runs `User` Service tests
-  *
-  * @author gem
-  */
+   * Runs `User` Service tests
+   *
+   * @author gem
+   *
+   * @todo test all possible way.
+   *    test
+   *      - without email
+   *      - without wrong email format like `1234`, `@134.com`, `aaaaaa.bbbb`
+   *      - with short email like `a@a.com`
+   *      - without password
+   *      - with short password
+   *      - with simple password
+   *      - with password like people name like `michael`, 'puppy'
+   *      - with password of too long chars.
+   *      - with password of same email
+   *      - with password of same displayName
+   *      - without displayName
+   *      - without data
+   */
   async user() {
     const _user = {
-      email : 'user-' + (new Date).getTime() + '@sample.com',
+      email: 'user-' + (new Date).getTime() + '@sample.com',
       password: '000000'
     };
-    await this.userRegisterSuccess( _user );
-    this.userLoginSuccess( _user );
-    this.userRegisterExistingUser( _user );
-    this.userLoginFakeUser();
+    await this.userRegisterSuccess(_user);
+    await this.userLoginSuccess(_user);
+    await this.userRegisterExistingUser(_user);
+    await this.userLoginFakeUser();
   }
+
+
   /**
    * Tests` User.register` method and expects `success`.
    * @param data - user `email` and `password`.
    */
-  async userRegisterSuccess( data ) {
+  async userRegisterSuccess(data) {
     const userInfo = {
-      displayName : 'TestName',
-      photoUrl : 'myphoto',
-      address : '#23, Kekami st., Brgy, City, Province'
+      displayName: 'TestName',
+      photoUrl: 'myphoto',
+      address: '#23, Kekami st., Brgy, City, Province'
     };
-    await this.fire.user.register( Object.assign( userInfo, data ) )
-    .then( res => {
-      this.test( this.fire.user.isLogin , 'User Registration, Should be success.');
-    })
-    .then( () => this.fire.user.logout() )
-    .catch( e => this.failure('User registration failed expected to be successful.', e) );
+    await this.fire.user.register(Object.assign(userInfo, data))
+      .then(res => {
+        this.test(this.fire.user.isLogin, 'User Registration, Should be success.');
+      })
+      .then(() => this.fire.user.logout())
+      .catch(e => this.failure('User registration failed expected to be successful.', e));
   }
   /**
   * Tests `User.login` method and expects `success`.
   * @param user `User` that is previously logged in by `userRegisterSuccess()`.
   * @author gem
   */
-  userLoginSuccess( user ) {
-    this.fire.user.login( user.email, user.password )
-    .then( a => {
-      this.test(a.message === undefined, 'Login previously created User by Register test. Expected to be successful' );
-    })
-    .catch( e => {
-      this.failure('Login success test failed', e);
-    } );
+  async userLoginSuccess(user) {
+    await this.fire.user.login(user.email, user.password)
+      .then(a => {
+        this.test(a.message === undefined, 'Login previously created User by Register test. Expected to be successful');
+      })
+      .catch(e => {
+        this.failure('Login success test failed', e);
+      });
   }
   /**
    * Tests `User.register` method for existing user. Expects `Email already in user` error.
    * @param data - User `email` and `password` of previously resgistered user.
    */
-  userRegisterExistingUser( data ) {
-    this.fire.user.register( data )
-    .then( res => {
-      this.failure('Existing user registration should be error. Test Failed!', res);
-    })
-    .catch( e => {
-      this.test( e['code'] === E.EMAIL_ALREADY_IN_USE, 'Register existing user. Should be error.');
-    });
+  async userRegisterExistingUser(data) {
+    await this.fire.user.register(data)
+      .then(res => {
+        this.failure('Existing user registration should be error. Test Failed!', res);
+      })
+      .catch(e => {
+        this.test(e['code'] === E.EMAIL_ALREADY_IN_USE, 'Register existing user. Should be error.');
+      });
   }
   /**
    * Tests `User.login` method with a fake/non-existing user. Expects error. user not found/exists.
    */
-  userLoginFakeUser() {
-    this.fire.user.login( 'email@fake.com', '000000' )
-    .then( a => {
-      this.failure('Login test should be failed. Email does not exists.', a);
-    } )
-    .catch( e => {
-      this.test(e.code === E.USER_NOT_FOUND, 'Login with fake user/email. Expected to be error.', 'Code: ' + e.code);
-    });
+  async userLoginFakeUser() {
+    await this.fire.user.login('email@fake.com', '000000')
+      .then(a => {
+        this.failure('Login test should be failed. Email does not exists.', a);
+      })
+      .catch(e => {
+        this.test(e.code === E.USER_NOT_FOUND, 'Login with fake user/email. Expected to be error.', 'Code: ' + e.code);
+      });
   }
   /**
   * Runs `Category` Service tests.
   */
   category() {
-    this.library();
-    this.translateError();
     this.categoryCreateWrongID();
     this.categoryGetWrongID();
+    this.categoryCreateExist();
+    this.categoryEdit();
   }
 
   library() {
@@ -175,45 +200,76 @@ export class TestComponent implements OnInit {
     this.test(re.length === 5, 'Language should be 5 letter', re);
 
   }
-  async translateError() {
+  async translate() {
     const old = this.fire.getLanguage();
     this.fire.setLanguage('en');
+    // console.log(`getLanguage() after setLanguage('en')`, this.fire.getLanguage());
+    this.test(this.fire.getLanguage() === 'en', `getLanguage() after setLanguage('en')`);
     try {
       const re = await this.fire.failure(<any>{ message: UNKNOWN }, { info: 'what' });
     } catch (e) {
       // console.log(e);
-      const text = this.fire.getText( UNKNOWN ).replace('#info', 'what');
-      this.test(e.message ===  this.fire.translate(UNKNOWN, { info: 'what' }), 'Error translation test', e);
+      const text = this.fire.getText(UNKNOWN).replace('#info', 'what');
+      this.test(e.message === this.fire.translate(UNKNOWN, { info: 'what' }), 'Error translation test', e);
       this.test(e.message === text, 'Unknown error translation test');
     }
+
+    this.test(this.fire.getText('HOME') === 'Home', 'code `home` should be `Home` in text.', 're: ' + this.fire.getText('HOME'));
+    // this.test( this.fire.translate('home') === 'Home', 'Translate home to Home', this.fire.translate('home') );
+
   }
 
   categoryCreateWrongID() {
     this.fire.category.create(<any>{})
-    .then(re => {
-      this.failure('Creating category should be failed with empty data');
-    })
-    .catch(e => {
-      this.test(e.code === E.CATEGORY_ID_IS_EMPTY, 'Expect error with empty data');
-      // console.log('error code: ', e.code);
-      // console.log('error message: ', e.message);
-      // console.error('error stack log: ', e);
-    });
+      .then(re => {
+        this.failure('Creating category should be failed with empty data');
+      })
+      .catch(e => {
+        this.test(e.code === E.CATEGORY_ID_EMPTY, 'Expect error with empty data');
+        // console.log('error code: ', e.code);
+        // console.log('error message: ', e.message);
+        // console.error('error stack log: ', e);
+      });
     this.fire.category.create(<any>{ id: '' })
-    .then(re => {
-      this.failure('Creating category should be failed with empty category id');
-    })
-    .catch(e => {
-      this.test(e.code === E.CATEGORY_ID_IS_EMPTY, 'Expect error with empty category id');
-    });
+      .then(re => {
+        this.failure('Creating category should be failed with empty category id');
+      })
+      .catch(e => {
+        this.fire.setLanguage('ko');
+        console.log(this.fire.getLanguage());
+        this.test(e.code === E.CATEGORY_ID_EMPTY, 'Expect error with empty category id', this.fire.translate(E.CATEGORY_ID_EMPTY));
+      });
   }
   /**
    *
    */
   categoryGetWrongID() {
     this.fire.category.get('wrong-category-id')
-    .then(x => this.failure('Category get with wrong id must be failed', x))
-    .catch(e => this.test(e.code === E.CATEGORY_DOES_NOT_EXIST, 'Expect error on getting a category with wrong id', e.code, e.message));
+      .then(x => this.failure('Category get with wrong id must be failed', x))
+      .catch(e => this.test(e.code === E.CATEGORY_DOES_NOT_EXIST, 'Expect error on getting a category with wrong id', e.code, e.message));
+  }
+
+  categoryCreateExist() {
+    const categoryId = 'cat-' + (new Date).getTime();
+    this.fire.category.create({ id: categoryId })
+      .then(re => {
+        this.test(re.code === null, 'Category create susccess');
+        this.test(re.data === categoryId, `Category id match`);
+        this.fire.category.create({ id: categoryId })
+          .then(x => this.failure('should fail on creating with existing category id'))
+          .catch(e => this.test(e.code === E.CATEGORY_EXISTS, 'Expect error on creating a category with existing category id'));
+      })
+      .catch(e => {
+        this.failure('Should create a category', e);
+      });
+  }
+  categoryEdit() {
+    this.fire.setLanguage('ko');
+    this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong'})
+      .then( () => this.failure('Expect error on creating wrong category') )
+      .catch( e => {
+        this.test( e.code === E.NOT_FOUND, e.message );
+      });
   }
   /**
   * Runs `Post` Service testing.
@@ -235,12 +291,12 @@ export class TestComponent implements OnInit {
       private: true,
       reminder: 0 // higher number will be listed on top.
     };
-    const re = this.fire.post.create( post )
-    .then( res => {
-      this.failure('Create post but user not logged in test. Failed');
-    })
-    .catch( e => {
-      this.test(e.message === E.USER_IS_NOT_LOGGED_IN, 'Create post without login should be error');
-    });
+    const re = this.fire.post.create(post)
+      .then(res => {
+        this.failure('Create post but user not logged in test. Failed');
+      })
+      .catch(e => {
+        this.test(e.message === E.USER_IS_NOT_LOGGED_IN, 'Create post without login should be error');
+      });
   }
 }
