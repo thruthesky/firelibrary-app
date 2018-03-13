@@ -91,7 +91,7 @@ export class CategoryComponent implements OnInit {
     this.show.edit = true;
     this.loader.edit = true;
     this.fire.category.get(category.id).then(re => {
-      this.category = re;
+      this.category = <any>re; // 'CATEGORY_GET' is not assignable to type 'CATEGORY'.
       this.loader.edit = false;
     }).catch(e => alert(e.message));
   }
