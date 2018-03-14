@@ -5,8 +5,8 @@ export * from './interface';
 import { Library as _ } from './library';
 export { Library as _ } from './library';
 export * from './define';
+import * as E from './error';
 export * from './error';
-
 import { en } from './languages/en';
 
 
@@ -53,6 +53,10 @@ export class Base {
     get http(): HttpClient {
         return Base.http;
     }
+
+    /**
+     * Returns the collection of the selected collection in this.collectionName
+     */
     get collection(): firebase.firestore.CollectionReference {
         if (this.collectionName) {
             // console.log('col name: ', this.collectionName);
@@ -64,6 +68,8 @@ export class Base {
 
 
     /**
+     *
+     * Returns an object of RESPONSE interface.
      *
      * @returns
      *      - <RESPONE> object.
@@ -77,42 +83,60 @@ export class Base {
 
     /**
      *
-     * @param e error object.
+     * Returns a Promise of reject. This means, the app will need to catch and handle somewhere.
+     *
+     * @desc This is not a Asynchronous call. It simply returns a Promise which does not means it is a Asynchronous call.
+     *
+     * @param e error object. It MUST be an Error object. It cannot be a string.
+     *      If you have a string or `error code string` call this method as ` failure( new Error('string') ) `.
      *      It can be an error of ` new Error('string..') ` or Firebase error.
      *      We need to detect if it's a firebase error or not. so we can translate the firebase error into proper erro string.
      *      Unfortunately I cannot refer `firebase.firestore.FirestoreError`.
      *      I simply compare if the error code is one of the firebase error code.
      *      @see for Firestore, https://firebase.google.com/docs/reference/js/firebase.firestore.FirestoreError
      *      @see for Authentication, https://firebase.google.com/docs/reference/js/firebase.auth.Error
+     *
+     * @return Promise<never>
+     *
      */
-    failure(e: Error, info = {}): any {
-        if ( this.isFirebaseError(e, info) ) {
+    failure(e: Error, info = {}): Promise<never> {
+        if (e['_translated']) { // Already translated.
+            return Promise.reject(e);
+        }
+        if (this.isFirebaseError(e, info)) {
             this.translateFirebaseError(e, info);
         } else {
             e['code'] = e.message;
             e['message'] = this.translate(e.message, info);
         }
-        if ( e['code'] === e['message'] ) {
+        if (e['code'] === e['message']) {
             e['message'] = `Error code - ${e['code']} - is not translated. Please translate it. It may be firebase error.`;
         }
+        e['_translated'] = true;
         return Promise.reject(e);
     }
 
+    /**
+     * Returns true if the error is a Firebase Error object.
+     *
+     * @description
+     *      - It checks if the error code is the same as `Firebase Error Code`. If yes, it returns true.
+     */
     isFirebaseError(e, info): boolean {
-        switch ( e.code ) {
-            case 'not-found' :
+        switch (e.code) {
+            case 'not-found':
                 // console.log('not-found: ', e.message);
                 const str: string = e.message;
                 info['documentID'] = str.split('/').pop();
                 return true;
-            case 'already-exists' :
+            case 'already-exists':
                 return true;
             default:
                 return false;
         }
     }
     translateFirebaseError(e, info) {
-        e['message'] = this.translate( e.code, info);
+        e['message'] = this.translate(e.code, info);
     }
 
 
@@ -152,9 +176,18 @@ export class Base {
         return Base.language;
     }
     /**
+     * Sets a language and loads the language file.
+     * This will load JSON language file under `assets/lang` by default. You can change the path.
+     * @desc If the input `ln` is 'en', then it will just return since `en` language is loaded by typescript by default.
+     * @desc If the language is already loaded, it does not load again.
      *
      * @returns a Promise<any> on success. Otherwise error will be thrown.
      * @see README## Langulage Translation
+     *
+     * @code
+     *          fire.setLanguage('cn')
+                  .catch( e => alert('Failed to load language file. ' + e.message) );
+     *
      */
     setLanguage(ln: string): Promise<any> {
         Base.language = ln;
@@ -166,6 +199,30 @@ export class Base {
         }
         return this.http.get(`/${Base.languageFolder}/${ln}.json`).toPromise()
             .then(re => Base.texts[ln] = re);
+    }
+
+
+    /**
+     *
+     * Checks if the Document ID is in right format.
+     *
+     *
+     * @param documentID Document ID
+     * @returns null if there is no problem. Otherwise `ERROR CODE` will be returned.
+     *
+     *
+     */
+    checkDocumentIDFormat(documentID) {
+        if (_.isEmpty(documentID)) {
+            return E.NO_DOCUMENT_ID;
+        }
+        if (documentID.length > 128) {
+            return E.DOCUMENT_ID_TOO_LONG;
+        }
+        if (documentID.indexOf('/') !== -1) {
+            return E.DOCUMENT_ID_CANNOT_CONTAIN_SLASH;
+        }
+        return null;
     }
 
 }

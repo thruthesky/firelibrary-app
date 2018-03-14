@@ -3,7 +3,8 @@
     "unknown-error": "알려지지 않은 정보. 정보: #info",
     "CATEGORY_EXISTS": "카테고리가 이미 존재합니다. 카테고리: #categoryID",
     "not-found": "문서가 존재하지 않습니다. 문서 아이디: #documentID",
-    "category-id-empty": "카테고리 아이디가 입력되지 않았습니다."
+    "category-id-empty": "카테고리 아이디가 입력되지 않았습니다.",
+    "document-id-too-long": "문서 아이디가 너무 깁니다. 문서 아이디: #documentID"
 }
 
 

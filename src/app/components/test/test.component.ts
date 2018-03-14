@@ -1,3 +1,4 @@
+import { } from './../../modules/firelibrary/providers/etc/error';
 import { POST, USER } from './../../modules/firelibrary/providers/etc/interface';
 import { Component, OnInit } from '@angular/core';
 import {
@@ -5,8 +6,11 @@ import {
   _,
   CATEGORY_ID_EMPTY, CATEGORY_DOES_NOT_EXIST, UNKNOWN, INVALID_EMAIL,
   WEAK_PASSWORD, EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, CATEGORY_EXISTS,
-  USER_IS_NOT_LOGGED_IN, NOT_FOUND
+  USER_IS_NOT_LOGGED_IN, NOT_FOUND, DOCUMENT_ID_TOO_LONG, DOCUMENT_ID_CANNOT_CONTAIN_SLASH
 } from '../../modules/firelibrary/core';
+
+import { TestValidator } from './test.validator';
+import { TestTools } from './test.tools';
 
 
 
@@ -15,72 +19,29 @@ import {
   templateUrl: './test.component.html',
   styleUrls: ['./test.component.css']
 })
-export class TestComponent implements OnInit {
-  count = {
-    test: 0,
-    success: 0,
-    failure: 0
-  };
+export class TestComponent extends TestTools implements OnInit {
   constructor(
     public fire: FireService
-  ) { }
+  ) {
+    super();
+  }
   ngOnInit() {
     this.run();
   }
-  /**
-  *
-  * @param params
-  */
-  success(...params) {
-    this.count.test++;
-    this.count.success++;
-    const str = `Success: [${this.count.success}/${this.count.test}]: `;
-    // params.unshift( str );
-    // params = [str, ...params];
-    // if (params && params.length) {
-    //   for (const p of params) {
-    //     console.log(p);
-    //   }
-    // }
-    // params.unshift( str );
-    console.log(str, ...params);
-  }
-  /**
-  *
-  * @param params
-  */
-  failure(...params) {
-    this.count.test++;
-    this.count.failure++;
-    console.error(`Failure: [${this.count.failure}/${this.count.test}]: `);
-    if (params && params.length) {
-      for (const p of params) {
-        console.error(p);
-      }
-    }
-  }
-  /**
-  * Calls success or failure based on `b`.
-  * @param b `Boolean` or `condition`.
-  * @param params some useful information that can give developer a clue to the problem.
-  */
-  test(b, ...params) {
-    if (b) {
-      this.success(params);
-    } else {
-      this.failure(params);
-    }
+  get count() {
+    return TestTools.count;
   }
   /**
   * Runs the all service testing.
   */
   async run() {
-    // this.version();
-    // this.library();
-    // this.translate();
+    (new TestValidator( this.fire )).run();
+    this.version();
+    this.library();
+    this.translate();
     await this.user();
-    // this.category();
-    // this.post();
+    this.category();
+    this.post();
   }
   /**
   * Tests current version
@@ -254,9 +215,10 @@ export class TestComponent implements OnInit {
     this.categoryCreateWrongID();
     this.categoryGetWrongID();
     this.categoryCreateExist();
-    this.categoryEdit();
+    this.categoryNotFound();
   }
-  categoryCreateWrongID() {
+
+  categoryEmptyID() {
     this.fire.category.create(<any>{})
     .then(re => {
       this.failure('Creating category should be failed with empty data');
@@ -277,6 +239,28 @@ export class TestComponent implements OnInit {
       this.test(e.code === CATEGORY_ID_EMPTY, 'Expect error with empty category id', this.fire.translate(CATEGORY_ID_EMPTY));
     });
   }
+
+  categoryCreateWrongID() {
+    this.fire.setLanguage('ko');
+    this.fire.category.create({'id': '/'})
+      .then(re => {
+        this.failure('Creating category should be failed with empty data');
+      })
+      .catch(e => {
+        this.test(e.code === DOCUMENT_ID_CANNOT_CONTAIN_SLASH, 'Expect invalid-argument', e.code, e.message);
+      });
+    this.fire.category.create({ id: 'too-long-category-id-1234567890-1234567890-1234567890-1234567890' +
+      '-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890' })
+      .then(re => {
+        this.failure('Creating category should be failed with empty category id');
+      })
+      .catch(e => {
+        this.fire.setLanguage('ko');
+        console.log(this.fire.getLanguage());
+        this.test(e.code === DOCUMENT_ID_TOO_LONG, 'Expect error with empty category id', e.code, e.message);
+      });
+  }
+
   /**
   *
   */
@@ -285,7 +269,10 @@ export class TestComponent implements OnInit {
     .then(x => this.failure('Category get with wrong id must be failed', x))
     .catch(e => this.test(e.code === CATEGORY_DOES_NOT_EXIST, 'Expect error on getting a category with wrong id', e.code, e.message));
   }
-  /** */
+
+  /**
+   *
+   */
   categoryCreateExist() {
     const categoryId = 'cat-' + (new Date).getTime();
     this.fire.category.create({ id: categoryId })
@@ -300,8 +287,11 @@ export class TestComponent implements OnInit {
       this.failure('Should create a category', e);
     });
   }
-  /** */
-  categoryEdit() {
+
+  /**
+   * Category edit test.
+   */
+  categoryNotFound() {
     this.fire.setLanguage('ko');
     this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong'})
     .then( () => this.failure('Expect error on creating wrong category') )
