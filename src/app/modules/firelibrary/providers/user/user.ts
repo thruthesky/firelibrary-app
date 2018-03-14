@@ -44,12 +44,12 @@ export class User extends Base {
     */
     register(data: USER): Promise<firebase.User> {
         return this.auth.createUserWithEmailAndPassword(data.email, data.password) // 1. create authentication.
-        .then((user: firebase.User) => { // 2. update Authentication(profile) with `dispalyName` and `photoURL`
-        return this.updateAuthentication(user, data);
-    })
-    .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
-    return this.set(user, data);
-    });
+            .then((user: firebase.User) => { // 2. update Authentication(profile) with `dispalyName` and `photoURL`
+                return this.updateAuthentication(user, data);
+            })
+            .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
+                return this.set(user, data);
+            });
     }
 
     login(email: string, password: string): Promise<any> {

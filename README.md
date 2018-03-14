@@ -84,6 +84,11 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 * Please submit your `pull request` if you want to update.
 
 
+## Terms
+
+* `Action Methods` are defined in providers and are handling/manipulating with `Firebase`.
+ * Some of `Action Methods` are `Category::create()`, `Category::edit()`, etc.
+
 ## Client Side Coding Limitation
 
 * For CRUD by the admin, owner, guest has no problem if they do it on their own documents(data).
@@ -132,11 +137,12 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ## Response of FireLibrary. How to handle the return.
 
-All the calls to the `firelibrary` return a Promise of `RESPONSE` type.
+* `Action Methods` must return a Promise of `Base::success()` or `Base::failure()`.
+ * The returns of `Base::sucess()` and `Base::failure()` are compatible with `RESPONSE` object.
 
-If there is no error, then `.then( (re: RESPONSE) => { ... })` would be followed by `firelibrary` call.
+* If there is no error, then `.then( (re: RESPONSE) => { ... })` would be followed by `Action Methods` call.
 
-If there is error, then `.catch( (re: RESPONSE) => { ... })` would be followed by `firelibrary` call.
+* If there is error, then `.catch( (re: RESPONSE) => { ... })` would be followed by `Action Methods` call.
 
 
 ### How to handle errors.
@@ -184,7 +190,7 @@ Please follow the rules below when you are going to write a validators.
 * validator must have a prefix of the method name it is needed for and postfix of 'Validator'
  * For instance, you need to write a validator for `create` method and the method name of the validator
    would be `createValidator`
-
+* put validator right on top of the caller method.
 * Should be Asynchronus `async/wait` call be chained like below.
 
 ````
@@ -198,7 +204,7 @@ return this.createValidator(category)
 
 * validator must be return `Promise<any>`.
  * Which means validator must be `thenable` and `catchable`.
-   * If there is any error on validator, it should return the result of ` failure() `.
    * If there is no error, then simply returns null.
+   * If there is error on validating, it should return the result of ` failure() `.
 
 
