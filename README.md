@@ -3,6 +3,17 @@
 Firebase CMS Library for Frontend
 
 ## TODO
+* Unit test
+ * @done (Not much to do) Produce all the errors of https://firebase.google.com/docs/reference/js/firebase.firestore.FirestoreError
+
+   *  emtpy category id
+   *  wrong category id: with slash, space, dot, other specail chars.
+   *  too long category id
+   *  too short category id
+   *  category id with existing
+   *  category id with
+   *  empty category data
+   *  too big category data. over 1M. ( this is not easy to test. )
 
 * user update with email/password login.
 * Authentication social login and profile update.
@@ -164,3 +175,30 @@ If there is error, then `.catch( (re: RESPONSE) => { ... })` would be followed b
 
 * If error code should be defined in language file so it can be translated to end user.
  * if there is any error that is not translated, you will see a message like `"Error code - not-found - is not translated. Please translate it. It may be firebase error."`.
+
+
+## Validators
+
+Please follow the rules below when you are going to write a validators.
+
+* validator must have a prefix of the method name it is needed for and postfix of 'Validator'
+ * For instance, you need to write a validator for `create` method and the method name of the validator
+   would be `createValidator`
+
+* Should be Asynchronus `async/wait` call be chained like below.
+
+````
+return this.createValidator(category)
+    .then(() => {
+        return this.collection.doc(category.id).set(_.sanitize(category));
+    })
+    .then(() => this.success(category.id))
+    .catch(e => this.failure(e));
+````
+
+* validator must be return `Promise<any>`.
+ * Which means validator must be `thenable` and `catchable`.
+   * If there is any error on validator, it should return the result of ` failure() `.
+   * If there is no error, then simply returns null.
+
+

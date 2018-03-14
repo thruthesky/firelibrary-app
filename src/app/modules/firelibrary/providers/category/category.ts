@@ -19,25 +19,53 @@ export class Category extends Base {
      *      - Promise<CATEGORY_CREATE>
      *      - Otherwise Promise<RESONSE> error object.
      */
-    create(category: CATEGORY): Promise<CATEGORY_CREATE> {
-        if (category.id === void 0 || !category.id) {
-            return this.failure(new Error(CATEGORY_ID_EMPTY)); // Promise.reject(new Error(CATEGORY_ID_IS_EMPTY));
+    async createValidator(category: CATEGORY): Promise<any> {
+        const idCheck = this.checkDocumentIDFormat(category.id);
+        if (idCheck) {
+            return this.failure(new Error(idCheck), { documentID: category.id });
         }
-        category.subcategories = _.removeSpaceBetween(',', category.subcategories);
-        category.created = firebase.firestore.FieldValue.serverTimestamp();
-        return this.collection.doc(category.id).get()
+        return await this.collection.doc(category.id).get()
             .then(doc => {
                 if (doc.exists) {
                     return this.failure(new Error(CATEGORY_EXISTS));
                 } else {
-                    return this.collection.doc(category.id).set(_.sanitize(category));
+                    return null;
                 }
-            })
-            .then(() => {
-                return this.success(category.id);
             });
     }
+    create(category: CATEGORY): Promise<CATEGORY_CREATE> {
+        return this.createValidator(category)
+            .then(() => {
+                category.subcategories = _.removeSpaceBetween(',', category.subcategories);
+                category.created = firebase.firestore.FieldValue.serverTimestamp();
+                return this.collection.doc(category.id).set(_.sanitize(category));
+            })
+            .then(() => this.success(category.id))
+            .catch(e => this.failure(e));
 
+        // const validate = this.createValidator(category);
+        // if (validate) {
+        //     return validate;
+        // }
+        // category.subcategories = _.removeSpaceBetween(',', category.subcategories);
+        // category.created = firebase.firestore.FieldValue.serverTimestamp();
+        // return this.collection.doc(category.id).get()
+        //     .then(doc => {
+        //         if (doc.exists) {
+        //             return this.failure(new Error(CATEGORY_EXISTS));
+        //         } else {
+        //             return this.collection.doc(category.id).set(_.sanitize(category));
+        //         }
+        //     })
+        //     .then(() => {
+        //         return this.success(category.id);
+        //     })
+        //     .catch(e => this.failure(e));
+    }
+
+    /**
+     * Edits a category.
+     */
     edit(category: CATEGORY): Promise<CATEGORY_EDIT> {
         if (category.id === void 0 || !category.id) {
             return this.failure(new Error(CATEGORY_ID_EMPTY));
@@ -45,7 +73,7 @@ export class Category extends Base {
         category.subcategories = _.removeSpaceBetween(',', category.subcategories);
         return this.collection.doc(category.id).update(_.sanitize(category))
             .then(() => this.success(category.id))
-            .catch( e => this.failure(e) );
+            .catch(e => this.failure(e));
     }
 
     get(id: string): Promise<CATEGORY_GET> {

@@ -12,7 +12,8 @@ export class AppComponent {
 
   constructor(public fire: FireService) {
 
-    fire.setLanguage('ko');
+    fire.setLanguage('ko')
+      .catch( e => alert('Failed to load language file. ' + e.message) );
 
 
   }
