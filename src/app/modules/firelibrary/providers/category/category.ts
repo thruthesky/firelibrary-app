@@ -1,6 +1,7 @@
+import * as firebase from 'firebase';
 import {
     Base, _, COLLECTIONS, CATEGORY,
-    CATEGORY_ID_IS_EMPTY, DOCUMENT_DOES_NOT_EXIST, CATEGORY_EXISTS, CATEGORY_DOES_NOT_EXIST, CATEGORY_CREATE, CATEGORY_GET
+    CATEGORY_EXISTS, CATEGORY_DOES_NOT_EXIST, CATEGORY_CREATE, CATEGORY_GET, CATEGORY_EDIT, CATEGORY_ID_EMPTY
 } from './../etc/base';
 export class Category extends Base {
 
@@ -11,15 +12,23 @@ export class Category extends Base {
         super(COLLECTIONS.CATEGORIES);
     }
 
+    /**
+     * Creates a category
+     *
+     * @returns
+     *      - Promise<CATEGORY_CREATE>
+     *      - Otherwise Promise<RESONSE> error object.
+     */
     create(category: CATEGORY): Promise<CATEGORY_CREATE> {
         if (category.id === void 0 || !category.id) {
-            return this.failure(new Error(CATEGORY_ID_IS_EMPTY)); // Promise.reject(new Error(CATEGORY_ID_IS_EMPTY));
+            return this.failure(new Error(CATEGORY_ID_EMPTY)); // Promise.reject(new Error(CATEGORY_ID_IS_EMPTY));
         }
         category.subcategories = _.removeSpaceBetween(',', category.subcategories);
+        category.created = firebase.firestore.FieldValue.serverTimestamp();
         return this.collection.doc(category.id).get()
             .then(doc => {
                 if (doc.exists) {
-                    return Promise.reject(new Error(CATEGORY_EXISTS));
+                    return this.failure(new Error(CATEGORY_EXISTS));
                 } else {
                     return this.collection.doc(category.id).set(_.sanitize(category));
                 }
@@ -29,18 +38,20 @@ export class Category extends Base {
             });
     }
 
-    edit(category: CATEGORY): Promise<void> {
+    edit(category: CATEGORY): Promise<CATEGORY_EDIT> {
         if (category.id === void 0 || !category.id) {
-            return Promise.reject(new Error(CATEGORY_ID_IS_EMPTY));
+            return this.failure(new Error(CATEGORY_ID_EMPTY));
         }
         category.subcategories = _.removeSpaceBetween(',', category.subcategories);
-        return this.collection.doc(category.id).update(_.sanitize(category));
+        return this.collection.doc(category.id).update(_.sanitize(category))
+            .then(() => this.success(category.id))
+            .catch( e => this.failure(e) );
     }
 
     get(id: string): Promise<CATEGORY_GET> {
 
         if (!id) {
-            return Promise.reject(new Error(CATEGORY_ID_IS_EMPTY));
+            return Promise.reject(new Error(CATEGORY_ID_EMPTY));
         }
         return this.collection.doc(id).get().then(doc => {
             if (doc.exists) {
@@ -53,7 +64,7 @@ export class Category extends Base {
 
     delete(id: string): Promise<any> {
         if (!id) {
-            return Promise.reject(new Error(CATEGORY_ID_IS_EMPTY));
+            return Promise.reject(new Error(CATEGORY_ID_EMPTY));
         }
         return this.collection.doc(id).delete().catch(e => {
             return e;

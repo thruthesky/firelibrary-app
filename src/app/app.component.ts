@@ -12,6 +12,7 @@ export class AppComponent {
 
   constructor(public fire: FireService) {
 
+    fire.setLanguage('ko');
 
 
   }
