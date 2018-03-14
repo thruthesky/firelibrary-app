@@ -34,23 +34,22 @@ export class User extends Base {
     }
 
     /**
-     * User regigration with email and password.
-     * @desc this method get user data from HTML FORM including email, password, displayName, gender, birthday, etc.
-     * @desc `Firebase Authentication` needs to create an `Authentication` in their `Authentication Service`.
-     *      The app
-     *          1. Create an Authentication (on the Authentication Service)
-     *          2. Update the profile on the Authentication with displayName and photoURL.
-     *          3. Sets other information on `users` collection.
-     */
+    * User regigration with email and password.
+    * @desc this method get user data from HTML FORM including email, password, displayName, gender, birthday, etc.
+    * @desc `Firebase Authentication` needs to create an `Authentication` in their `Authentication Service`.
+    *      The app
+    *          1. Create an Authentication (on the Authentication Service)
+    *          2. Update the profile on the Authentication with displayName and photoURL.
+    *          3. Sets other information on `users` collection.
+    */
     register(data: USER): Promise<firebase.User> {
-
         return this.auth.createUserWithEmailAndPassword(data.email, data.password) // 1. create authentication.
-            .then((user: firebase.User) => { // 2. update Authentication(profile) with `dispalyName` and `photoURL`
-                return this.updateAuthentication(user, data);
-            })
-            .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
-                return this.set(user, data);
-            });
+        .then((user: firebase.User) => { // 2. update Authentication(profile) with `dispalyName` and `photoURL`
+        return this.updateAuthentication(user, data);
+    })
+    .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
+    return this.set(user, data);
+    });
     }
 
     login(email: string, password: string): Promise<any> {
@@ -61,10 +60,10 @@ export class User extends Base {
         this.auth.signOut();
     }
     /**
-     * Update `displayName`, `photoURL` on Authentication.
-     * @desc it does not update other information.
-     * @see `this.updateProfile()` for updating user information.
-     */
+    * Update `displayName`, `photoURL` on Authentication.
+    * @desc it does not update other information.
+    * @see `this.updateProfile()` for updating user information.
+    */
     updateAuthentication(user: firebase.User, data: USER): Promise<firebase.User> {
         const up = {
             displayName: user.displayName,
@@ -73,12 +72,11 @@ export class User extends Base {
         return user.updateProfile(_.sanitize(up)).then(x => user);
     }
     updateProfile() {
-
     }
 
     /**
-     * Sets user information on user collection.
-     */
+    * Sets user information on user collection.
+    */
     set(user: firebase.User, data: USER): Promise<firebase.User> {
         delete data.displayName;
         delete data.photoURL;
@@ -88,13 +86,12 @@ export class User extends Base {
     }
 
     /**
-     * For Unit-testing - Delete user after testing.
-     *
-     * @author gem
-     */
-    deleteTestUser() {
-        const user = firebase.auth().currentUser;
-        return user.delete();
+    * For Unit-testing - Get user to delete.
+    *
+    * @author gem
+    */
+    getUser() {
+        return this.auth.currentUser;
     }
 }
 
