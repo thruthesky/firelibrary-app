@@ -65,6 +65,8 @@ export class Base {
 
     /**
      *
+     * Returns an object of RESPONSE interface.
+     *
      * @returns
      *      - <RESPONE> object.
      */
@@ -76,6 +78,8 @@ export class Base {
     }
 
     /**
+     *
+     * Returns a Promise of reject. This means, the app will need to catch and handle somewhere.
      *
      * @param e error object.
      *      It can be an error of ` new Error('string..') ` or Firebase error.
