@@ -1,4 +1,3 @@
-import { } from './../../modules/firelibrary/providers/etc/error';
 import { POST, USER } from './../../modules/firelibrary/providers/etc/interface';
 import { Component, OnInit } from '@angular/core';
 import {
