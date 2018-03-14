@@ -86,5 +86,15 @@ export class User extends Base {
         data.created = firebase.firestore.FieldValue.serverTimestamp();
         return this.collection.doc(user.uid).set(data).then(x => user);
     }
+
+    /**
+     * For Unit-testing - Delete user after testing.
+     *
+     * @author gem
+     */
+    deleteTestUser() {
+        const user = firebase.auth().currentUser;
+        return user.delete();
+    }
 }
 
