@@ -26,6 +26,7 @@ export class TestComponent extends TestTools implements OnInit {
   ngOnInit() {
     this.run();
   }
+
   get count() {
     return TestTools.count;
   }
@@ -204,15 +205,17 @@ export class TestComponent extends TestTools implements OnInit {
 
   categoryCreateWrongID() {
     this.fire.setLanguage('ko');
-    this.fire.category.create({'id': '/'})
+    this.fire.category.create({ 'id': '/' })
       .then(re => {
         this.failure('Creating category should be failed with empty data');
       })
       .catch(e => {
         this.test(e.code === E.DOCUMENT_ID_CANNOT_CONTAIN_SLASH, 'Expect invalid-argument', e.code, e.message);
       });
-    this.fire.category.create({ id: 'too-long-category-id-1234567890-1234567890-1234567890-1234567890' +
-      '-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890' })
+    this.fire.category.create({
+      id: 'too-long-category-id-1234567890-1234567890-1234567890-1234567890' +
+        '-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890'
+    })
       .then(re => {
         this.failure('Creating category should be failed with empty category id');
       })
@@ -255,10 +258,10 @@ export class TestComponent extends TestTools implements OnInit {
    */
   categoryNotFound() {
     this.fire.setLanguage('ko');
-    this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong'})
-      .then( () => this.failure('Expect error on creating wrong category') )
-      .catch( e => {
-        this.test( e.code === E.NOT_FOUND, e.message );
+    this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong' })
+      .then(() => this.failure('Expect error on creating wrong category'))
+      .catch(e => {
+        this.test(e.code === E.NOT_FOUND, e.message);
       });
   }
   /**

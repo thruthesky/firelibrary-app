@@ -83,11 +83,16 @@ export class Base {
 
     /**
      *
-     * Returns a Promise of reject. This means, the app will need to catch and handle somewhere.
+     * Returns a Promise.
      *
-     * @desc This is not a Asynchronous call. It simply returns a Promise which does not means it is a Asynchronous call.
+     * @desc This method returns a Promise. And this is important to understand.
+     *      Firstly, it will first return a Promise.
+     *      Secondl, laster it will reject().
      *
-     * @param e error object. It MUST be an Error object. It cannot be a string.
+     * @desc This method is actually an Asynchronous method since it returns a Promise.
+     *
+     *
+     * @param e error object. the input `e` MUST be an Error object. It cannot be a string.
      *      If you have a string or `error code string` call this method as ` failure( new Error('string') ) `.
      *      It can be an error of ` new Error('string..') ` or Firebase error.
      *      We need to detect if it's a firebase error or not. so we can translate the firebase error into proper erro string.
