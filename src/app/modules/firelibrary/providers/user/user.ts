@@ -1,4 +1,4 @@
-﻿import { INVALID_EMAIL, WEAK_PASSWORD } from '../../core';
+﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG } from '../../core';
 import { Base, _, USER, COLLECTIONS } from './../etc/base';
 import * as firebase from 'firebase';
 export class User extends Base {
@@ -30,32 +30,41 @@ export class User extends Base {
         }
     }
     /**
-     * Validates user data to be used for registration
-     * @param user User data to validate
-     */
+    * Validates user data to be used for registration
+    * @param user User data to validate
+    */
     async registerValidator(user: USER): Promise<any> {
         /**PASSWORD VALIDATION**/
-        if (user.displayName) {
-            if ( user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1 ) {
-                return this.failure(WEAK_PASSWORD, { message: 'Password should not contain display name.'});
+        if ( user.password ) {
+            /**
+            * As prescribe in `https://stackoverflow.com/questions/98768/should-i-impose-a-maximum-length-on-passwords`
+            */
+            if (user.password.length > 128 ) {
+                return this.failure(PASSWORD_TOO_LONG);
+            }
+            if (user.displayName) {
+                if ( user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1 ) {
+                    return this.failure(WEAK_PASSWORD, { message: 'Password should not contain display name.'});
+                }
+            }
+            if (user.email) {
+                const email = user.email.split('@');
+                if (user.password.toLowerCase().indexOf(email[0].toLowerCase()) > -1) {
+                    return this.failure(WEAK_PASSWORD, { message: 'Password should not contain email.'});
+                }
+            }
+            if ( !user.password.match(/[0-9]/g)) { // must contain number
+                return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 number'});
+            }
+            if ( !user.password.match(/[a-zA-Z]/g)) { // must contain letter
+                return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 letter.'});
             }
         }
-        if (user.email) {
-            const email = user.email.split('@');
-            if (user.password.toLowerCase().indexOf(email[0].toLowerCase()) > -1) {
-                return this.failure(WEAK_PASSWORD, { message: 'Password should not contain email.'});
-            }
-        }
-        if ( !user.password.match(/[0-9]/g)) { // must contain number
-            return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 number'});
-        }
-        if ( !user.password.match(/[a-zA-Z]/g)) { // must contain number
-            return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 letter.'});
-        }
+
         /**EMAIL VALIDATION
-         * empty and invalid email format
-         *  - are handled by firebase by default.
-         */
+        * empty and invalid email format
+        *  - are handled by firebase by default.
+        */
 
         return null;
     }
@@ -71,22 +80,28 @@ export class User extends Base {
     register(data: USER): Promise<firebase.User> {
         return this.registerValidator(data)
         .then( () => {
-                return this.auth.createUserWithEmailAndPassword(data.email, data.password) // 1. create authentication.
+            return this.auth.createUserWithEmailAndPassword(data.email, data.password) // 1. create authentication.
             .then((user: firebase.User) => { // 2. update Authentication(profile) with `dispalyName` and `photoURL`
-                return this.updateAuthentication(user, data);
-            })
-            .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
-                return this.set(user, data);
-            });
+            return this.updateAuthentication(user, data);
         })
-        .then( a => this.success(a) )
-        .catch( e => this.failure(e) );
-    }
-
+        .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
+        return this.set(user, data);
+    });
+})
+.then( a => this.success(a) )
+.catch( e => this.failure(e) );
+}
+/**
+*
+* @param email
+* @param password
+*/
 login(email: string, password: string): Promise<any> {
     return this.auth.signInWithEmailAndPassword(email, password);
 }
-
+/**
+*
+*/
 logout() {
     this.auth.signOut();
 }
@@ -102,6 +117,9 @@ updateAuthentication(user: firebase.User, data: USER): Promise<firebase.User> {
     };
     return user.updateProfile(_.sanitize(up)).then(x => user);
 }
+/**
+*
+*/
 updateProfile() {
 }
 

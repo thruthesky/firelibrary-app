@@ -37,3 +37,4 @@ export const EMAIL_ALREADY_IN_USE = 'auth/email-already-in-use'; // from firebas
 export const USER_NOT_FOUND = 'auth/user-not-found'; // from firebase
 export const INVALID_EMAIL = 'auth/invalid-email'; // from firebase
 export const WEAK_PASSWORD = 'auth/weak-password'; // from firebase
+export const PASSWORD_TOO_LONG = 'password-too-long'; // declared by gem
