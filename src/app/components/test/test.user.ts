@@ -35,12 +35,8 @@ export class TestUser extends TestTools {
     *
     */
     async run() {
-        // await this.userRegisterEmailValidation();
+        await this.userRegisterEmailValidation();
         await this.userRegisterPasswordValidation();
-        // await this.userRegisterSuccess(_user);
-        // await this.userLoginLogout(_user);
-        // await this.userRegisterExistingUser(_user);
-        // await this.deleteUserThenLogin(_user);
     }
     /**
     * Test Email validation.
@@ -144,62 +140,5 @@ export class TestUser extends TestTools {
         })
         .then(() => this.fire.user.logout())
         .catch(e => this.bad('User registration failed expected to be successful.', e));
-    }
-    /**
-    * Tests `User.login` method and `User.logout` then expects `success`.
-    * @param user `User` that is previously logged in by `userRegisterSuccess()`.
-    * @author gem
-    */
-    async userLoginLogout(user) {
-        await this.fire.user.login(user.email, user.password) // Login
-        .then(a => { // test for error message
-            this.test(a.message === undefined, 'Login previously created User by Register test. Expected to be successful');
-        })
-        .then(() => { // Logout
-            this.fire.user.logout();
-        })
-        .then(() => {
-            this.test(this.fire.user.isLogout, 'Logout User should be success');
-        })
-        .catch(e => {
-            this.bad('Login success test failed', e);
-        });
-    }
-    /**
-    * Tests `User.register` method for existing user. Expects `Email already in user` error.
-    * @param user - User `email` and `password` of previously resgistered user.
-    */
-    async userRegisterExistingUser(user) {
-        await this.fire.user.register(user)
-        .then(res => {
-            this.bad('Existing user registration should be error. Test Failed!', res);
-        })
-        .catch(e => {
-            this.test(e['code'] === EMAIL_ALREADY_IN_USE, 'Register existing user. Should be error.');
-        });
-    }
-    /**
-    * Deletes current User and tries to `User.login` method with previously deleted email. Expects error. user not found/exists.
-    */
-    async deleteUserThenLogin(user) {
-        // let uid;
-        await this.fire.user.login(user.email, user.password)
-        .then(a => {
-            return this.fire.user.getUser();
-        })
-        .then(b => {
-            // uid = b.uid;
-            return b.delete();
-        })
-        .then(c => {
-            this.test(this.fire.user.isLogout, 'User logged-out so the user is deleted successfully');
-        })
-        .then(() => {
-            return this.fire.user.login(user.email, user.password);
-        })
-        .then(a => {
-            this.bad('Failed should be error, User log in is expects to be deleted.');
-        })
-        .catch(e => this.test(e.code === USER_NOT_FOUND, 'Login deleted user expected to be an error', e.code));
     }
 }
