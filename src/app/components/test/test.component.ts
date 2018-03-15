@@ -48,7 +48,7 @@ export class TestComponent extends TestTools implements OnInit {
     await this.user();
     (new TestCategory(this.fire)).run();
     // this.category();
-    this.post();
+    // this.post();
   }
   /**
   * Tests current version
@@ -225,40 +225,40 @@ export class TestComponent extends TestTools implements OnInit {
     // this.categoryNotFound();
   }
 
-  /**
-  * Runs `Post` Service testing.
-  *
-  * @author gem
-  */
-  post() {
-    this.createPostNotLogin();
-  }
-  /**
-  * Tests `Post.create` without logging in.
-  *
-  */
-  createPostNotLogin() {
-    const post: POST = {
-      uid: 'wrong-user',                   // author
-      // title: 'This is title',
-      // content: 'this is content',
-      // category: 'abc',             // This is category's 'Document ID'.
-      // tags: 'abc',                  // Tags to search
-      // displayName: 'wrong-user',
-      // email: 'wrong',
-      // files: [''],
-      // private: true,
-      // reminder: 0 // higher number will be listed on top.
-    };
-    const re = this.fire.post.create(post)
-      .then(res => {
-        this.bad('Create post but user not logged in test. Failed');
-      })
-      .catch(e => {
-        this.test(e.message === USER_IS_NOT_LOGGED_IN, 'Create post without login should be error', 'Message: ' + e.message);
-      });
-  }
-  createPostSuccess() {
-    //
-  }
+  // /**
+  // * Runs `Post` Service testing.
+  // *
+  // * @author gem
+  // */
+  // post() {
+  //   this.createPostNotLogin();
+  // }
+  // /**
+  // * Tests `Post.create` without logging in.
+  // *
+  // */
+  // createPostNotLogin() {
+  //   const post: POST = {
+  //     uid: 'wrong-user',                   // author
+  //     // title: 'This is title',
+  //     // content: 'this is content',
+  //     // category: 'abc',             // This is category's 'Document ID'.
+  //     // tags: 'abc',                  // Tags to search
+  //     // displayName: 'wrong-user',
+  //     // email: 'wrong',
+  //     // files: [''],
+  //     // private: true,
+  //     // reminder: 0 // higher number will be listed on top.
+  //   };
+  //   const re = this.fire.post.create(post)
+  //     .then(res => {
+  //       this.bad('Create post but user not logged in test. Failed');
+  //     })
+  //     .catch(e => {
+  //       this.test(e.message === USER_IS_NOT_LOGGED_IN, 'Create post without login should be error', e);
+  //     });
+  // }
+  // createPostSuccess() {
+  //   //
+  // }
 }

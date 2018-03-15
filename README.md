@@ -14,7 +14,7 @@ Firebase CMS Library for Frontend
    *  category id with
    *  empty category data
    *  too big category data. over 1M. ( this is not easy to test. )
-
+ * Unit test on creating category with admin permission.
 * user update with email/password login.
 * Authentication social login and profile update.
 * resign.
