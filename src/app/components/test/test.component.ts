@@ -1,4 +1,4 @@
-import { POST, USER } from './../../modules/firelibrary/providers/etc/interface';
+﻿import { POST, USER } from './../../modules/firelibrary/providers/etc/interface';
 import { Component, OnInit } from '@angular/core';
 import {
   FireService,
@@ -74,12 +74,44 @@ export class TestComponent extends TestTools implements OnInit {
       email: 'user-' + (new Date).getTime() + '@sample.com',
       password: '000000'
     };
+    await this.userRegisterWithoutEmail();
+    await this.userRegisterWithShortEmail();
     await this.userRegisterBadEmail();
+    await this.userRegisterWithoutPassword(_user);
     await this.userRegisterWeakPassword(_user);
+    // await this.userRegisterSimplePassword(_user); // nothing here yet
+    // await this.userRegisterPasswordSameWithDisplayName(_user); // nothing here yet
     await this.userRegisterSuccess(_user);
     await this.userLoginLogout(_user);
     await this.userRegisterExistingUser(_user);
     await this.deleteUserThenLogin(_user);
+  }
+  /**
+  * Tests Register with without email.
+  */
+  async userRegisterWithoutEmail() {
+    await this.fire.user.register({email: '', password: '000000'})
+    .then( a => {
+      this.failure('This should be error. Email is empty. Should be invalid email');
+    })
+    .catch( e => {
+      this.test( e.code === INVALID_EMAIL, 'User Register empty email. Should be Invalid email', e.code );
+    });
+  }
+  /**
+  * Tests Register with short email format
+  * No firebase-error.
+  * @todo Short email validation.
+  */
+  async userRegisterWithShortEmail() {
+    await this.fire.user.register({email: 'b@a.com', password: '000000'})
+    .then( (a) => {
+      this.failure('This should be error. Email is short. Should be invalid email');
+      // console.log(a);
+    })
+    .catch( e => {
+      this.test( e, 'User Register email is too short. Should be Invalid email', e.code );
+    });
   }
   /**
   * Tests Register with bad email format
@@ -92,13 +124,47 @@ export class TestComponent extends TestTools implements OnInit {
     });
   }
   /**
-  * Tests Register with bad email format
+  * Tests Register with weak password
+  * Firebase only restricts password that are less tha 6 characters.
   */
   async userRegisterWeakPassword(user) {
     await this.fire.user.register({email: 'pass' + user.email, password: 'gemlo'})
     .then( () => this.failure('This should be error. password is weak') )
     .catch( e => {
       this.test( e.code === WEAK_PASSWORD, 'User Register Weak Password. Expecting error', e.code );
+    });
+  }
+  /**
+  * Tests Register with simple password
+  * Firebase only restricts password that are less tha 6 characters.
+  * @todo Validation - only accept alpha-numeric password.
+  */
+  async userRegisterSimplePassword(user) {
+    // await this.fire.user.register({email: 'pass' + user.email, password: 'letmein'})
+    // .then( () => this.failure('This should be error. password is weak') )
+    // .catch( e => {
+    //   this.test( e.code === WEAK_PASSWORD, 'User Register Weak Password. Expecting error', e.code );
+    // });
+  }
+  /**
+  * Tests Register password with same display name
+  * @todo Validation to prohibit password same with display name.
+  */
+  async userRegisterPasswordSameWithDisplayName(user) {
+    // await this.fire.user.register({email: 'pass' + user.email, password: 'letmein'})
+    // .then( () => this.failure('This should be error. password is weak') )
+    // .catch( e => {
+    //   this.test( e.code === WEAK_PASSWORD, 'User Register Weak Password. Expecting error', e.code );
+    // });
+  }
+  /**
+  * Tests Register without password
+  */
+  async userRegisterWithoutPassword(user) {
+    await this.fire.user.register({email: user.email, password: ''})
+    .then( () => this.failure('This should be error. password is weak') )
+    .catch( e => {
+      this.test( e, 'User Register Weak Password. Expecting error', e.code );
     });
   }
   /**
@@ -216,7 +282,7 @@ export class TestComponent extends TestTools implements OnInit {
     this.categoryCreateExist();
     this.categoryNotFound();
   }
-
+  /** */
   categoryEmptyID() {
     this.fire.category.create(<any>{})
     .then(re => {
@@ -238,28 +304,27 @@ export class TestComponent extends TestTools implements OnInit {
       this.test(e.code === CATEGORY_ID_EMPTY, 'Expect error with empty category id', this.fire.translate(CATEGORY_ID_EMPTY));
     });
   }
-
+  /** */
   categoryCreateWrongID() {
     this.fire.setLanguage('ko');
     this.fire.category.create({'id': '/'})
-      .then(re => {
-        this.failure('Creating category should be failed with empty data');
-      })
-      .catch(e => {
-        this.test(e.code === DOCUMENT_ID_CANNOT_CONTAIN_SLASH, 'Expect invalid-argument', e.code, e.message);
-      });
+    .then(re => {
+      this.failure('Creating category should be failed with empty data');
+    })
+    .catch(e => {
+      this.test(e.code === DOCUMENT_ID_CANNOT_CONTAIN_SLASH, 'Expect invalid-argument', e.code, e.message);
+    });
     this.fire.category.create({ id: 'too-long-category-id-1234567890-1234567890-1234567890-1234567890' +
-      '-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890' })
-      .then(re => {
-        this.failure('Creating category should be failed with empty category id');
-      })
-      .catch(e => {
-        this.fire.setLanguage('ko');
-        console.log(this.fire.getLanguage());
-        this.test(e.code === DOCUMENT_ID_TOO_LONG, 'Expect error with empty category id', e.code, e.message);
-      });
+    '-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890' })
+    .then(re => {
+      this.failure('Creating category should be failed with empty category id');
+    })
+    .catch(e => {
+      this.fire.setLanguage('ko');
+      console.log(this.fire.getLanguage());
+      this.test(e.code === DOCUMENT_ID_TOO_LONG, 'Expect error with empty category id', e.code, e.message);
+    });
   }
-
   /**
   *
   */
@@ -268,10 +333,9 @@ export class TestComponent extends TestTools implements OnInit {
     .then(x => this.failure('Category get with wrong id must be failed', x))
     .catch(e => this.test(e.code === CATEGORY_DOES_NOT_EXIST, 'Expect error on getting a category with wrong id', e.code, e.message));
   }
-
   /**
-   *
-   */
+  *
+  */
   categoryCreateExist() {
     const categoryId = 'cat-' + (new Date).getTime();
     this.fire.category.create({ id: categoryId })
@@ -286,10 +350,9 @@ export class TestComponent extends TestTools implements OnInit {
       this.failure('Should create a category', e);
     });
   }
-
   /**
-   * Category edit test.
-   */
+  * Category edit test.
+  */
   categoryNotFound() {
     this.fire.setLanguage('ko');
     this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong'})
