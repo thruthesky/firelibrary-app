@@ -69,7 +69,7 @@ export interface CATEGORY {
 */
 export interface POST {
     id?: string;                    // Document ID. This is needed only on accessing. It does not need to be saved.
-    uid: string;                    // author
+    uid?: string;                    // author
     title?: string;
     content?: string;
     category?: string;              // This is category's 'Document ID'.
@@ -120,3 +120,8 @@ export interface CATEGORY_EDIT extends RESPONSE {
 export interface CATEGORY_GET extends RESPONSE {
     data: CATEGORY;
 }
+
+export interface POST_CREATE extends RESPONSE {
+    data: string;
+}
+

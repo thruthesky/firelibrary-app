@@ -66,9 +66,9 @@ export class TestTools {
     /**
      * Returns Promise<true> if logged in. Otherwise Promise<false>
      */
-    async registerOrLoginAsAdmin(): Promise<any> {
+    async registerOrLoginAs(email, password): Promise<any> {
 
-        let re = await this.fire.user.login(settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD)
+        let re = await this.fire.user.login(email, password)
             .then(() => {
                 return true;
             })
@@ -78,7 +78,7 @@ export class TestTools {
 
         if (re) {
         } else {
-            const data = { email: settings.ADMIN_EMAIL, password: settings.ADMIN_PASSWORD };
+            const data = { email: email, password: password };
             re = await this.fire.user.register(data)
                 .then(res => {
                     return true;
@@ -96,7 +96,28 @@ export class TestTools {
 
     }
     async loginAsAdmin( callback ) {
-        const admin = await this.registerOrLoginAsAdmin();
+        this.loginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD, callback );
+        // const admin = await this.registerOrLoginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD);
+        // if (!admin) {
+        //     return this.bad('Failed to login as admin in loginAsAdmin()');
+        // }
+        // this.fire.auth.onAuthStateChanged(user => {
+        //     if ( user && user.email === settings.ADMIN_EMAIL) {
+        //         callback();
+        //     }
+        // });
+    }
+
+
+    /**
+     * Calls the callback When the user has completely logged
+     *  after
+     *      1. email/password login(or register)
+     *      2. onAuthStateChanged()
+     *
+     */
+    async loginAs(email, password, callback) {
+        const admin = await this.registerOrLoginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD);
         if (!admin) {
             return this.bad('Failed to login as admin in loginAsAdmin()');
         }

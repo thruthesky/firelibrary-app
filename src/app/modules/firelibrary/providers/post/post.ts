@@ -1,6 +1,6 @@
 import {
     Base, COLLECTIONS, POST,
-    POST_ID_EXISTS, CATEGORY_DOES_NOT_EXIST, USER_IS_NOT_LOGGED_IN, CATEGORY_ID_EMPTY
+    POST_ID_EXISTS, CATEGORY_DOES_NOT_EXIST, USER_IS_NOT_LOGGED_IN, CATEGORY_ID_EMPTY, POST_CREATE, CATEGORY
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -34,25 +34,68 @@ export class Post extends Base {
         }
         return Promise.resolve(null);
     }
-    create(post: POST): Promise<string> {
+    create(post: POST): Promise<POST_CREATE> {
         return this.createValidator(post)
             .then(() => {
                 post.uid = this.user.uid;
                 post.created = firebase.firestore.FieldValue.serverTimestamp();
-                return this.collection.add(post);
+                const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
+                const categoryRef = this.db.collection(COLLECTIONS.CATEGORIES).doc(post.category);
+                return <any>this.db.runTransaction(t => {
+                    return t.get(categoryRef)
+                        .then(category => {
+                            if (!category.exists) {
+                                throw CATEGORY_DOES_NOT_EXIST;
+                            }
+                            const categoryData = <CATEGORY>category.data();
+                            if (categoryData.numberOfPosts === void 0) {
+                                categoryData.numberOfPosts = 1;
+                            } else {
+                                categoryData.numberOfPosts++;
+                            }
+                            t
+                                .set(categoryRef, categoryData)
+                                .set(postRef, post);
+                            return postRef.id;
+                        });
+                });
             })
-            .then(doc => doc.id)
+            .then(id => this.success(id))
             .catch(e => this.failure(e));
     }
+    /**
+     * @deprecated
+     */
+    // createOld(post: POST): Promise<string> {
+    //     return this.createValidator(post)
+    //         .then(() => {
+    //             post.uid = this.user.uid;
+    //             post.created = firebase.firestore.FieldValue.serverTimestamp();
+    //             return this.collection.add(post);
+    //         })
+    //         .then(doc => doc.id)
+    //         .catch(e => this.failure(e));
+    // }
 
+
+    /**
+     * It remembers previous category for pagnation.
+     * If category changes, it will clear the cursor.
+     */
     categoryChanged(category): boolean {
         return this.prevCategory !== category;
     }
+    /**
+     * For pagination.
+     */
     resetCursor(category) {
         this.prevCategory = category;
         this.cursor = null;
     }
 
+    /**
+     *
+     */
     page(options: { category: string, limit: number }): Promise<Array<POST>> {
         console.log('options:', options);
         if (this.categoryChanged(options.category)) {

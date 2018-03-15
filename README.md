@@ -130,7 +130,7 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ### How to gain Admin permission on unit testing.
 * In `components/test/test.settings.ts`, you can put admin email and password.
-* And you must put admin email on `settings` collection.
+ * And you must put admin email on `settings` collection. This means the admin meail in `test.setttings.ts` will become real admin. You will use this only on testing.
 
 
 
