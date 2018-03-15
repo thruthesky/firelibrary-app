@@ -4,10 +4,10 @@ import {
     CATEGORY_DOES_NOT_EXIST, CATEGORY_EXISTS, NOT_FOUND, NO_DOCUMENT_ID, COLLECTION_NOT_EMPTY
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
+import * as settings from './test.settings';
 
 export class TestCategory extends TestTools {
     constructor(
-        private fire: FireService
     ) {
         super();
     }
@@ -87,19 +87,62 @@ export class TestCategory extends TestTools {
     /**
      *
      */
-    categoryCreateExist() {
-        const categoryId = 'cat-' + (new Date).getTime();
-        this.fire.category.create({ id: categoryId })
-            .then(re => {
-                this.test(re.code === null, 'Category create susccess');
-                this.test(re.data === categoryId, `Category id match`);
-                this.fire.category.create({ id: categoryId })
-                    .then(x => this.bad('should fail on creating with existing category id'))
-                    .catch(e => this.test(e.code === CATEGORY_EXISTS, 'Expect error on creating a category with existing category id'));
-            })
-            .catch(e => {
-                this.bad('Should create a category', e);
-            });
+    async categoryCreateExist() {
+
+        // console.log('user email: ', this.fire.user.email);
+        //         const categoryId = 'cat-' + (new Date).getTime();
+        //         this.fire.category.create({ id: categoryId })
+        //             .then(re => {
+        //                 this.test(re.code === null, 'Category create susccess');
+        //                 this.test(re.data === categoryId, `Category id match`);
+        //                 this.fire.category.create({ id: categoryId })
+        //                     .then(x => this.bad('should fail on creating with existing category id'))
+        //                     .catch(e => this.test(e.code === CATEGORY_EXISTS,
+        //                         'Expect error on creating a category with existing category id'));
+        //             })
+        //             .catch(e => {
+        //                 this.bad('Expect success on creating a category', e);
+        //             });
+
+
+        // const admin = await this.registerOrLoginAsAdmin();
+        // if (!admin) {
+        //     return this.bad('Failed to login as admin');
+        // }
+        // this.fire.auth.onAuthStateChanged(user => {
+        //     if ( user && user.email === settings.ADMIN_EMAIL) {
+        //         const categoryId = 'cat-' + (new Date).getTime();
+        //         this.fire.category.create({ id: categoryId })
+        //             .then(re => {
+        //                 this.test(re.code === null, 'Category create susccess');
+        //                 this.test(re.data === categoryId, `Category id match`);
+        //                 this.fire.category.create({ id: categoryId })
+        //                     .then(x => this.bad('should fail on creating with existing category id'))
+        //                     .catch(e => this.test(e.code === CATEGORY_EXISTS,
+        //                         'Expect error on creating a category with existing category id'));
+        //             })
+        //             .catch(e => {
+        //                 this.bad('Expect success on creating a category', e);
+        //             });
+        //     }
+        // });
+
+
+        this.loginAsAdmin(() => {
+            const categoryId = 'cat-' + (new Date).getTime();
+            this.fire.category.create({ id: categoryId })
+                .then(re => {
+                    this.test(re.code === null, 'Category create susccess');
+                    this.test(re.data === categoryId, `Category id match`);
+                    this.fire.category.create({ id: categoryId })
+                        .then(x => this.bad('should fail on creating with existing category id'))
+                        .catch(e => this.test(e.code === CATEGORY_EXISTS,
+                            'Expect error on creating a category with existing category id'));
+                })
+                .catch(e => {
+                    this.bad('Expect success on creating a category', e);
+                });
+        });
     }
 
 
@@ -117,66 +160,73 @@ export class TestCategory extends TestTools {
      * Category edit test.
      */
     categoryNotFoundForEditing() {
-        this.fire.setLanguage('ko');
-        this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong' })
-            .then(() => this.bad('Expect error on creating wrong category'))
-            .catch(e => {
-                this.test(e.code === NOT_FOUND, 'Expect not-found error with wrong category id.', e.message);
-            });
+        this.loginAsAdmin(() => {
+            this.fire.setLanguage('ko');
+            this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong' })
+                .then(() => this.bad('Expect error on creating wrong category'))
+                .catch(e => {
+                    this.test(e.code === NOT_FOUND, 'Expect not-found error with wrong category id.', e);
+                });
+        });
     }
 
     categoryCreateGetEdit() {
-        const name = 'category Name 2';
-        const categoryId = 'cat-2-' + (new Date).getTime();
-        this.fire.category.create({ id: categoryId, name: name })
-            .then(re => {
-                this.fire.category.get(re.data)
-                    .then(res => {
-                        this.test(res.data.name === name, 'Expect name match');
-                        this.fire.category.edit({ id: res.data.id, name: 'updated' })
-                            .then(edited => {
-                                this.fire.category.get(edited.data)
-                                    .then(r => {
-                                        this.test(r.data.name === 'updated', 'Expect success on updating category', r.data.name, r.data.id);
-                                    });
-                            });
-                    })
-                    .catch(e => this.bad('Expect failure on createEditGet'));
-            })
-            .catch(e => {
-                this.bad('Should create a category', e);
-            });
+        this.loginAsAdmin(() => {
+            const name = 'category Name 2';
+            const categoryId = 'cat-2-' + (new Date).getTime();
+            this.fire.category.create({ id: categoryId, name: name })
+                .then(re => {
+                    this.fire.category.get(re.data)
+                        .then(res => {
+                            this.test(res.data.name === name, 'Expect name match');
+                            this.fire.category.edit({ id: res.data.id, name: 'updated' })
+                                .then(edited => {
+                                    this.fire.category.get(edited.data)
+                                        .then(r => {
+                                            this.test(r.data.name === 'updated',
+                                                'Expect success on updating category', r.data.name, r.data.id);
+                                        });
+                                });
+                        })
+                        .catch(e => this.bad('Expect failure on createEditGet'));
+                })
+                .catch(e => {
+                    this.bad('Should create a category', e);
+                });
+        });
     }
 
 
     categoryDelete() {
-        const name = 'cat-3';
-        const categoryId = name + (new Date).getTime();
-        this.fire.category.create({ id: categoryId, name: name, numberOfPosts: 1 })
-            .then(re => {
-                return this.fire.category.delete(re.data);
-            })
-            .then(() => {
-                this.good('Category deleted.');
-            })
-            .catch(e => {
-                this.test(e.code === COLLECTION_NOT_EMPTY, 'Expect error since the collection is not empty');
-                // this.bad('Create a category for categoryDelete test', e);
-            });
+        this.loginAsAdmin(() => {
+            const name = 'cat-3';
+            const categoryId = name + (new Date).getTime();
+            this.fire.category.create({ id: categoryId, name: name, numberOfPosts: 1 })
+                .then(re => {
+                    return this.fire.category.delete(re.data);
+                })
+                .then(() => {
+                    this.good('Category deleted.');
+                })
+                .catch(e => {
+                    this.test(e.code === COLLECTION_NOT_EMPTY, 'Expect error since the collection is not empty');
+                    // this.bad('Create a category for categoryDelete test', e);
+                });
 
-        this.fire.category.create({ id: categoryId + '-2' })
-            .then(re => {
-                return this.fire.category.delete(re.data);
-            })
-            .then(() => {
-                this.good('Success on deleting a category.');
-            })
-            .catch(e => this.bad('Expect to delete the category', e));
+            this.fire.category.create({ id: categoryId + '-2' })
+                .then(re => {
+                    return this.fire.category.delete(re.data);
+                })
+                .then(() => {
+                    this.good('Success on deleting a category.');
+                })
+                .catch(e => this.bad('Expect to delete the category', e));
 
-        this.fire.category.delete('this-is-wrong-category-id')
-            .then(() => this.bad('Expect error with wrong category id on delete'))
-            .catch(e => {
-                this.test(e.code === NOT_FOUND, 'Expect not-found with wrong category id on delete');
-            });
+            this.fire.category.delete('this-is-wrong-category-id')
+                .then(() => this.bad('Expect error with wrong category id on delete'))
+                .catch(e => {
+                    this.test(e.code === NOT_FOUND, 'Expect not-found with wrong category id on delete', e);
+                });
+        });
     }
 }

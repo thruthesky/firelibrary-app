@@ -1,6 +1,7 @@
 import {
     ALREADY_EXISTS, NOT_FOUND, UNKNOWN, CATEGORY_ID_EMPTY, DOCUMENT_ID_TOO_LONG,
-    EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG
+    EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG,
+    PERMISSION_DENIED
 } from './../error';
 
 export const en = {
@@ -16,7 +17,7 @@ en[ CATEGORY_ID_EMPTY ] = 'Category ID is empty.';
 en[ NOT_FOUND ] = 'Document was not found. Document ID: #documentID';
 en[ ALREADY_EXISTS ] = 'Category is already exists. Category ID: #categoryID';
 en[ DOCUMENT_ID_TOO_LONG ] = 'Document ID is too long. Document ID: #documentID';
-
+en[ PERMISSION_DENIED ] = 'Permission denied or insufficient permission.';
 // User
 
 en[ EMAIL_ALREADY_IN_USE ] = 'Email address already in use. #message';

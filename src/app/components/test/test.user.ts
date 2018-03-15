@@ -27,7 +27,6 @@ import { TestTools } from './test.tools';
 
 export class TestUser extends TestTools {
     constructor(
-        private fire: FireService
     ) {
         super();
     }

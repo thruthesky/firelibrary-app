@@ -3,7 +3,6 @@ import { TestTools } from './test.tools';
 
 export class TestPost extends TestTools {
     constructor(
-        private fire: FireService
     ) {
         super();
     }

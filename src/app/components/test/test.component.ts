@@ -24,14 +24,20 @@ import { TestPost } from './test.post';
 })
 export class TestComponent extends TestTools implements OnInit {
   constructor(
-    public fire: FireService
+    fire: FireService
   ) {
     super();
+    TestTools.fire = fire;
   }
   ngOnInit() {
-    // (new TestCategory(this.fire)).run(); // Run only one test file.
-    // (new TestCategory(this.fire)).categoryEmptyID(); // Run only one test method.
-    // (new TestCategory(this.fire)).categoryDelete(); // Run only one test method.
+    // (new TestCategory()).run(); // Run only one test file.
+    // (new TestCategory()).categoryCreateExist();
+    // (new TestCategory).categoryCreateGetEdit(); //
+    // (new TestCategory()).categoryEmptyID(); // Run only one test method.
+    // (new TestCategory()).categoryDelete(); // Run only one test method.
+    // (new TestCategory).categoryNotFoundForEditing(); //
+    // (new TestCategory).categoryGetWrongID();
+    // (new TestCategory).categoryCreateWrongID();
     this.run();
   }
 
@@ -42,11 +48,11 @@ export class TestComponent extends TestTools implements OnInit {
   * Runs the all service testing.
   */
   async run() {
-    (new TestError(this.fire)).run();
-    (new TestValidator(this.fire)).run();
-    await ( new TestUser(this.fire) ).run();
-    (new TestCategory(this.fire)).run();
-    (new TestPost(this.fire)).run();
+    (new TestError()).run();
+    (new TestValidator()).run();
+    await (new TestUser()).run();
+    (new TestCategory()).run();
+    (new TestPost()).run();
     this.version();
     this.library();
     this.translate();

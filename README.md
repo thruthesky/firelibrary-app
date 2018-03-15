@@ -125,8 +125,13 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ## Unit Testing
 
-* We have a test page component in which all tests are written.
+* We have a test page.
  * You can simply click the link and the app will load test component page.
+
+### How to gain Admin permission on unit testing.
+* In `components/test/test.settings.ts`, you can put admin email and password.
+* And you must put admin email on `settings` collection.
+
 
 
 ### What happen to Karma & Jasmine.
@@ -208,3 +213,29 @@ return this.createValidator(category)
    * If there is error on validating, it should return the result of ` failure() `.
 
 
+
+# Firebase Security Rules
+````
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+	  function isAdmin() {
+      return request.auth.uid != null && exists(/databases/$(database)/documents/settings/admins/$(request.auth.token.email)/data);
+    }
+
+    match /users/{user} {
+    	allow read: if true;
+      allow write: if true;
+    }
+    match /categories/{category} {
+    	allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /posts/{post} {
+      allow read: if true;
+      allow write: if request.auth.uid != null;
+      // allow get: if request.query.limit <= 10;
+    }
+  }
+}
+````

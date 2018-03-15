@@ -1,6 +1,10 @@
-
+import {
+    FireService, RESPONSE, EMAIL_ALREADY_IN_USE
+} from '../../modules/firelibrary/core';
+import * as settings from './test.settings';
 export class TestTools {
 
+    static fire: FireService;
     static count = {
         test: 0,
         success: 0,
@@ -9,6 +13,9 @@ export class TestTools {
 
     constructor() {
 
+    }
+    get fire(): FireService {
+        return TestTools.fire;
     }
     /**
      *
@@ -54,6 +61,50 @@ export class TestTools {
         } else {
             this.bad(params);
         }
+    }
+
+    /**
+     * Returns Promise<true> if logged in. Otherwise Promise<false>
+     */
+    async registerOrLoginAsAdmin(): Promise<any> {
+
+        let re = await this.fire.user.login(settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD)
+            .then(() => {
+                return true;
+            })
+            .catch(() => {
+                return false;
+            });
+
+        if (re) {
+        } else {
+            const data = { email: settings.ADMIN_EMAIL, password: settings.ADMIN_PASSWORD };
+            re = await this.fire.user.register(data)
+                .then(res => {
+                    return true;
+                })
+                .catch(e => false);
+
+        }
+
+
+        if (!re) {
+            return false;
+        }
+
+        return true;
+
+    }
+    async loginAsAdmin( callback ) {
+        const admin = await this.registerOrLoginAsAdmin();
+        if (!admin) {
+            return this.bad('Failed to login as admin in loginAsAdmin()');
+        }
+        this.fire.auth.onAuthStateChanged(user => {
+            if ( user && user.email === settings.ADMIN_EMAIL) {
+                callback();
+            }
+        });
     }
 }
 

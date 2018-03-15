@@ -42,7 +42,9 @@ export class Category extends Base {
                 return this.collection.doc(category.id).set(_.sanitize(category));
             })
             .then(() => this.success(category.id))
-            .catch(e => this.failure(e));
+            .catch(e => {
+                return this.failure(e);
+            });
 
         // const validate = this.createValidator(category);
         // if (validate) {
