@@ -21,12 +21,14 @@ export const NO_DOCUMENT_ID = 'no-document-id';
 export const DOCUMENT_ID_TOO_LONG = 'document-id-too-long';
 export const DOCUMENT_ID_CANNOT_CONTAIN_SLASH = 'document-id-cannot-cotain-slash';
 
+export const COLLECTION_NOT_EMPTY = 'collection-not-empty';
+
 
 /// Categories
 
 export const CATEGORY_ID_EMPTY = NO_DOCUMENT_ID;
 export const CATEGORY_EXISTS = ALREADY_EXISTS;
-export const CATEGORY_DOES_NOT_EXIST = 'category id does not exist';
+export const CATEGORY_DOES_NOT_EXIST = NOT_FOUND;
 export const POST_ID_EXISTS = 'post id exists';
 
 

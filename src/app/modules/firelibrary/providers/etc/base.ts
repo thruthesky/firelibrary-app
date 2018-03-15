@@ -83,24 +83,48 @@ export class Base {
 
     /**
      *
-     * Returns a Promise of reject. This means, the app will need to catch and handle somewhere.
+     * Returns a Promise.
      *
-     * @desc This is not a Asynchronous call. It simply returns a Promise which does not means it is a Asynchronous call.
+     * @desc This method returns a Promise. And this is important to understand.
+     *      Firstly, it will first return a Promise.
+     *      Secondl, laster it will reject().
      *
-     * @param e error object. It MUST be an Error object. It cannot be a string.
-     *      If you have a string or `error code string` call this method as ` failure( new Error('string') ) `.
-     *      It can be an error of ` new Error('string..') ` or Firebase error.
-     *      We need to detect if it's a firebase error or not. so we can translate the firebase error into proper erro string.
-     *      Unfortunately I cannot refer `firebase.firestore.FirestoreError`.
-     *      I simply compare if the error code is one of the firebase error code.
+     * @desc This method is actually an Asynchronous method since it returns a Promise.
+     *
+     * @desc `_count` counts how many times the `Error Object` passed over to this method.
+     *          - when an Error that has already done translate with `failture()`, the does not translate again.
+     *              it simply increase `_count`.
+     *              so, it is safe to pass one object to this method over gain.
+     *
+     *
+     * @param obj error object or error code string.
+     *      If the input `obj` is a string, then it encapsulates with ` new Error( obj ) `.
+     *      So, the input `obj` is transformed into an Error object.
+     *      If the input `obj` is an Error object, It may be a Firebase Error.
+     *      It will detect if it's a Firebase Error and translates the Firebase Error into proper `error message`.
+     *          ( The error code of Firebase Error should not be changed. Only error message should be translated. )
+     *      Unfortunately we cannot use instance of `firebase.firestore.FirestoreError` or we do not know how to use it yet.
+     *      So, we simply compare if the error code is one of the firebase error code.
      *      @see for Firestore, https://firebase.google.com/docs/reference/js/firebase.firestore.FirestoreError
      *      @see for Authentication, https://firebase.google.com/docs/reference/js/firebase.auth.Error
      *
      * @return Promise<never>
      *
+     * @code this.failure( UNKNOWN );
+     * @code this.failure( new Error(UNKNOWN) ); // same as above.
+     *
+     * @example test/test.error.ts
+     *
      */
-    failure(e: Error, info = {}): Promise<never> {
-        if (e['_translated']) { // Already translated.
+    failure(obj: Error | string, info = {}): Promise<never> {
+        let e: Error;
+        if ( typeof obj === 'string' ) {
+            e = new Error(obj);
+        } else {
+            e = obj;
+        }
+        if (e['_count']) { // Already translated.
+            e['_count']++;
             return Promise.reject(e);
         }
         if (this.isFirebaseError(e, info)) {
@@ -112,7 +136,7 @@ export class Base {
         if (e['code'] === e['message']) {
             e['message'] = `Error code - ${e['code']} - is not translated. Please translate it. It may be firebase error.`;
         }
-        e['_translated'] = true;
+        e['_count'] = 1;
         return Promise.reject(e);
     }
 
@@ -223,6 +247,34 @@ export class Base {
             return E.DOCUMENT_ID_CANNOT_CONTAIN_SLASH;
         }
         return null;
+    }
+
+
+    /**
+     * Get a document.
+     * @desc This is a general method to get a document.
+     *      - It can be overriden on each module.
+     */
+    async getValidator(id: string): Promise<any> {
+        const idCheck = this.checkDocumentIDFormat(id);
+        if (idCheck) {
+            return this.failure(new Error(idCheck), { documentID: id });
+        }
+        return null;
+    }
+    get(id: string): Promise<any> {
+        return this.getValidator(id)
+            .then(() => {
+                return this.collection.doc(id).get();
+            })
+            .then(doc => {
+                if (doc.exists) {
+                    return this.success(doc.data());
+                } else {
+                    return this.failure(new Error(E.NOT_FOUND));
+                }
+            })
+            .catch(e => this.failure(e));
     }
 
 }

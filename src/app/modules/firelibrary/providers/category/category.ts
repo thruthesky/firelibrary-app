@@ -1,7 +1,8 @@
 import * as firebase from 'firebase';
 import {
     Base, _, COLLECTIONS, CATEGORY,
-    CATEGORY_EXISTS, CATEGORY_DOES_NOT_EXIST, CATEGORY_CREATE, CATEGORY_GET, CATEGORY_EDIT, CATEGORY_ID_EMPTY
+    CATEGORY_EXISTS, CATEGORY_DOES_NOT_EXIST, CATEGORY_CREATE, CATEGORY_GET, CATEGORY_EDIT,
+    CATEGORY_ID_EMPTY, NOT_FOUND, COLLECTION_NOT_EMPTY
 } from './../etc/base';
 export class Category extends Base {
 
@@ -66,37 +67,54 @@ export class Category extends Base {
     /**
      * Edits a category.
      */
-    edit(category: CATEGORY): Promise<CATEGORY_EDIT> {
-        if (category.id === void 0 || !category.id) {
-            return this.failure(new Error(CATEGORY_ID_EMPTY));
+    async editValidator(category: CATEGORY): Promise<any> {
+        const idCheck = this.checkDocumentIDFormat(category.id);
+        if (idCheck) {
+            return this.failure(new Error(idCheck), { documentID: category.id });
         }
-        category.subcategories = _.removeSpaceBetween(',', category.subcategories);
-        return this.collection.doc(category.id).update(_.sanitize(category))
+        return null;
+    }
+    edit(category: CATEGORY): Promise<CATEGORY_EDIT> {
+        return this.editValidator(category)
+            .then(() => this.collection.doc(category.id).update(_.sanitize(category)))
             .then(() => this.success(category.id))
             .catch(e => this.failure(e));
+
+        // category.subcategories = _.removeSpaceBetween(',', category.subcategories);
+        // return this.collection.doc(category.id).update(_.sanitize(category))
+        //     .then(() => this.success(category.id))
+        //     .catch(e => this.failure(e));
     }
 
-    get(id: string): Promise<CATEGORY_GET> {
 
-        if (!id) {
-            return Promise.reject(new Error(CATEGORY_ID_EMPTY));
+    /**
+     *
+     */
+    async deleteValidator(id: string): Promise<any> {
+        const idCheck = this.checkDocumentIDFormat(id);
+        if (idCheck) {
+            return this.failure(new Error(idCheck), { documentID: id });
         }
-        return this.collection.doc(id).get().then(doc => {
-            if (doc.exists) {
-                return this.success(doc.data());
-            } else {
-                return this.failure(new Error(CATEGORY_DOES_NOT_EXIST));
-            }
-        });
+        return await this.collection.doc(id).get()
+            .then(doc => {
+                if (doc.exists) {
+                    const data: CATEGORY = <any>doc.data();
+                    if (data.numberOfPosts) {
+                        return this.failure(COLLECTION_NOT_EMPTY);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return this.failure(new Error(NOT_FOUND));
+                }
+            });
     }
-
     delete(id: string): Promise<any> {
-        if (!id) {
-            return Promise.reject(new Error(CATEGORY_ID_EMPTY));
-        }
-        return this.collection.doc(id).delete().catch(e => {
-            return e;
-        });
+        return this.deleteValidator(id)
+            .then(() => {
+                return this.collection.doc(id).delete();
+            })
+            .catch(e => this.failure(e));
     }
 
     categories(): Promise<Array<CATEGORY>> {
@@ -107,6 +125,10 @@ export class Category extends Base {
             });
             return categories;
         });
+    }
+
+    get(id: string): Promise<CATEGORY_GET> {
+        return super.get(id);
     }
 }
 

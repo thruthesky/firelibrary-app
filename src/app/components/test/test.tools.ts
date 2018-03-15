@@ -14,7 +14,7 @@ export class TestTools {
      *
      * @param params
      */
-    success(...params) {
+    good(...params) {
         TestTools.count.test++;
         TestTools.count.success++;
         const str = `Success: [${TestTools.count.success}/${TestTools.count.test}]: `;
@@ -30,9 +30,10 @@ export class TestTools {
     }
     /**
      *
+     * @deprecated since the method name is same as `Firebase::failure()`.
      * @param params
      */
-    failure(...params) {
+    bad(...params) {
         TestTools.count.test++;
         TestTools.count.failure++;
         console.error(`Failure: [${TestTools.count.failure}/${TestTools.count.test}]: `);
@@ -49,9 +50,9 @@ export class TestTools {
      */
     test(b, ...params) {
         if (b) {
-            this.success(params);
+            this.good(params);
         } else {
-            this.failure(params);
+            this.bad(params);
         }
     }
 }

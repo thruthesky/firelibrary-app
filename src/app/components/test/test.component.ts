@@ -10,6 +10,8 @@ import {
 
 import { TestValidator } from './test.validator';
 import { TestTools } from './test.tools';
+import { TestError } from './test.error';
+import { TestCategory } from './test.category';
 
 
 
@@ -25,8 +27,12 @@ export class TestComponent extends TestTools implements OnInit {
     super();
   }
   ngOnInit() {
+    // (new TestCategory(this.fire)).run(); // Run only one test file.
+    // (new TestCategory(this.fire)).categoryEmptyID(); // Run only one test method.
+    // (new TestCategory(this.fire)).categoryDelete(); // Run only one test method.
     this.run();
   }
+
   get count() {
     return TestTools.count;
   }
@@ -34,12 +40,14 @@ export class TestComponent extends TestTools implements OnInit {
   * Runs the all service testing.
   */
   async run() {
-    (new TestValidator( this.fire )).run();
+    (new TestError(this.fire)).run();
+    (new TestValidator(this.fire)).run();
     this.version();
     this.library();
     this.translate();
     await this.user();
-    this.category();
+    (new TestCategory(this.fire)).run();
+    // this.category();
     this.post();
   }
   /**
@@ -92,7 +100,7 @@ export class TestComponent extends TestTools implements OnInit {
   async userRegisterWithoutEmail() {
     await this.fire.user.register({email: '', password: '000000'})
     .then( a => {
-      this.failure('This should be error. Email is empty. Should be invalid email');
+      this.bad('This should be error. Email is empty. Should be invalid email');
     })
     .catch( e => {
       this.test( e.code === INVALID_EMAIL, 'User Register empty email. Should be Invalid email', e.code );
@@ -106,7 +114,7 @@ export class TestComponent extends TestTools implements OnInit {
   async userRegisterWithShortEmail() {
     await this.fire.user.register({email: 'b@a.com', password: '000000'})
     .then( (a) => {
-      this.failure('This should be error. Email is short. Should be invalid email');
+      this.bad('This should be error. Email is short. Should be invalid email');
       // console.log(a);
     })
     .catch( e => {
@@ -117,22 +125,22 @@ export class TestComponent extends TestTools implements OnInit {
   * Tests Register with bad email format
   */
   async userRegisterBadEmail() {
-    await this.fire.user.register({email: 'Gem@googlecom', password: '000000'})
-    .then( () => this.failure('This should be error. Email format is bad.') )
-    .catch( e => {
-      this.test( e.code === INVALID_EMAIL, 'User Register bad email format. Expecting error' );
-    });
+    await this.fire.user.register({ email: 'Gem@googlecom', password: '000000' })
+      .then(() => this.bad('This should be error. Email format is bad.'))
+      .catch(e => {
+        this.test(e.code === INVALID_EMAIL, 'User Register bad email format. Expecting error');
+      });
   }
   /**
   * Tests Register with weak password
   * Firebase only restricts password that are less tha 6 characters.
   */
   async userRegisterWeakPassword(user) {
-    await this.fire.user.register({email: 'pass' + user.email, password: 'gemlo'})
-    .then( () => this.failure('This should be error. password is weak') )
-    .catch( e => {
-      this.test( e.code === WEAK_PASSWORD, 'User Register Weak Password. Expecting error', e.code );
-    });
+    await this.fire.user.register({ email: 'pass' + user.email, password: 'gemlo' })
+      .then(() => this.bad('This should be error. password is weak'))
+      .catch(e => {
+        this.test(e.code === WEAK_PASSWORD, 'User Register Weak Password. Expecting error', e.code);
+      });
   }
   /**
   * Tests Register with simple password
@@ -162,7 +170,7 @@ export class TestComponent extends TestTools implements OnInit {
   */
   async userRegisterWithoutPassword(user) {
     await this.fire.user.register({email: user.email, password: ''})
-    .then( () => this.failure('This should be error. password is weak') )
+    .then( () => this.bad('This should be error. password is weak') )
     .catch( e => {
       this.test( e, 'User Register Weak Password. Expecting error', e.code );
     });
@@ -178,31 +186,31 @@ export class TestComponent extends TestTools implements OnInit {
       address: '#23, Kekami st., Brgy, City, Province'
     };
     await this.fire.user.register(Object.assign(userInfo, data))
-    .then(res => {
-      this.test(this.fire.user.isLogin, 'User Registration, Should be success.');
-    })
-    .then(() => this.fire.user.logout())
-    .catch(e => this.failure('User registration failed expected to be successful.', e));
+      .then(res => {
+        this.test(this.fire.user.isLogin, 'User Registration, Should be success.');
+      })
+      .then(() => this.fire.user.logout())
+      .catch(e => this.bad('User registration failed expected to be successful.', e));
   }
   /**
   * Tests `User.login` method and `User.logout` then expects `success`.
   * @param user `User` that is previously logged in by `userRegisterSuccess()`.
   * @author gem
   */
-  async userLoginLogout( user ) {
-    await this.fire.user.login( user.email, user.password ) // Login
-    .then( a => { // test for error message
-      this.test(a.message === undefined, 'Login previously created User by Register test. Expected to be successful' );
-    })
-    .then( () => { // Logout
-      this.fire.user.logout();
-    })
-    .then( () => {
-      this.test( this.fire.user.isLogout, 'Logout User should be success');
-    })
-    .catch( e => {
-      this.failure('Login success test failed', e);
-    });
+  async userLoginLogout(user) {
+    await this.fire.user.login(user.email, user.password) // Login
+      .then(a => { // test for error message
+        this.test(a.message === undefined, 'Login previously created User by Register test. Expected to be successful');
+      })
+      .then(() => { // Logout
+        this.fire.user.logout();
+      })
+      .then(() => {
+        this.test(this.fire.user.isLogout, 'Logout User should be success');
+      })
+      .catch(e => {
+        this.bad('Login success test failed', e);
+      });
   }
   /**
   * Tests `User.register` method for existing user. Expects `Email already in user` error.
@@ -210,36 +218,36 @@ export class TestComponent extends TestTools implements OnInit {
   */
   async userRegisterExistingUser(user) {
     await this.fire.user.register(user)
-    .then(res => {
-      this.failure('Existing user registration should be error. Test Failed!', res);
-    })
-    .catch(e => {
-      this.test(e['code'] === EMAIL_ALREADY_IN_USE, 'Register existing user. Should be error.');
-    });
+      .then(res => {
+        this.bad('Existing user registration should be error. Test Failed!', res);
+      })
+      .catch(e => {
+        this.test(e['code'] === EMAIL_ALREADY_IN_USE, 'Register existing user. Should be error.');
+      });
   }
   /**
   * Deletes current User and tries to `User.login` method with previously deleted email. Expects error. user not found/exists.
   */
   async deleteUserThenLogin(user) {
     // let uid;
-    await this.fire.user.login( user.email, user.password )
-    .then( a => {
-      return this.fire.user.getUser();
-    })
-    .then( b => {
-      // uid = b.uid;
-      return b.delete();
-    })
-    .then( c => {
-      this.test( this.fire.user.isLogout, 'User logged-out so the user is deleted successfully' );
-    })
-    .then( () => {
-      return this.fire.user.login( user.email, user.password );
-    })
-    .then( a => {
-      this.failure( 'Failed should be error, User log in is expects to be deleted.');
-    })
-    .catch( e => this.test(e.code === USER_NOT_FOUND, 'Login deleted user expected to be an error', e.code) );
+    await this.fire.user.login(user.email, user.password)
+      .then(a => {
+        return this.fire.user.getUser();
+      })
+      .then(b => {
+        // uid = b.uid;
+        return b.delete();
+      })
+      .then(c => {
+        this.test(this.fire.user.isLogout, 'User logged-out so the user is deleted successfully');
+      })
+      .then(() => {
+        return this.fire.user.login(user.email, user.password);
+      })
+      .then(a => {
+        this.bad('Failed should be error, User log in is expects to be deleted.');
+      })
+      .catch(e => this.test(e.code === USER_NOT_FOUND, 'Login deleted user expected to be an error', e.code));
   }
   /**
   * Runs Library Test.
@@ -286,7 +294,7 @@ export class TestComponent extends TestTools implements OnInit {
   categoryEmptyID() {
     this.fire.category.create(<any>{})
     .then(re => {
-      this.failure('Creating category should be failed with empty data');
+      this.bad('Creating category should be failed with empty data');
     })
     .catch(e => {
       this.test(e.code === CATEGORY_ID_EMPTY, 'Expect error with empty data');
@@ -296,7 +304,7 @@ export class TestComponent extends TestTools implements OnInit {
     });
     this.fire.category.create(<any>{ id: '' })
     .then(re => {
-      this.failure('Creating category should be failed with empty category id');
+      this.bad('Creating category should be failed with empty category id');
     })
     .catch(e => {
       this.fire.setLanguage('ko');
@@ -309,7 +317,7 @@ export class TestComponent extends TestTools implements OnInit {
     this.fire.setLanguage('ko');
     this.fire.category.create({'id': '/'})
     .then(re => {
-      this.failure('Creating category should be failed with empty data');
+      this.bad('Creating category should be failed with empty data');
     })
     .catch(e => {
       this.test(e.code === DOCUMENT_ID_CANNOT_CONTAIN_SLASH, 'Expect invalid-argument', e.code, e.message);
@@ -317,7 +325,7 @@ export class TestComponent extends TestTools implements OnInit {
     this.fire.category.create({ id: 'too-long-category-id-1234567890-1234567890-1234567890-1234567890' +
     '-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890' })
     .then(re => {
-      this.failure('Creating category should be failed with empty category id');
+      this.bad('Creating category should be failed with empty category id');
     })
     .catch(e => {
       this.fire.setLanguage('ko');
@@ -330,7 +338,7 @@ export class TestComponent extends TestTools implements OnInit {
   */
   categoryGetWrongID() {
     this.fire.category.get('wrong-category-id')
-    .then(x => this.failure('Category get with wrong id must be failed', x))
+    .then(x => this.bad('Category get with wrong id must be failed', x))
     .catch(e => this.test(e.code === CATEGORY_DOES_NOT_EXIST, 'Expect error on getting a category with wrong id', e.code, e.message));
   }
   /**
@@ -343,11 +351,11 @@ export class TestComponent extends TestTools implements OnInit {
       this.test(re.code === null, 'Category create susccess');
       this.test(re.data === categoryId, `Category id match`);
       this.fire.category.create({ id: categoryId })
-      .then(x => this.failure('should fail on creating with existing category id'))
+      .then(x => this.bad('should fail on creating with existing category id'))
       .catch(e => this.test(e.code === CATEGORY_EXISTS, 'Expect error on creating a category with existing category id'));
     })
     .catch(e => {
-      this.failure('Should create a category', e);
+      this.bad('Should create a category', e);
     });
   }
   /**
@@ -356,7 +364,7 @@ export class TestComponent extends TestTools implements OnInit {
   categoryNotFound() {
     this.fire.setLanguage('ko');
     this.fire.category.edit({ id: 'wrong-category-id', name: 'wrong'})
-    .then( () => this.failure('Expect error on creating wrong category') )
+    .then( () => this.bad('Expect error on creating wrong category') )
     .catch( e => {
       this.test( e.code === NOT_FOUND, e.message );
     });
@@ -386,13 +394,13 @@ export class TestComponent extends TestTools implements OnInit {
       // private: true,
       // reminder: 0 // higher number will be listed on top.
     };
-    const re = this.fire.post.create( post )
-    .then( res => {
-      this.failure('Create post but user not logged in test. Failed');
-    })
-    .catch( e => {
-      this.test(e.message === USER_IS_NOT_LOGGED_IN, 'Create post without login should be error', 'Message: ' + e.message);
-    });
+    const re = this.fire.post.create(post)
+      .then(res => {
+        this.bad('Create post but user not logged in test. Failed');
+      })
+      .catch(e => {
+        this.test(e.message === USER_IS_NOT_LOGGED_IN, 'Create post without login should be error', 'Message: ' + e.message);
+      });
   }
   createPostSuccess() {
     //
