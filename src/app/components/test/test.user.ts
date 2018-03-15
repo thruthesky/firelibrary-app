@@ -21,8 +21,7 @@
 import {
     FireService,
     UNKNOWN, NOT_FOUND,
-    // DOCUMENT_ID_CANNOT_CONTAIN_SLASH, DOCUMENT_ID_TOO_LONG, NO_DOCUMENT_ID,
-    INVALID_EMAIL, WEAK_PASSWORD, EMAIL_ALREADY_IN_USE, USER_NOT_FOUND
+    INVALID_EMAIL, WEAK_PASSWORD, EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, PASSWORD_TOO_LONG
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
 
@@ -36,7 +35,7 @@ export class TestUser extends TestTools {
     *
     */
     async run() {
-        await this.userRegisterEmailValidation();
+        // await this.userRegisterEmailValidation();
         await this.userRegisterPasswordValidation();
         // await this.userRegisterSuccess(_user);
         // await this.userLoginLogout(_user);
@@ -114,6 +113,14 @@ export class TestUser extends TestTools {
         await this.fire.user.register({email: user.email, password: user.email + '123sd'})
         .then( () => this.bad('Password contains email. Password is weak - expects error') )
         .catch( e => {this.test( e.code === WEAK_PASSWORD, 'User Register `password contains email`', e.code, e.message ); });
+        /**
+        * Tests Password. Password exceeds at max 128 characters
+        */
+        await this.fire.user.register({email: user.email, password: ('asdf1234').repeat(20)})
+        .then( () => this.bad('Password too long exceeds at 128 maximum characters') )
+        .catch( e => {
+            this.test( e.code === PASSWORD_TOO_LONG, 'User Register `password exceeds at 128 characters`', e.code, e.message );
+        });
         /**
         * Tests Password Validation success
         */

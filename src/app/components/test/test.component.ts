@@ -41,10 +41,10 @@ export class TestComponent extends TestTools implements OnInit {
   * Runs the all service testing.
   */
   async run() {
-    (new TestError(this.fire)).run();
-    (new TestValidator(this.fire)).run();
+    // (new TestError(this.fire)).run();
+    // (new TestValidator(this.fire)).run();
     await ( new TestUser(this.fire) ).run();
-    (new TestCategory(this.fire)).run();
+    // (new TestCategory(this.fire)).run();
     // this.version();
     // this.library();
     // this.translate();

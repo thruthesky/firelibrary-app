@@ -1,6 +1,6 @@
 import {
     ALREADY_EXISTS, NOT_FOUND, UNKNOWN, CATEGORY_ID_EMPTY, DOCUMENT_ID_TOO_LONG,
-    EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, INVALID_EMAIL, WEAK_PASSWORD
+    EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG
 } from './../error';
 
 export const en = {
@@ -23,3 +23,5 @@ en[ EMAIL_ALREADY_IN_USE ] = 'Email address already in use. #message';
 en[ USER_NOT_FOUND ] = 'User does not found in collection. #message';
 en[ INVALID_EMAIL ] = 'Invalid email, #message';
 en[ WEAK_PASSWORD ] = 'Weak password, #message';
+en[ PASSWORD_TOO_LONG ] = 'Password length exceeds at maximum 128 characters.';
+

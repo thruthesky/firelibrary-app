@@ -157,11 +157,9 @@ export class Base {
             return true;
 
             case 'auth/weak-password':
-            info['message'] = e.message;
             return true;
 
             case 'auth/invalid-email':
-            info['message'] = e.message;
             return true;
 
             default:
