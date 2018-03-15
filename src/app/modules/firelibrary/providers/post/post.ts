@@ -1,6 +1,6 @@
 import {
     Base, COLLECTIONS, POST,
-    POST_ID_EXISTS, CATEGORY_DOES_NOT_EXIST, USER_IS_NOT_LOGGED_IN
+    POST_ID_EXISTS, CATEGORY_DOES_NOT_EXIST, USER_IS_NOT_LOGGED_IN, CATEGORY_ID_EMPTY
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -22,7 +22,7 @@ export class Post extends Base {
      * @desc if `post.id` exists, then it rejects.
      * @returns Promise<string> with Document ID if success.
      */
-    create(post: POST): Promise<string> {
+    createValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
         }
@@ -30,14 +30,19 @@ export class Post extends Base {
             return Promise.reject(new Error(POST_ID_EXISTS));
         }
         if (!post.category) {
-            return Promise.reject(new Error(CATEGORY_DOES_NOT_EXIST));
+            return Promise.reject(new Error(CATEGORY_ID_EMPTY));
         }
-        post.uid = this.user.uid;
-        post.created = firebase.firestore.FieldValue.serverTimestamp();
-        return this.collection.add(post)
-            .then(doc => {
-                return doc.id;
-            });
+        return Promise.resolve(null);
+    }
+    create(post: POST): Promise<string> {
+        return this.createValidator(post)
+            .then(() => {
+                post.uid = this.user.uid;
+                post.created = firebase.firestore.FieldValue.serverTimestamp();
+                return this.collection.add(post);
+            })
+            .then(doc => doc.id)
+            .catch(e => this.failure(e));
     }
 
     categoryChanged(category): boolean {
