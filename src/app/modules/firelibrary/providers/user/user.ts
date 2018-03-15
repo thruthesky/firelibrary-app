@@ -1,4 +1,4 @@
-﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG } from '../../core';
+﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG } from '../etc/error';
 import { Base, _, USER, COLLECTIONS } from './../etc/base';
 import * as firebase from 'firebase';
 export class User extends Base {
@@ -30,9 +30,9 @@ export class User extends Base {
         }
     }
     /**
-    * Validates user data to be used for registration
-    * @param user User data to validate
-    */
+     * Validates user data to be used for registration
+     * @param user User data to validate
+     */
     async registerValidator(user: USER): Promise<any> {
         /**PASSWORD VALIDATION**/
         if ( user.password ) {
