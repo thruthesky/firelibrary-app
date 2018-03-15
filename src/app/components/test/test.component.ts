@@ -13,6 +13,7 @@ import { TestValidator } from './test.validator';
 import { TestTools } from './test.tools';
 import { TestError } from './test.error';
 import { TestCategory } from './test.category';
+import { TestPost } from './test.post';
 
 
 
@@ -45,9 +46,10 @@ export class TestComponent extends TestTools implements OnInit {
     (new TestValidator(this.fire)).run();
     await ( new TestUser(this.fire) ).run();
     (new TestCategory(this.fire)).run();
-    // this.version();
-    // this.library();
-    // this.translate();
+    (new TestPost(this.fire)).run();
+    this.version();
+    this.library();
+    this.translate();
 
     // this.category();
     // this.post();
