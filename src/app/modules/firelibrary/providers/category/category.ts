@@ -20,12 +20,12 @@ export class Category extends Base {
      *      - Promise<CATEGORY_CREATE>
      *      - Otherwise Promise<RESONSE> error object.
      */
-    async createValidator(category: CATEGORY): Promise<any> {
+    createValidator(category: CATEGORY): Promise<any> {
         const idCheck = this.checkDocumentIDFormat(category.id);
         if (idCheck) {
             return this.failure(new Error(idCheck), { documentID: category.id });
         }
-        return await this.collection.doc(category.id).get()
+        return this.collection.doc(category.id).get()
             .then(doc => {
                 if (doc.exists) {
                     return this.failure(new Error(CATEGORY_EXISTS));

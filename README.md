@@ -191,7 +191,7 @@ Please follow the rules below when you are going to write a validators.
  * For instance, you need to write a validator for `create` method and the method name of the validator
    would be `createValidator`
 * put validator right on top of the caller method.
-* Should be Asynchronus `async/wait` call be chained like below.
+* must return a Promise. Or it can be `async/wait` method to be chained like below.
 
 ````
 return this.createValidator(category)
@@ -202,8 +202,8 @@ return this.createValidator(category)
     .catch(e => this.failure(e));
 ````
 
-* validator must be return `Promise<any>`.
- * Which means validator must be `thenable` and `catchable`.
+* since all validator returns a `Promise`
+ * they are `thenable` and `catchable`.
    * If there is no error, then simply returns null.
    * If there is error on validating, it should return the result of ` failure() `.
 
