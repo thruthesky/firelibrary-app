@@ -43,7 +43,7 @@ Firebase CMS Library for Frontend
 
 * npm i firebase firelibrary
 
-* initialize `firebae` app.
+* initialize `firebase` app.
 
 * set the `firebase` app onto `firelibrary` like below
 ````
