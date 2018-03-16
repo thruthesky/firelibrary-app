@@ -212,6 +212,15 @@ return this.createValidator(category)
    * If there is no error, then simply returns null.
    * If there is error on validating, it should return the result of ` failure() `.
 
+## Sanitizers
+
+When there are things to sanitize, it is one good idea to make a separate method for easy structuring.
+
+* All sanitizer must have a prefix of the method name and post fix of `Sanitizer`.
+ * For instance, you will write a sinitizer for `create` method, then the name of the sanitizer would be `createSaninitizer`.
+* Sanitizer must return the sanitized value even if the data was passed by `reference`.
+
+
 
 
 # Firebase Security Rules

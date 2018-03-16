@@ -1,6 +1,7 @@
 import {
     Base, COLLECTIONS, POST,
-    POST_ID_EXISTS, CATEGORY_DOES_NOT_EXIST, USER_IS_NOT_LOGGED_IN, CATEGORY_ID_EMPTY, POST_CREATE, CATEGORY
+    POST_ID_EXISTS, CATEGORY_DOES_NOT_EXIST, USER_IS_NOT_LOGGED_IN, CATEGORY_ID_EMPTY, POST_CREATE,
+    CATEGORY
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -17,10 +18,10 @@ export class Post extends Base {
         this.user = new User();
     }
 
+
     /**
-     * Creates a post.
-     * @desc if `post.id` exists, then it rejects.
-     * @returns Promise<string> with Document ID if success.
+     * Validates the input data for creating a post.
+     * @desc it does not check if the category exists for efficiency. It is done in `transaction`.
      */
     createValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
@@ -34,13 +35,22 @@ export class Post extends Base {
         }
         return Promise.resolve(null);
     }
+    createSanitizer(post: POST) {
+        post.uid = this.user.uid;
+        post.created = firebase.firestore.FieldValue.serverTimestamp();
+        return post;
+    }
+    /**
+     * Creates a post.
+     * @desc if `post.id` exists, then it rejects.
+     * @returns Promise<string> with Document ID if success.
+     */
     create(post: POST): Promise<POST_CREATE> {
         return this.createValidator(post)
             .then(() => {
-                post.uid = this.user.uid;
-                post.created = firebase.firestore.FieldValue.serverTimestamp();
-                const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
+                this.createSanitizer(post);
                 const categoryRef = this.db.collection(COLLECTIONS.CATEGORIES).doc(post.category);
+                const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
                 return <any>this.db.runTransaction(t => {
                     return t.get(categoryRef)
                         .then(category => {
