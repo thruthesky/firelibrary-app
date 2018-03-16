@@ -111,11 +111,20 @@ export interface RESPONSE {
     data?: any;                 // result data.
 }
 
+export interface USER_CREATE extends RESPONSE {
+    data: {
+        id: string;
+    };
+}
 export interface CATEGORY_CREATE extends RESPONSE {
-    data: string; // Category id.
+    data: {
+        id: string; // Category id.
+    };
 }
 export interface CATEGORY_EDIT extends RESPONSE {
-    data: string; // Category id.
+    data: {
+        id: string; // Category id.
+    };
 }
 export interface CATEGORY_GET extends RESPONSE {
     data: CATEGORY;
@@ -130,6 +139,15 @@ export interface POST_CREATE extends RESPONSE {
 
 
 export interface POST_EDIT extends RESPONSE {
-    data: string;
+    data: {
+        id: string;
+        post: POST;
+    };
+}
+
+export interface POST_DELETE extends RESPONSE {
+    data: {
+        id: string;
+    };
 }
 

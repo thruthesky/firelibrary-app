@@ -62,7 +62,7 @@ export class PostComponent implements OnInit {
   onSubmit(event: Event) {
     if (this.post.id) {
       this.fire.post.edit(this.post).then(re => {
-        console.log('post eidt', re);
+        console.log('post edit', re);
       })
         .catch(e => alert(e.message));
     } else {
@@ -71,6 +71,8 @@ export class PostComponent implements OnInit {
       }).catch(e => alert(e.message));
     }
   }
+
+
 
 
   get subcategories() {
@@ -92,5 +94,12 @@ export class PostComponent implements OnInit {
   onClickPostEdit(post: POST) {
     console.log('post: ', post);
     this.post = post;
+  }
+  onClickPostDelete( id: string ) {
+    console.log('Going to delete: ', id);
+    this.fire.post.delete( id ).then( re => {
+      console.log('deleted: ', re.data.id);
+    })
+    .catch( e => alert(e.message));
   }
 }

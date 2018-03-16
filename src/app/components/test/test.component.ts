@@ -14,6 +14,7 @@ import { TestTools } from './test.tools';
 import { TestError } from './test.error';
 import { TestCategory } from './test.category';
 import { TestPost } from './test.post';
+import { TestRules } from './test.rules';
 
 
 
@@ -30,6 +31,11 @@ export class TestComponent extends TestTools implements OnInit {
     TestTools.fire = fire;
   }
   ngOnInit() {
+
+    this.run();
+
+    // (new TestRules).run();
+
     // (new TestCategory()).run(); // Run only one test file.
     // (new TestCategory()).categoryCreateExist();
     // (new TestCategory).categoryCreateGetEdit(); //
@@ -41,7 +47,6 @@ export class TestComponent extends TestTools implements OnInit {
     // (new TestUser()).userRegisterEmailValidation();
     // (new TestUser()).run();
     // (new TestPost).run();
-    this.run();
   }
 
   get count() {
@@ -51,6 +56,7 @@ export class TestComponent extends TestTools implements OnInit {
   * Runs the all service testing.
   */
   async run() {
+    (new TestRules).run();
     (new TestError()).run();
     (new TestValidator()).run();
     await (new TestUser()).run();

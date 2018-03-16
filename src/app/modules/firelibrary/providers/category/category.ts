@@ -41,7 +41,7 @@ export class Category extends Base {
                 category.created = firebase.firestore.FieldValue.serverTimestamp();
                 return this.collection.doc(category.id).set(_.sanitize(category));
             })
-            .then(() => this.success(category.id))
+            .then(() => this.success({ id: category.id }))
             .catch(e => {
                 return this.failure(e);
             });
@@ -79,7 +79,7 @@ export class Category extends Base {
     edit(category: CATEGORY): Promise<CATEGORY_EDIT> {
         return this.editValidator(category)
             .then(() => this.collection.doc(category.id).update(_.sanitize(category)))
-            .then(() => this.success(category.id))
+            .then(() => this.success({ id: category.id }))
             .catch(e => this.failure(e));
 
         // category.subcategories = _.removeSpaceBetween(',', category.subcategories);

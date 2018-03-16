@@ -243,6 +243,7 @@ setLanguage(ln: string): Promise<any> {
 * @returns null if there is no problem. Otherwise `ERROR CODE` will be returned.
 *
 *
+*
 */
 checkDocumentIDFormat(documentID) {
     if (_.isEmpty(documentID)) {
@@ -259,10 +260,13 @@ checkDocumentIDFormat(documentID) {
 
 
 /**
-* Get a document.
-* @desc This is a general method to get a document.
-*      - It can be overriden on each module.
-*/
+ * Get a document.
+ * @desc This is a general method to get a document.
+ *      - It can be overriden on each module.
+ *
+ * @return Promise<Document Data> or Error is thrown.
+ *      If there is no document by that id, then NOT_FOUND errir will be thrown.
+ */
 async getValidator(id: string): Promise<any> {
     const idCheck = this.checkDocumentIDFormat(id);
     if (idCheck) {

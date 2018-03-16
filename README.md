@@ -4,6 +4,7 @@ Firebase CMS Library for Frontend
 
 ## TODO
 * Security rules on post if the category does not exist, then fail.
+* check uid is his uid. a user may put another user's uid on post and that can cause a problem
 * `like/dislike` counting without secuirty hole.
  * When a user `like`,
   * it compare if the uid already exists under 'likes' subcollection.
@@ -261,21 +262,54 @@ When there are things to sanitize, it is one good idea to make a separate method
 service cloud.firestore {
   match /databases/{database}/documents {
   
+    function isLogin() {
+    	return request.auth != null;
+    }
 	  function isAdmin() {
-      return request.auth.uid != null && exists(/databases/$(database)/documents/settings/admins/$(request.auth.token.email)/data);
+      return isLogin()
+        && exists(/databases/$(database)/documents/settings/admins/$(request.auth.token.email)/data);
+    }
+    function isMy() {
+    	return resource.data.uid == request.auth.uid;
+    }
+    function userReadValidator() {
+    	return request.data.uid == request.auth.uid;
+    }
+    function userCreateValidator() {
+    	return isLogin() && request.resource.data.id == request.auth.uid;
+    }
+    function userUpdateValidator() {
+    	return isLogin() && request.data.uid == request.auth.uid;
+    }
+    function postCreateValidator() {
+    	return isLogin()
+        && request.resource.data.keys().hasAll(['category', 'uid'])
+        && exists(/databases/$(database)/documents/categories/$(request.resource.data.category))
+        && request.resource.data.uid == request.auth.uid;
+    }
+    function postUpdateValidator() {
+    	return postCreateValidator() && isMy();
+    }
+    function postDeleteValidator() {
+    	return isMy() || isAdmin();
     }
 
     match /users/{user} {
-    	allow read: if true;
-      allow write: if true;
+    	allow read: if userReadValidator();
+      allow create: if userCreateValidator();
+      allow update: if userUpdateValidator();
+      allow delete: if isMy();
     }
     match /categories/{category} {
     	allow read: if true;
-      allow write: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
     }
     match /posts/{post} {
       allow read: if true;
-      allow write: if request.auth.uid != null;
+      allow create: if postCreateValidator();
+      allow update: if postUpdateValidator();
+      allow delete: if postDeleteValidator();
       // allow get: if request.query.limit <= 10;
     }
   }

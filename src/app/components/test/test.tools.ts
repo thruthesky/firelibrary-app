@@ -117,13 +117,15 @@ export class TestTools {
      *
      */
     async loginAs(email, password, callback) {
-        const admin = await this.registerOrLoginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD);
-        if (!admin) {
-            return this.bad('Failed to login as admin in loginAsAdmin()');
+        const login = await this.registerOrLoginAs( email, password);
+        if (!login) {
+            return this.bad('Failed to login as ' + email);
         }
         this.fire.auth.onAuthStateChanged(user => {
-            if ( user && user.email === settings.ADMIN_EMAIL) {
-                callback();
+            if ( user && user.email === email) {
+                console.log('loginAs: ', user.email);
+                setTimeout(callback, 100);
+                // callback();
             }
         });
     }

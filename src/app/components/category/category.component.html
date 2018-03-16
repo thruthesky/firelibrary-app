@@ -1,6 +1,7 @@
 <h1>Categories</h1>
 
 <div>
+  {{ this.category | json }}
   <h2 *ngIf="show.create">Create Category</h2>
   <h2 *ngIf="show.edit">Edit Category</h2>
   <form (ngSubmit)=" onSubmitCategoryCreateForm( $event ) ">

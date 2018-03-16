@@ -31,10 +31,10 @@ export class FireService extends Base {
     firebase.auth().onAuthStateChanged((user: firebase.User) => {
       this.ngZone.run( x => {} );     /// refresh the view if state changes.
       if (user) {
-        console.log('user signed in');
+        // console.log('user signed in');
       } else {
         // No user is signed in.
-        console.log('user is not signed in');
+        // console.log('user is not signed in');
       }
     });
 

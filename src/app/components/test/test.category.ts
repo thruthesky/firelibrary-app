@@ -133,7 +133,7 @@ export class TestCategory extends TestTools {
             this.fire.category.create({ id: categoryId })
                 .then(re => {
                     this.test(re.code === null, 'Category create susccess');
-                    this.test(re.data === categoryId, `Category id match`);
+                    this.test(re.data.id === categoryId, `Category id match`);
                     this.fire.category.create({ id: categoryId })
                         .then(x => this.bad('should fail on creating with existing category id'))
                         .catch(e => this.test(e.code === CATEGORY_EXISTS,
@@ -176,12 +176,12 @@ export class TestCategory extends TestTools {
             const categoryId = 'cat-2-' + (new Date).getTime();
             this.fire.category.create({ id: categoryId, name: name })
                 .then(re => {
-                    this.fire.category.get(re.data)
+                    this.fire.category.get(re.data.id)
                         .then(res => {
                             this.test(res.data.name === name, 'Expect name match');
                             this.fire.category.edit({ id: res.data.id, name: 'updated' })
                                 .then(edited => {
-                                    this.fire.category.get(edited.data)
+                                    this.fire.category.get(edited.data.id)
                                         .then(r => {
                                             this.test(r.data.name === 'updated',
                                                 'Expect success on updating category', r.data.name, r.data.id);
@@ -203,7 +203,7 @@ export class TestCategory extends TestTools {
             const categoryId = name + (new Date).getTime();
             this.fire.category.create({ id: categoryId, name: name, numberOfPosts: 1 })
                 .then(re => {
-                    return this.fire.category.delete(re.data);
+                    return this.fire.category.delete(re.data.id);
                 })
                 .then(() => {
                     this.good('Category deleted.');
@@ -215,7 +215,7 @@ export class TestCategory extends TestTools {
 
             this.fire.category.create({ id: categoryId + '-2' })
                 .then(re => {
-                    return this.fire.category.delete(re.data);
+                    return this.fire.category.delete(re.data.id);
                 })
                 .then(() => {
                     this.good('Success on deleting a category.');

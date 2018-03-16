@@ -5,7 +5,8 @@ import {
     CATEGORY,
     POST_EDIT,
     POST_ID_EMPTY,
-    POST_ID_NOT_EMPTY
+    POST_ID_NOT_EMPTY,
+    POST_DELETE
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -25,7 +26,8 @@ export class Post extends Base {
 
     /**
      * Validates the input data for creating a post.
-     * @desc it does not check if the category exists for efficiency. It is done in `transaction`.
+     * @desc validate the input for creating a post.
+     * @desc Don't check if the category id is really exists. Normally this won't make a trouble.
      */
     createValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
@@ -96,6 +98,9 @@ export class Post extends Base {
             .then(() => {
                 return this.collection.doc(post.id).update(post);
             })
+            .then( () => {
+                return this.success({ id: post.id, post: post});
+            })
             .catch(e => this.failure(e));
     }
     /**
@@ -112,6 +117,11 @@ export class Post extends Base {
     //         .catch(e => this.failure(e));
     // }
 
+    delete(id: string): Promise<POST_DELETE> {
+        return this.collection.doc( id ).delete()
+            .then( () => this.success({id: id}))
+            .catch( e => this.failure(e));
+    }
 
     /**
      * It remembers previous category for pagnation.
