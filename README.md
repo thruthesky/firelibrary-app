@@ -3,6 +3,17 @@
 Firebase CMS Library for Frontend
 
 ## TODO
+* Security rules on post if the category does not exist, then fail.
+* `like/dislike` counting without secuirty hole.
+ * When a user `like`,
+  * it compare if the uid already exists under 'likes' subcollection.
+  * if not exists,
+   * add 'uid' on the subcollection
+   * and add 1 on `numberOfLikes`.
+    * Make sure the user cannot add more than 1 by the security rules.
+     @see https://firebase.google.com/docs/firestore/security/rules-conditions#data_validation
+     
+
 * Unit test
  * @done (Not much to do) Produce all the errors of https://firebase.google.com/docs/reference/js/firebase.firestore.FirestoreError
 
@@ -89,19 +100,37 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 * `Action Methods` are defined in providers and are handling/manipulating with `Firebase`.
  * Some of `Action Methods` are `Category::create()`, `Category::edit()`, etc.
 
-## Client Side Coding Limitation
+## Client Side Coding Limitation and PUBLIC META DATA
 
 * For CRUD by the admin, owner, guest has no problem if they do it on their own documents(data).
 
-* But if there is any document or any property that should be edited by every one, That's a problem.
+* But if there is a property that should be edited by every one, That's a problem.
  * Let's say, when a user reads a post, the docuemnt must count number of views.
   * It can be done in Client side increasing 1 of the property.
   * But what if the user increases 999 instead of 1?
-  * `Firebase config` keys are open. And they can do whatever if the permission is open to public.
+  * `Firebase access config` keys are open to public. And they can do whatever if the permission of the document is open to public.
 
-* For `Like` and `Dislike`.
- * When a user clicks on `Like`, the app can `add` who liked the post on `posts/{post-id}/likes/{uid}`. And when he `Un-Like` it, the app can `delete` it. This is the same on `Dislike` and `Un-Dislike`.
- * But the app still needs how many users liked/disliked the post.
+### Post like and dislike
+* When a user clicks on `Like`, the app can `add` who liked the post on `posts/{post-id}/likes/{uid}`. And when he `Un-Like` it, the app can `delete` it. This is the same on `Dislike` and `Un-Dislike`.
+* But the app still needs to count how many users liked/disliked on the post.
+* If the post has a property of `numberOfLikes`, then the post must be open to public to update it when a user `like`.
+* So, this is going to be a security problem since the post is open to public, anyone can delete it.
+* We put this kind of public metadata on a collection named `public_metadata` under the post document.
+* And when a user does `like`/`dislike`, it will get the whole likes/dislikes and count it and update it on `public_metadata`. Thi is very inefficient so, if it rechease more than 500 likes or dislikes, it stops updating it.
+
+### Post
+* We will set seucrity rules that
+ * User cannot post if the category does not exists.
+
+
+### Couting no of posts and comments on Category.
+
+* The category may need to know the number of posts/comments that belong to the category.
+* And the properties of counting posts/comemnts should be open to public.
+
+
+When a user does posting/commenting,
+
 
 ### Solution
 
@@ -167,6 +196,10 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
       });
   }
 ````
+
+## PUBLIC META DATA
+
+
 
 
 ## Language Translation

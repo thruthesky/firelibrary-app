@@ -69,14 +69,13 @@ export class Library {
 
 
     /**
-     *
      * Returns true if the input `what` is falsy or empty or no data.
-     *
-     * @returns
-     *      - true if the input `what` is
-     *          - boolean and it's false,
-     *          - number with 0.
-     *          - string with empty. ( if it has any vlaue like blank, then it's not empty. )
+     * @returns true if the input `what` is
+     *          - falsy value.
+     *              -- boolean and it's false,
+     *              -- number with 0.
+     *              -- string with empty. ( if it has any vlaue like blank, then it's not empty. )
+     *              -- undefined.
      *          - object with no key.
      *          - array with 0 length.
      *

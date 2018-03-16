@@ -38,8 +38,8 @@ export class PostComponent implements OnInit {
 
   ngOnInit() {
   }
-  loadPage( category? ) {
-    if ( category ) {
+  loadPage(category?) {
+    if (category) {
       this.posts = {};
       this.postIds = [];
       this.category = category;
@@ -56,11 +56,22 @@ export class PostComponent implements OnInit {
       }
     });
   }
+  /**
+   * Create or edit a post
+   */
   onSubmit(event: Event) {
-    this.fire.post.create(this.post).then(postId => {
-      console.log('postId:', postId);
-    }).catch(e => alert(e.message));
+    if (this.post.id) {
+      this.fire.post.edit(this.post).then(re => {
+        console.log('post eidt', re);
+      })
+        .catch(e => alert(e.message));
+    } else {
+      this.fire.post.create(this.post).then(re => {
+        console.log('postId:', re.data.id);
+      }).catch(e => alert(e.message));
+    }
   }
+
 
   get subcategories() {
     if (!this.categoryIds.length) {
@@ -77,4 +88,9 @@ export class PostComponent implements OnInit {
     }
   }
 
+
+  onClickPostEdit(post: POST) {
+    console.log('post: ', post);
+    this.post = post;
+  }
 }

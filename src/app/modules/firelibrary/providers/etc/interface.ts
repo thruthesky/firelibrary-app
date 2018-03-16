@@ -122,6 +122,14 @@ export interface CATEGORY_GET extends RESPONSE {
 }
 
 export interface POST_CREATE extends RESPONSE {
+    data: {
+        id: string;
+        post: POST;
+    };
+}
+
+
+export interface POST_EDIT extends RESPONSE {
     data: string;
 }
 

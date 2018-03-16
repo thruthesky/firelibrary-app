@@ -29,7 +29,11 @@ export const COLLECTION_NOT_EMPTY = 'collection-not-empty';
 export const CATEGORY_ID_EMPTY = NO_DOCUMENT_ID;
 export const CATEGORY_EXISTS = ALREADY_EXISTS;
 export const CATEGORY_DOES_NOT_EXIST = NOT_FOUND;
-export const POST_ID_EXISTS = 'post id exists';
+export const POST_ID_NOT_EMPTY = 'post-id-not-empty';
+
+
+/// Posts
+export const POST_ID_EMPTY = 'post-id-empty';
 
 
 // User

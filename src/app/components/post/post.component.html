@@ -5,6 +5,7 @@
       Select Category :
       <select name="category" [(ngModel)]="post.category" *ngIf="categoryIds.length">
         <option value="" selected>Select Category</option>
+        <option value="wrong-category">Wrong Category ID</option>
         <option *ngFor=" let id of categoryIds " [value]=" id ">{{ categories[id].name ? categories[id].name : id }}</option>
       </select>
       <div *ngIf="categoryIds.length && post.category && subcategories">
@@ -25,12 +26,15 @@
   </form>
 </section>
 
+
 <hr> Forums:
 <button *ngFor=" let id of categoryIds " (click)=" loadPage( id ) ">{{ categories[id].name ? categories[id].name : id }}</button>
 <hr>
 <ul>
   <li *ngFor=" let id of postIds">
     {{ posts[id].category }} / {{ posts[id].title }} / {{ posts[id].date }}
+    <button (click)="onClickPostEdit( posts[id] )">Edit</button>
+    <button>Delete</button>
   </li>
 </ul>
 <button (click)=" loadPage() ">Load Next Page</button>
