@@ -38,6 +38,8 @@ export class TestComponent extends TestTools implements OnInit {
     // (new TestCategory).categoryNotFoundForEditing(); //
     // (new TestCategory).categoryGetWrongID();
     // (new TestCategory).categoryCreateWrongID();
+    // (new TestUser()).userRegisterEmailValidation();
+    // (new TestUser()).run();
     // (new TestPost).run();
     this.run();
   }

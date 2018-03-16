@@ -1,4 +1,4 @@
-﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG } from '../etc/error';
+﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG, UNKNOWN, FIREBASE_API_ERROR } from '../etc/error';
 import { Base, _, USER, COLLECTIONS, RESPONSE } from './../etc/base';
 import * as firebase from 'firebase';
 export class User extends Base {
@@ -37,42 +37,35 @@ export class User extends Base {
         }
     }
     /**
-     * Validates user data to be used for registration
-     * @param user User data to validate
-     */
+    * @desc Validates user data to be used for registration
+    * @param user User data to validate
+    */
     async registerValidator(user: USER): Promise<any> {
         /**PASSWORD VALIDATION**/
-        if (user.password) {
-            /**
-            * As prescribe in `https://stackoverflow.com/questions/98768/should-i-impose-a-maximum-length-on-passwords`
-            */
-            if (user.password.length > 128) {
-                return this.failure(PASSWORD_TOO_LONG);
-            }
-            if (user.displayName) {
-                if (user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1) {
-                    return this.failure(WEAK_PASSWORD, { message: 'Password should not contain display name.' });
-                }
-            }
-            if (user.email) {
-                const email = user.email.split('@');
-                if (user.password.toLowerCase().indexOf(email[0].toLowerCase()) > -1) {
-                    return this.failure(WEAK_PASSWORD, { message: 'Password should not contain email.' });
-                }
-            }
-            if (!user.password.match(/[0-9]/g)) { // must contain number
-                return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 number' });
-            }
-            if (!user.password.match(/[a-zA-Z]/g)) { // must contain letter
-                return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 letter.' });
+        if (! _.isString(user.password) || ! _.isString(user.email)) {
+            return this.failure(FIREBASE_API_ERROR, { info: 'Password and Email should contain valid string.' });
+        }
+        // As prescribe in `https://stackoverflow.com/questions/98768/should-i-impose-a-maximum-length-on-passwords`
+        if (user.password.length > 128) {
+            return this.failure(PASSWORD_TOO_LONG);
+        }
+        if (user.displayName) {
+            if (user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1) {
+                return this.failure(WEAK_PASSWORD, { message: 'Password should not contain display name.' });
             }
         }
-
-        /**EMAIL VALIDATION
-        * empty and invalid email format
-        *  - are handled by firebase by default.
-        */
-
+        if (user.email) {
+            const email = user.email.split('@');
+            if (user.password.toLowerCase().indexOf(email[0].toLowerCase()) > -1) {
+                return this.failure(WEAK_PASSWORD, { message: 'Password should not contain email.' });
+            }
+        }
+        if (!user.password.match(/[0-9]/g)) { // must contain number
+            return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 number' });
+        }
+        if (!user.password.match(/[a-zA-Z]/g)) { // must contain letter
+            return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 letter.' });
+        }
         return null;
     }
     /**
@@ -85,31 +78,47 @@ export class User extends Base {
     *          3. Sets other information on `users` collection.
     */
     register(data: USER): Promise<RESPONSE> {
-        // console.log('data: ', data);
         return this.registerValidator(data)
-            .then(() => {
-                return this.auth.createUserWithEmailAndPassword(data.email, data.password); // 1. create authentication.
-            })
-            .then((user: firebase.User) => { // 2. update Authentication(profile) with `dispalyName` and `photoURL`
-                return this.updateAuthentication(user, data);
-            })
-            .then((user: firebase.User) => { // 3. update other information like birthday, gender on `users` collection.
-                return this.set(user, data);
-            })
-            .then(a => this.success(a))
-            .catch(e => this.failure(e));
+        .then(() => {
+            return this.auth.createUserWithEmailAndPassword(data.email, data.password); // 1. create authentication.
+        })
+        .then((user: firebase.User) => {
+            return this.updateAuthentication(user, data); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
+        })
+        .then((user: firebase.User) => {
+            return this.set(user, data); // 3. update other information like birthday, gender on `users` collection.
+        })
+        .then(a => this.success(a))
+        .catch(e => this.failure(e));
     }
-
     /**
-    *
+    * Validator for User.login()
+    */
+    async loginValidator( email: string, password: string ): Promise<any> {
+        /**
+        * Test email and password should be both `string`
+        */
+        if (! _.isString(email) || ! _.isString(password) ) {
+            return this.failure(FIREBASE_API_ERROR, {info: 'Both email and password should contain valid string.'});
+        }
+        return null;
+    }
+    /**
+    * Login User
     * @param email
     * @param password
     */
     login(email: string, password: string): Promise<any> {
-        return this.auth.signInWithEmailAndPassword(email, password);
+        return this.loginValidator(email, password)
+        .then( () => {
+            return this.auth.signInWithEmailAndPassword(email, password);
+        })
+        .then( a => this.success(a))
+        .catch( e => this.failure(e));
+        // .catch( e => e );
     }
     /**
-    *
+    * Logout user.
     */
     logout() {
         this.auth.signOut();
@@ -148,7 +157,7 @@ export class User extends Base {
     *
     * @author gem
     */
-    getUser() {
+    getCurrentUser() {
         return this.auth.currentUser;
     }
 }

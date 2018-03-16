@@ -10,6 +10,7 @@
 /// General error code
 /// firebase error code
 export const UNKNOWN = 'unknown-error';
+export const FIREBASE_API_ERROR = 'firebase-api-error';
 export const NOT_FOUND = 'not-found';
 export const ALREADY_EXISTS = 'already-exists';
 export const PERMISSION_DENIED = 'permission-denied';
@@ -32,9 +33,16 @@ export const CATEGORY_DOES_NOT_EXIST = NOT_FOUND;
 export const POST_ID_EXISTS = 'post id exists';
 
 
-// User
-export const EMAIL_ALREADY_IN_USE = 'auth/email-already-in-use'; // from firebase
-export const USER_NOT_FOUND = 'auth/user-not-found'; // from firebase
-export const INVALID_EMAIL = 'auth/invalid-email'; // from firebase
-export const WEAK_PASSWORD = 'auth/weak-password'; // from firebase
-export const PASSWORD_TOO_LONG = 'password-too-long'; // declared by gem
+// USER
+// firebase errors
+export const EMAIL_ALREADY_IN_USE = 'auth/email-already-in-use';
+export const USER_NOT_FOUND = 'auth/user-not-found';
+export const INVALID_EMAIL = 'auth/invalid-email';
+export const WEAK_PASSWORD = 'auth/weak-password';
+export const EXPIRED_ID_TOKEN = 'auth/id-token-revoked';
+export const WRONG_PASSWORD = 'auth/wrong-password';
+// firelibrary errors
+export const PASSWORD_TOO_LONG = 'password-too-long';
+
+
+

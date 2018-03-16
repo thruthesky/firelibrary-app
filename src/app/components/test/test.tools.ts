@@ -66,7 +66,7 @@ export class TestTools {
     /**
      * Returns Promise<true> if logged in. Otherwise Promise<false>
      */
-    async registerOrLoginAs(email, password): Promise<any> {
+    async registerOrLoginAs(email, password): Promise<Boolean> {
 
         let re = await this.fire.user.login(email, password)
             .then(() => {
