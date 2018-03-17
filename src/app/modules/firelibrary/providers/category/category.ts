@@ -30,10 +30,10 @@ export class Category extends Base {
                 if (doc.exists) {
                     return this.failure(new Error(CATEGORY_EXISTS));
                 } else {
-                    return null;
+                    return null; // NOT error.
                 }
             })
-            .catch( e => null );
+            .catch( e => null ); // NOT error. The error is handled here and resolves with null.
     }
     create(category: CATEGORY): Promise<CATEGORY_CREATE> {
         return this.createValidator(category)

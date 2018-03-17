@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FireService, CATEGORY, POST, COLLECTIONS } from '../../../../public_api';
 import * as firebase from 'firebase';
 
@@ -8,13 +8,13 @@ import * as firebase from 'firebase';
   templateUrl: './post.component.html',
   styleUrls: ['./post.component.css']
 })
-export class PostComponent implements OnInit {
+export class PostComponent implements OnInit, OnDestroy {
 
   categories: { [id: string]: any } = {};
   categoryIds: Array<string> = [];
   post: POST = <POST>{};
-  posts: { [id: string]: POST } = {};
-  postIds: Array<string> = [];
+  // posts: { [id: string]: POST } = {};
+  // postIds: Array<string> = [];
 
   loader = {
     creating: false
@@ -34,28 +34,25 @@ export class PostComponent implements OnInit {
       }
     });
 
+    fire.post.settings = {
+      listenOnLikes: true
+    };
     this.loadPage('all');
   }
 
   ngOnInit() {
   }
-
-  /**
-   * Get posts for a page.
-   * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
-   *    Otherwise it gets posts for next page.
-   */
-  resetLoadPage(category: string) {
-    if (category) {
-      if (category === 'all' || this.fire.post.categoryId !== category) {
-        this.posts = {};
-        this.postIds = [];
-        this.fire.post.categoryId = category;
-        this.fire.post.resetCursor(category);
-      }
-    }
+  ngOnDestroy() {
+    this.fire.post.stopLoadPage();
   }
 
+
+  getPostIDs() {
+    return this.fire.post.pagePostIds;
+  }
+  getPost(id) {
+    return this.fire.post.pagePosts[id];
+  }
   /**
    * Get posts for a page.
    * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
@@ -66,19 +63,8 @@ export class PostComponent implements OnInit {
    *    if not, it loads that category only.
    */
   loadPage(category: string) {
-    this.resetLoadPage(category);
-    this.fire.post.page({ limit: 5 }).then(posts => {
-      if (posts.length) {
-        posts.map(post => {
-          post['date'] = (new Date(post.created)).toLocaleString();
-          this.posts[post.id] = post;
-          this.postIds.push(post.id);
-
-
-
-        });
-        // console.log('postIds:', this.postIds);
-      }
+    this.fire.post.page({ category: category, limit: 5 }).then(posts => {
+      console.log('posts: ', posts);
     });
   }
 
@@ -94,8 +80,8 @@ export class PostComponent implements OnInit {
     } else {
       this.fire.post.create(this.post).then(re => {
         console.log('postId:', re.data.id);
-        this.posts[re.data.id] = this.post;
-        this.postIds.unshift(re.data.id);
+        this.post.id = re.data.id;
+        this.fire.post.addPostOnTop( this.post );
         this.post = {};
       }).catch(e => alert(e.message));
     }
@@ -129,7 +115,7 @@ export class PostComponent implements OnInit {
   }
   onClickLike(id: string) {
     this.fire.post.like(id).then(re => {
-      console.log(re);
+      // console.log(re);
     }).catch(e => alert(e.message));
   }
   onClickDislike(id: string) {

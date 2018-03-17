@@ -93,6 +93,7 @@ export interface POST {
     reminder?: number; // higher number will be listed on top.
     created?: any;
     updated?: any;
+    date?: any; // generated only on client side.
 }
 
 

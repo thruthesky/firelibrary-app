@@ -32,16 +32,17 @@
 <button *ngFor=" let id of categoryIds " (click)=" loadPage( id ) ">{{ categories[id].name ? categories[id].name : id }}</button>
 <hr>
 
+
 <ul>
-  <li *ngFor=" let id of postIds">
-    <div>{{ posts[id].category }} / {{ posts[id].title }} / {{ posts[id].date }}</div>
+  <li *ngFor=" let id of getPostIDs()">
+    <div>{{ getPost(id).category }} / {{ getPost(id).title }} / {{ getPost(id).date }}</div>
     <div style="padding: 1em; background-color: #eee;">
-      {{ posts[id].content }}
+      {{ getPost(id).content }}
     </div>
-    <button (click)="onClickEdit( posts[id] )">Edit</button>
+    <button (click)="onClickEdit( getPost(id) )">Edit</button>
     <button (click)="onClickDelete( id )">Delete</button>
-    <button (click)="onClickLike(id)">Like</button>
-    <button (click)="onClickDislike(id)">Dislike</button>
+    <button (click)="onClickLike(id)">Like({{getPost(id).numberOfLikes ? getPost(id).numberOfLikes : 0}})</button>
+    <button (click)="onClickDislike(id)">Dislike({{getPost(id).numberOfDislikes ? getPost(id).numberOfDislikes : 0}})</button>
   </li>
 </ul>
 <button (click)=" loadPage() ">Load Next Page</button>

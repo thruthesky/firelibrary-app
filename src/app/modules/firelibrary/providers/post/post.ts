@@ -15,9 +15,24 @@ export class Post extends Base {
 
     user: User;
 
+
+    /// Post settings
+    settings: { listenOnLikes?: boolean } = {
+        listenOnLikes: false
+    };
     /// navigation
     cursor: any = null; // null by default
     categoryId: string = null; // Category ID to get posts. null by default
+
+
+    /// post loading by page
+    pagePosts: { [id: string]: POST } = {}; // posts loaded by page indexed by key.
+    pagePostIds: Array<string> = []; // posts keys loaded by page.
+
+
+
+    ///
+    _unsubscribeLikes = [];
     constructor(
     ) {
         super(COLLECTIONS.POSTS);
@@ -118,7 +133,7 @@ export class Post extends Base {
         return this.collection.doc(id).delete()
             .then(() => {
                 return this.db.collection(COLLECTIONS.POSTS_DELETED).doc(id)
-                    .set({time: firebase.firestore.FieldValue.serverTimestamp()});
+                    .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
             })
             .then(() => this.success({ id: id }))
             .catch(e => this.failure(e));
@@ -140,9 +155,50 @@ export class Post extends Base {
     }
 
     /**
-     * Get pages.
+     * Get posts for a page.
+     * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
+     *    Otherwise it gets posts for next page.
      */
-    page(options: { limit: number }): Promise<Array<POST>> {
+    resetLoadPage(category: string) {
+        if (category) {
+            if (category === 'all' || this.categoryId !== category) {
+                this.pagePosts = {};
+                this.unsubscribeLikes();
+                this.pagePostIds = [];
+                this.categoryId = category;
+                this.resetCursor(category);
+                this.unsubscribeLikes();
+            }
+        }
+    }
+    unsubscribeLikes() {
+        if ( this._unsubscribeLikes.length ) {
+            this._unsubscribeLikes.map( unsubscribe => {
+                unsubscribe();
+            });
+        }
+    }
+    subscribeLikes(post: POST) {
+        const subscribe = this.likeColllection(post.id).doc('count').onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                post.numberOfLikes = data.count;
+                console.log('subscribleLikes: ', post.id);
+            }
+        });
+        this._unsubscribeLikes.push(subscribe);
+    }
+    /**
+     * Get pages.
+     *
+     *
+     * @param
+     *      options['listenOnLikes'] if set true, it listens all the posts in the list.
+     */
+    page(options: { category?: string, limit: number }): Promise<Array<POST>> {
+
+        this.resetLoadPage(options.category);
+
         let query: any = this.collection;
         if (this.categoryId && this.categoryId !== 'all') {
             query = query.where('category', '==', this.categoryId);
@@ -153,22 +209,44 @@ export class Post extends Base {
         }
         query = query.limit(options.limit);
         return query.get().then(querySnapshot => {
-            const posts: Array<POST> = [];
             if (querySnapshot.docs.length) {
                 querySnapshot.forEach(doc => {
                     const post: POST = <any>doc.data();
                     post.id = doc.id;
-                    posts.push(post);
+                    post['date'] = (new Date(post.created)).toLocaleString();
+                    this.pagePosts[post.id] = post;
+                    this.pagePostIds.push(post.id);
+                    if (this.settings.listenOnLikes) {
+                        this.subscribeLikes(post);
+                    }
                 });
                 // only one cursor is supported and normally one page has on pagination.
                 this.cursor = querySnapshot.docs[querySnapshot.docs.length - 1];
-                return posts;
+                return this.pagePosts;
             } else {
                 return [];
             }
         });
     }
 
+
+    /**
+     * Add a post on top of post list on the page
+     *  - and subscribe like/dislike based on the settings.
+     *
+     *
+     */
+    addPostOnTop(post: POST) {
+        this.pagePosts[post.id] = post;
+        this.pagePostIds.unshift(post.id);
+        if (this.settings.listenOnLikes) {
+            this.subscribeLikes( post );
+        }
+    }
+
+    stopLoadPage() {
+
+    }
     likeColllection(id) {
         return this.collection.doc(id)
             .collection(COLLECTIONS.LIKES);
@@ -178,6 +256,12 @@ export class Post extends Base {
     }
 
 
+
+    /**
+     * Validating for like to a post.
+     *
+     * @desc if the user did `like` already, it returns `ALREADY_LIKED` error.
+     */
     likeValidator(id: string): Promise<any> {
         const idCheck = this.checkDocumentIDFormat(id);
         if (idCheck) {
@@ -186,38 +270,69 @@ export class Post extends Base {
         return this.likeDocument(id).get()
             .then(doc => {
                 if (doc.exists) {
+                    console.log('likeValidator. already liked');
                     return this.failure(ALREADY_LIKED);
                 } else {
-                    return null;
+                    return null; // NOT error. it resolves with not exists.
                 }
-            })
-            .catch(e => null);
+            });
+        // .catch(e => null); // It cannot be here. If then, ALREADY LIKE becomes NOT error.
     }
     like(id: string): Promise<any> {
         return this.likeValidator(id)
             .then(() => {
+                console.log('validator passed. Going to add a like', id);
                 return this.likeDocument(id).set({ time: firebase.firestore.FieldValue.serverTimestamp() });
             })
             .then(() => {
-                return this.likeColllection(id).get();
+                console.log('like has been added: ', id);
+                return this.countLikes(id);
             })
-            .then(re => {
-                console.log('gets: ', re.size);
-                const size = re.size === 1 ? 1 : re.size - 1;
-                return this.likeColllection(id).doc('count').set({count: size});
-            })
-            .catch(e => this.failure(e));
+            .catch(e => {
+                if (e.code === ALREADY_LIKED) {
+                    console.log('already liked it. going to unlike : ', id);
+                    return this.unlike(id);
+                } else {
+                    console.log('failed on other reason: ', e);
+                    return this.failure(e);
+                }
+            });
     }
 
 
     unlike(id: string): Promise<any> {
         return this.likeDocument(id).delete()
             .then(() => {
-                this.likeColllection(id).get().then(re => {
-                    console.log(re);
-                });
+                console.log('like has been deleted: ', id);
+                return this.countLikes(id);
             })
             .catch(e => this.failure(e));
+    }
+
+    /**
+     * Counts the number of Likes and saves it into `count` document.
+     */
+    countLikes(id) {
+        return this.likeColllection(id).get()
+            .then(snapshot => {
+                let count = 0;
+                if ( snapshot.size > 2 ) {      // if size is bigger than 2, it probablly has `count` document.
+                    count = snapshot.size - 1;
+                } else {                        // if size is 1 or 2, then it may not have `count` document yet.
+                    snapshot.forEach(doc => {
+                        if (doc && doc.exists) {
+                            if (doc.id !== 'count') {
+                                count++;
+                            }
+                        }
+                    });
+                }
+                console.log('size: ', count);
+                return this.likeColllection(id).doc('count').set({ count: count });
+            })
+            .then(() => {
+                console.log('like counted: ', id);
+            });
     }
 
 }
