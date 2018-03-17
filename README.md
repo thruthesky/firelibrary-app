@@ -5,15 +5,7 @@ Firebase CMS Library for Frontend
 ## TODO
 * Security rules on post if the category does not exist, then fail.
 * check uid is his uid. a user may put another user's uid on post and that can cause a problem
-* `like/dislike` counting without secuirty hole.
- * When a user `like`,
-  * it compare if the uid already exists under 'likes' subcollection.
-  * if not exists,
-   * add 'uid' on the subcollection
-   * and add 1 on `numberOfLikes`.
-    * Make sure the user cannot add more than 1 by the security rules.
-     @see https://firebase.google.com/docs/firestore/security/rules-conditions#data_validation
-     
+
 
 * Unit test
  * @done (Not much to do) Produce all the errors of https://firebase.google.com/docs/reference/js/firebase.firestore.FirestoreError
@@ -315,3 +307,36 @@ service cloud.firestore {
   }
 }
 ````
+
+
+
+## Ideas
+
+### Like/Dislike On Client End.
+
+* Each post should have `/posts/{post}/likes/{uid}` and `/posts/{post}/dislikes/{uid}`.
+* `likes`, `dislikes` should be updated in realtime.
+ * which means, it needs to be set in a separate subcollection so it can minize on downloading playload on observing.
+ * It counts how many likes/dislikes was given and saves into `/posts/{post}/likes/count`. And this document is the one to be observed.
+
+
+
+* Increasing/Decreasing by number 1 on `numberOfLikes` when the post was liked or disliked can be a problematic.
+ * When a user `like`,
+  * it compare if the uid already exists under 'likes' subcollection.
+  * if not exists,
+   * add 'uid' on the subcollection
+   * and add 1 on `numberOfLikes`.
+    * Make sure the user cannot add more than 1 by the security rules.
+     @see https://firebase.google.com/docs/firestore/security/rules-conditions#data_validation
+    * Problem here: The user has already liked it. so the user has a document on `likes` subcollection.
+     What if the user want to increase the number 1 again and over again.
+     You may still want to do it. and there might be ways like
+     * When the user like it, you can leave a timestmap on the document in like subcollection.
+      * And increase 1 only if the timestamp is not different in 10 seconds.
+     * Or you may want to another subcollection for confirmation.
+      When the user like it, create a document under `likes` subcollection and increase by 1 and create another document under
+      `like-confirmations` subcollection.
+      The user cannot increase `numberOfLikes` anymore because he has a document under `like-confirmation`.
+      This still be a problem. What if the user want to create a document only on `likes` collection
+      and want to increase number 1 on `numbrerOfLikes` forever?

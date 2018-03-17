@@ -28,8 +28,10 @@
 
 
 <hr> Forums:
+<button (click)="loadPage('all')">All categories</button>
 <button *ngFor=" let id of categoryIds " (click)=" loadPage( id ) ">{{ categories[id].name ? categories[id].name : id }}</button>
 <hr>
+
 <ul>
   <li *ngFor=" let id of postIds">
     {{ posts[id].category }} / {{ posts[id].title }} / {{ posts[id].date }}

@@ -15,8 +15,8 @@ export class Post extends Base {
     user: User;
 
     /// navigation
-    cursor: any = null;
-    prevCategory: string = null;
+    cursor: any = null; // null by default
+    categoryId: string = null; // Category ID to get posts. null by default
     constructor(
     ) {
         super(COLLECTIONS.POSTS);
@@ -78,7 +78,7 @@ export class Post extends Base {
                 //         });
                 // });
             })
-            .then(doc => this.success({ id: doc.id, post: post}))
+            .then(doc => this.success({ id: doc.id, post: post }))
             .catch(e => this.failure(e));
     }
     editValidator(post: POST): Promise<any> {
@@ -98,8 +98,8 @@ export class Post extends Base {
             .then(() => {
                 return this.collection.doc(post.id).update(post);
             })
-            .then( () => {
-                return this.success({ id: post.id, post: post});
+            .then(() => {
+                return this.success({ id: post.id, post: post });
             })
             .catch(e => this.failure(e));
     }
@@ -118,9 +118,9 @@ export class Post extends Base {
     // }
 
     delete(id: string): Promise<POST_DELETE> {
-        return this.collection.doc( id ).delete()
-            .then( () => this.success({id: id}))
-            .catch( e => this.failure(e));
+        return this.collection.doc(id).delete()
+            .then(() => this.success({ id: id }))
+            .catch(e => this.failure(e));
     }
 
     /**
@@ -128,37 +128,36 @@ export class Post extends Base {
      * If category changes, it will clear the cursor.
      */
     categoryChanged(category): boolean {
-        return this.prevCategory !== category;
+        return this.categoryId !== category;
     }
     /**
      * For pagination.
      */
-    resetCursor(category) {
-        this.prevCategory = category;
+    resetCursor(category: string) {
+        console.log('resetCursor: ', category);
+        this.categoryId = category;
         this.cursor = null;
     }
 
     /**
-     *
+     * Get pages.
      */
-    page(options: { category: string, limit: number }): Promise<Array<POST>> {
-        console.log('options:', options);
-        if (this.categoryChanged(options.category)) {
-            this.resetCursor(options.category);
+    page(options: { limit: number }): Promise<Array<POST>> {
+        console.log(`prevCategory: ${this.categoryId}`, 'options:', options);
+        // if (this.categoryChanged(this.categoryId)) {
+        //     console.log('categoryChanged to ', options.category);
+        //     this.resetCursor(options.category);
+        // }
+        let query: any = this.collection;
+        if (this.categoryId && this.categoryId !== 'all') {
+            query = query.where('category', '==', this.categoryId);
         }
-        let query;
+        query = query.orderBy('created', 'desc');
         if (this.cursor) {
-            query = this.collection
-                .where('category', '==', options.category)
-                .orderBy('created', 'desc')
-                .startAfter(this.cursor)
-                .limit(options.limit);
-        } else {
-            query = this.collection
-                .where('category', '==', options.category)
-                .orderBy('created', 'desc')
-                .limit(options.limit);
+            console.log('cursor: ', this.cursor);
+            query = query.startAfter(this.cursor);
         }
+        query = query.limit(options.limit);
         return query.get().then(querySnapshot => {
             const posts: Array<POST> = [];
             if (querySnapshot.docs.length) {

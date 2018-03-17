@@ -20,7 +20,7 @@ export class PostComponent implements OnInit {
   };
 
   /// post list
-  category = '';
+  // category;
   constructor(
     public fire: FireService
   ) {
@@ -33,26 +33,47 @@ export class PostComponent implements OnInit {
       }
     });
 
-    this.loadPage();
+    this.loadPage('all');
   }
 
   ngOnInit() {
   }
-  loadPage(category?) {
+
+  /**
+   * Get posts for a page.
+   * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
+   *    Otherwise it gets posts for next page.
+   */
+  resetLoadPage(category: string) {
     if (category) {
-      this.posts = {};
-      this.postIds = [];
-      this.category = category;
+      if (category === 'all' || this.fire.post.categoryId !== category) {
+        this.posts = {};
+        this.postIds = [];
+        this.fire.post.categoryId = category;
+        this.fire.post.resetCursor(category);
+      }
     }
-    console.log(this.category);
-    this.fire.post.page({ category: this.category, limit: 5 }).then(posts => {
+  }
+
+  /**
+   * Get posts for a page.
+   * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
+   *    Otherwise it gets posts for next page.
+   * @param a category id.
+   *    if it is omitted, it loads next page.
+   *    if it is 'all', then it loads all categories.
+   *    if not, it loads that category only.
+   */
+  loadPage(category: string) {
+    this.resetLoadPage(category);
+    this.fire.post.page({ limit: 5 }).then(posts => {
       if (posts.length) {
         posts.map(post => {
           post['date'] = (new Date(post.created)).toLocaleString();
           this.posts[post.id] = post;
           this.postIds.push(post.id);
         });
-        console.log('postIds:', this.postIds);
+        // console.log('postIds:', this.postIds);
       }
     });
   }
@@ -71,9 +92,6 @@ export class PostComponent implements OnInit {
       }).catch(e => alert(e.message));
     }
   }
-
-
-
 
   get subcategories() {
     if (!this.categoryIds.length) {
@@ -95,11 +113,11 @@ export class PostComponent implements OnInit {
     console.log('post: ', post);
     this.post = post;
   }
-  onClickPostDelete( id: string ) {
+  onClickPostDelete(id: string) {
     console.log('Going to delete: ', id);
-    this.fire.post.delete( id ).then( re => {
+    this.fire.post.delete(id).then(re => {
       console.log('deleted: ', re.data.id);
     })
-    .catch( e => alert(e.message));
+      .catch(e => alert(e.message));
   }
 }
