@@ -32,7 +32,8 @@ export class Category extends Base {
                 } else {
                     return null;
                 }
-            });
+            })
+            .catch( e => null );
     }
     create(category: CATEGORY): Promise<CATEGORY_CREATE> {
         return this.createValidator(category)

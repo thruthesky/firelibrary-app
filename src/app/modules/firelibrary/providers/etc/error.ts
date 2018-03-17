@@ -37,6 +37,9 @@ export const POST_ID_NOT_EMPTY = 'post-id-not-empty';
 export const POST_ID_EMPTY = 'post-id-empty';
 
 
+export const ALREADY_LIKED = 'already-liked';
+
+
 // USER
 // firebase errors
 export const EMAIL_ALREADY_IN_USE = 'auth/email-already-in-use';

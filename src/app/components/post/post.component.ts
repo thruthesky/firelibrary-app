@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FireService, CATEGORY, POST } from '../../../../public_api';
+import { FireService, CATEGORY, POST, COLLECTIONS } from '../../../../public_api';
+import * as firebase from 'firebase';
 
 
 @Component({
@@ -72,11 +73,15 @@ export class PostComponent implements OnInit {
           post['date'] = (new Date(post.created)).toLocaleString();
           this.posts[post.id] = post;
           this.postIds.push(post.id);
+
+
+
         });
         // console.log('postIds:', this.postIds);
       }
     });
   }
+
   /**
    * Create or edit a post
    */
@@ -89,6 +94,9 @@ export class PostComponent implements OnInit {
     } else {
       this.fire.post.create(this.post).then(re => {
         console.log('postId:', re.data.id);
+        this.posts[re.data.id] = this.post;
+        this.postIds.unshift(re.data.id);
+        this.post = {};
       }).catch(e => alert(e.message));
     }
   }
@@ -109,15 +117,22 @@ export class PostComponent implements OnInit {
   }
 
 
-  onClickPostEdit(post: POST) {
+  onClickEdit(post: POST) {
     console.log('post: ', post);
     this.post = post;
   }
-  onClickPostDelete(id: string) {
+  onClickDelete(id: string) {
     console.log('Going to delete: ', id);
     this.fire.post.delete(id).then(re => {
       console.log('deleted: ', re.data.id);
-    })
-      .catch(e => alert(e.message));
+    }).catch(e => alert(e.message));
+  }
+  onClickLike(id: string) {
+    this.fire.post.like(id).then(re => {
+      console.log(re);
+    }).catch(e => alert(e.message));
+  }
+  onClickDislike(id: string) {
+
   }
 }

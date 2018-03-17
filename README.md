@@ -104,12 +104,15 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
   * `Firebase access config` keys are open to public. And they can do whatever if the permission of the document is open to public.
 
 ### Post like and dislike
-* When a user clicks on `Like`, the app can `add` who liked the post on `posts/{post-id}/likes/{uid}`. And when he `Un-Like` it, the app can `delete` it. This is the same on `Dislike` and `Un-Dislike`.
-* But the app still needs to count how many users liked/disliked on the post.
-* If the post has a property of `numberOfLikes`, then the post must be open to public to update it when a user `like`.
-* So, this is going to be a security problem since the post is open to public, anyone can delete it.
-* We put this kind of public metadata on a collection named `public_metadata` under the post document.
-* And when a user does `like`/`dislike`, it will get the whole likes/dislikes and count it and update it on `public_metadata`. Thi is very inefficient so, if it rechease more than 500 likes or dislikes, it stops updating it.
+* When a user clicks on `Like`, the app can `add` who liked the post on `posts/{post-id}/likes/{uid}`.    And when the user `Un-Like` it, the app deletes it. This is the same on `Dislike` and `Un-Dislike`.
+* and the app needs to count how many users liked/disliked on the post.
+
+* Each post should have `/posts/{post}/likes/{uid}` and `/posts/{post}/dislikes/{uid}`.
+* `likes`, `dislikes` should be observed in realtime.
+ * which means, it needs to be set in a separate subcollection so it can minimize on downloading playload on observing.
+ * It counts how many likes/dislikes was given by reading the whole like/dislike subcollection and saves into `/posts/{post}/likes/count`. And this is the document that should be observed.
+
+
 
 ### Post
 * We will set seucrity rules that
@@ -248,6 +251,15 @@ When there are things to sanitize, it is one good idea to make a separate method
 
 
 
+# Database Structure. Collections and Database Design.
+
+## posts_deleted collection
+
+* If a post is deleted, the post id will be saved under `posts_deleted` collection.
+ * This is because deleted posts may have sub collections and they are still living in the `posts` collection.
+ * So, `posts_deleted` is to clean the garbages under `posts` collection.
+  There should be a node script or functions http trigger to clean this.
+
 
 # Firebase Security Rules
 ````
@@ -311,15 +323,6 @@ service cloud.firestore {
 
 
 ## Ideas
-
-### Like/Dislike On Client End.
-
-* Each post should have `/posts/{post}/likes/{uid}` and `/posts/{post}/dislikes/{uid}`.
-* `likes`, `dislikes` should be updated in realtime.
- * which means, it needs to be set in a separate subcollection so it can minize on downloading playload on observing.
- * It counts how many likes/dislikes was given and saves into `/posts/{post}/likes/count`. And this document is the one to be observed.
-
-
 
 * Increasing/Decreasing by number 1 on `numberOfLikes` when the post was liked or disliked can be a problematic.
  * When a user `like`,

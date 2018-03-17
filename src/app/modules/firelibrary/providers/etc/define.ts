@@ -7,6 +7,9 @@ export const COLLECTIONS = {
     SETTINGS: 'settings',
     CATEGORIES: 'categories',
     POSTS: 'posts',
+    POSTS_DELETED: 'posts_deleted',
+    LIKES: 'likes',
+    DISLIKES: 'dislikes',
     COMMENTS: 'comments'
 };
 

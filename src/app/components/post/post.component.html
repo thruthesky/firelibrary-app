@@ -34,9 +34,14 @@
 
 <ul>
   <li *ngFor=" let id of postIds">
-    {{ posts[id].category }} / {{ posts[id].title }} / {{ posts[id].date }}
-    <button (click)="onClickPostEdit( posts[id] )">Edit</button>
-    <button (click)="onClickPostDelete( id )">Delete</button>
+    <div>{{ posts[id].category }} / {{ posts[id].title }} / {{ posts[id].date }}</div>
+    <div style="padding: 1em; background-color: #eee;">
+      {{ posts[id].content }}
+    </div>
+    <button (click)="onClickEdit( posts[id] )">Edit</button>
+    <button (click)="onClickDelete( id )">Delete</button>
+    <button (click)="onClickLike(id)">Like</button>
+    <button (click)="onClickDislike(id)">Dislike</button>
   </li>
 </ul>
 <button (click)=" loadPage() ">Load Next Page</button>

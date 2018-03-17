@@ -49,23 +49,23 @@ export class User extends Base {
         if (user.password.length > 128) {
             return this.failure(PASSWORD_TOO_LONG);
         }
-        if (user.displayName) {
-            if (user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1) {
-                return this.failure(WEAK_PASSWORD, { message: 'Password should not contain display name.' });
-            }
-        }
-        if (user.email) {
-            const email = user.email.split('@');
-            if (user.password.toLowerCase().indexOf(email[0].toLowerCase()) > -1) {
-                return this.failure(WEAK_PASSWORD, { message: 'Password should not contain email.' });
-            }
-        }
-        if (!user.password.match(/[0-9]/g)) { // must contain number
-            return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 number' });
-        }
-        if (!user.password.match(/[a-zA-Z]/g)) { // must contain letter
-            return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 letter.' });
-        }
+        // if (user.displayName) {
+        //     if (user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1) {
+        //         return this.failure(WEAK_PASSWORD, { message: 'Password should not contain display name.' });
+        //     }
+        // }
+        // if (user.email) {
+        //     const email = user.email.split('@');
+        //     if (user.password.toLowerCase().indexOf(email[0].toLowerCase()) > -1) {
+        //         return this.failure(WEAK_PASSWORD, { message: 'Password should not contain email.' });
+        //     }
+        // }
+        // if (!user.password.match(/[0-9]/g)) { // must contain number
+        //     return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 number' });
+        // }
+        // if (!user.password.match(/[a-zA-Z]/g)) { // must contain letter
+        //     return this.failure(WEAK_PASSWORD, { message: 'Password should contain atleast 1 letter.' });
+        // }
         return null;
     }
     /**

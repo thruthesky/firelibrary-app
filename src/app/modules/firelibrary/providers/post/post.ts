@@ -6,7 +6,8 @@ import {
     POST_EDIT,
     POST_ID_EMPTY,
     POST_ID_NOT_EMPTY,
-    POST_DELETE
+    POST_DELETE,
+    ALREADY_LIKED
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -103,22 +104,22 @@ export class Post extends Base {
             })
             .catch(e => this.failure(e));
     }
-    /**
-     * @deprecated
-     */
-    // createOld(post: POST): Promise<string> {
-    //     return this.createValidator(post)
-    //         .then(() => {
-    //             post.uid = this.user.uid;
-    //             post.created = firebase.firestore.FieldValue.serverTimestamp();
-    //             return this.collection.add(post);
-    //         })
-    //         .then(doc => doc.id)
-    //         .catch(e => this.failure(e));
-    // }
 
+
+
+    /**
+     * Deletes a post.
+     *
+     * @desc It puts the post id under `posts_deleted` to indicate that the post has been deleted.
+     * @see REAMEMD## posts_deleted collection
+     * @todo test on deleting and marking.
+     */
     delete(id: string): Promise<POST_DELETE> {
         return this.collection.doc(id).delete()
+            .then(() => {
+                return this.db.collection(COLLECTIONS.POSTS_DELETED).doc(id)
+                    .set({time: firebase.firestore.FieldValue.serverTimestamp()});
+            })
             .then(() => this.success({ id: id }))
             .catch(e => this.failure(e));
     }
@@ -134,7 +135,6 @@ export class Post extends Base {
      * For pagination.
      */
     resetCursor(category: string) {
-        console.log('resetCursor: ', category);
         this.categoryId = category;
         this.cursor = null;
     }
@@ -143,18 +143,12 @@ export class Post extends Base {
      * Get pages.
      */
     page(options: { limit: number }): Promise<Array<POST>> {
-        console.log(`prevCategory: ${this.categoryId}`, 'options:', options);
-        // if (this.categoryChanged(this.categoryId)) {
-        //     console.log('categoryChanged to ', options.category);
-        //     this.resetCursor(options.category);
-        // }
         let query: any = this.collection;
         if (this.categoryId && this.categoryId !== 'all') {
             query = query.where('category', '==', this.categoryId);
         }
         query = query.orderBy('created', 'desc');
         if (this.cursor) {
-            console.log('cursor: ', this.cursor);
             query = query.startAfter(this.cursor);
         }
         query = query.limit(options.limit);
@@ -173,6 +167,57 @@ export class Post extends Base {
                 return [];
             }
         });
+    }
+
+    likeColllection(id) {
+        return this.collection.doc(id)
+            .collection(COLLECTIONS.LIKES);
+    }
+    likeDocument(id) {
+        return this.likeColllection(id).doc(this.user.uid);
+    }
+
+
+    likeValidator(id: string): Promise<any> {
+        const idCheck = this.checkDocumentIDFormat(id);
+        if (idCheck) {
+            return this.failure(new Error(idCheck), { documentID: id });
+        }
+        return this.likeDocument(id).get()
+            .then(doc => {
+                if (doc.exists) {
+                    return this.failure(ALREADY_LIKED);
+                } else {
+                    return null;
+                }
+            })
+            .catch(e => null);
+    }
+    like(id: string): Promise<any> {
+        return this.likeValidator(id)
+            .then(() => {
+                return this.likeDocument(id).set({ time: firebase.firestore.FieldValue.serverTimestamp() });
+            })
+            .then(() => {
+                return this.likeColllection(id).get();
+            })
+            .then(re => {
+                console.log('gets: ', re.size);
+                const size = re.size === 1 ? 1 : re.size - 1;
+                return this.likeColllection(id).doc('count').set({count: size});
+            })
+            .catch(e => this.failure(e));
+    }
+
+
+    unlike(id: string): Promise<any> {
+        return this.likeDocument(id).delete()
+            .then(() => {
+                this.likeColllection(id).get().then(re => {
+                    console.log(re);
+                });
+            })
+            .catch(e => this.failure(e));
     }
 
 }
