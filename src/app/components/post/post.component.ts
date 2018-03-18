@@ -119,6 +119,7 @@ export class PostComponent implements OnInit, OnDestroy {
     }).catch(e => alert(e.message));
   }
   onClickDislike(id: string) {
-
+    this.fire.post.dislike(id).then()
+    .catch(e => alert(e.message));
   }
 }
