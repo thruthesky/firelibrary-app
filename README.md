@@ -33,6 +33,10 @@ Firebase CMS Library for Frontend
  * Check query data to meet condition.
   * When a user create a post, categoryId must exist in categories collection.
 
+* Cleaning tool for deleted posts.
+
+* Make it work on `Vuejs`.
+
 
 ## Documents
 

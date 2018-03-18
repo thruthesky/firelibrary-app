@@ -245,7 +245,8 @@ export class Post extends Base {
     }
 
     stopLoadPage() {
-
+        this.resetLoadPage(undefined);
+        this.unsubscribeLikes();
     }
     likeColllection(id) {
         return this.collection.doc(id)
