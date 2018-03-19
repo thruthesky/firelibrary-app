@@ -7,7 +7,8 @@ import {
     POST_ID_EMPTY,
     POST_ID_NOT_EMPTY,
     POST_DELETE,
-    ALREADY_LIKED
+    ALREADY_LIKED,
+    POST_DELETED
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -29,6 +30,7 @@ export class Post extends Base {
 
     ///
     private _unsubscribeLikes = [];
+    private _unsubscribePosts = [];
 
     private unsubscribePage = null;
     constructor(
@@ -98,6 +100,11 @@ export class Post extends Base {
             })
             .catch(e => this.failure(e));
     }
+
+    /**
+     * Validates edit.
+     * @desc on edit, category can be empty.
+     */
     private editValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
@@ -105,9 +112,9 @@ export class Post extends Base {
         if (_.isEmpty(post.id)) {
             return Promise.reject(new Error(POST_ID_EMPTY));
         }
-        if (_.isEmpty(post.category)) {
-            return Promise.reject(new Error(CATEGORY_ID_EMPTY));
-        }
+        // if (_.isEmpty(post.category)) {
+        //     return Promise.reject(new Error(CATEGORY_ID_EMPTY));
+        // }
         return Promise.resolve(null);
     }
     edit(post: POST): Promise<POST_EDIT> {
@@ -133,14 +140,21 @@ export class Post extends Base {
      * @todo test on deleting and marking.
      */
     delete(id: string): Promise<POST_DELETE> {
-        return this.collection.doc(id).delete()
-            .then(() => {
-                return this.db.collection(COLLECTIONS.POSTS_DELETED).doc(id)
-                    .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
-            })
-            .then(() => this.success({ id: id }))
-            .catch(e => this.failure(e));
+        const post: POST = {
+            id: id,
+            title: POST_DELETED,
+            content: POST_DELETED
+        };
+        return this.edit(post);
+        // return this.collection.doc(id).delete()
+        //     .then(() => {
+        //         return this.db.collection(COLLECTIONS.POSTS_DELETED).doc(id)
+        //             .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
+        //     })
+        //     .then(() => this.success({ id: id }))
+        //     .catch(e => this.failure(e));
     }
+
 
     /**
      * It remembers previous category for pagnation.
@@ -170,15 +184,23 @@ export class Post extends Base {
         if (category) {
             if (category === 'all' || this.categoryId !== category) { /// new category. Category has changed to list(load pages)
                 this.pagePosts = {};
-                this.unsubscribeLikes();
                 this.pagePostIds = [];
                 this.categoryId = category;
                 this.resetCursor(category);
+                this.unsubscribePosts();
                 this.unsubscribeLikes();
                 reset = true;
             }
         }
         return reset;
+    }
+    /**
+     * Unsubscribe all the posts.
+     */
+    private unsubscribePosts() {
+        if (this._unsubscribePosts.length) {
+            this._unsubscribePosts.map(unsubscribe => unsubscribe());
+        }
     }
     private unsubscribeLikes() {
         if (this._unsubscribeLikes.length) {
@@ -188,6 +210,14 @@ export class Post extends Base {
         }
     }
 
+    private subscribePosts(post: POST) {
+        const path = this.post( post.id ).path;
+        const unsubscribe = this.post( post.id ).onSnapshot( doc => {
+            console.log('Update on :', path, doc.data());
+            post = Object.assign(post, doc.data());
+        });
+        this._unsubscribePosts.push( unsubscribe );
+    }
     /**
      * Subscribes for likes/dislikes
      * @param post post to subscribe for like, dislike
@@ -243,6 +273,9 @@ export class Post extends Base {
                     post['date'] = (new Date(post.created)).toLocaleString();
                     this.pagePosts[post.id] = post;
                     this.pagePostIds.push(post.id);
+                    if (this.settings.listenOnPostChange) {
+                        this.subscribePosts(post);
+                    }
                     if (this.settings.listenOnPostLikes) {
                         this.subscribeLikes(post);
                     }
@@ -264,7 +297,8 @@ export class Post extends Base {
 
 
     /**
-     *  it subscribes added/updated/removed only after loading/displaying the post list.
+     * Listens on new post only. It does not listen for edit/delete.
+     *  It subscribes added/updated/removed only after loading/displaying the post list.
      *  In this way, it prevents double display of the last post.
      */
     private subscribeNewPost(query: firebase.firestore.Query) {
@@ -272,20 +306,24 @@ export class Post extends Base {
             this.unsubscribePage();
         }
         this.unsubscribePage = query.limit(1).onSnapshot(snapshot => {
-            snapshot.forEach(doc => {
+            snapshot.docChanges.forEach(change => {
+                const doc = change.doc;
                 if (doc.metadata.hasPendingWrites) {
 
                     console.log('pending', doc.metadata.hasPendingWrites, 'from cache: ', doc.metadata.fromCache);
 
                 } else {
-                    console.log('pending', doc.metadata.hasPendingWrites, 'from cache: ', doc.metadata.fromCache, doc.data());
+                    console.log('pending', doc.metadata.hasPendingWrites, 'type: ', change.type,
+                        'from cache: ', doc.metadata.fromCache, doc.data());
                     const post: POST = doc.data();
                     post.id = doc.id;
                     console.log(`exists: ${this.pagePosts[post.id]}`);
-                    if (this.pagePosts[post.id] === void 0) {
+                    if (change.type === 'added' && this.pagePosts[post.id] === void 0) {
                         this.addPostOnTop(post);
-                    } else {
+                    } else if (change.type === 'modified') {
                         this.updatePost(post);
+                    } else if (change.type === 'removed') {
+                        this.removePost(post);
                     }
                 }
             });
@@ -316,28 +354,49 @@ export class Post extends Base {
             console.log(`addPostOnTop: `, post);
             this.pagePosts[post.id] = post;
             this.pagePostIds.unshift(post.id);
+            if (this.settings.listenOnPostChange) {
+                this.subscribePosts(post);
+            }
             if (this.settings.listenOnPostLikes) {
                 this.subscribeLikes(post);
             }
         }
     }
+    /**
+     * When listening the last post on collection in realtime, it often fires `modified` event on new docuemnt created.
+     */
     private updatePost(post: POST) {
         console.log('updatePost id: ', post.id);
         if (this.pagePosts[post.id]) {
             console.log(`updatePost`, post);
             this.pagePosts[post.id] = Object.assign(this.pagePosts[post.id], post);
+        } else {
+            this.addPostOnTop(post);
         }
     }
+    /**
+     * This method is no longer in use.
+     *
+     * @deprecated @see README### No post delete.
+     */
     private removePost(post: POST) {
-        if (this.pagePosts[post.id]) {
-            console.log(`deletePost`, post);
-            delete this.pagePosts[post.id];
-        }
+        // if (this.pagePosts[post.id]) {
+        //     console.log(`deletePost`, post);
+        //     this.pagePosts[post.id].title = 'deleted???';
+        //     // delete this.pagePosts[post.id];
+        // }
     }
 
     stopLoadPage() {
         this.resetLoadPage(undefined);
         this.unsubscribeLikes();
+        this.unsubscribePosts();
+    }
+    /**
+     * Returns post docuement reference.
+     */
+    private post( postId: string ) {
+        return this.collection.doc(postId);
     }
     /**
      * Returns collection of like/dislike.

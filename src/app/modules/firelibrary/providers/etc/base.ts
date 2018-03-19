@@ -13,7 +13,11 @@ import { en } from './languages/en';
 
 
 interface FIRESERVICE_SETTINGS {
-    listenOnPostCreate?: boolean;
+    /**
+     * When the post has `added`, `edited`, `deleted`, the change will be updated in realtime.
+     * It does not listen the change by default.
+     */
+    listenOnPostChange?: boolean;
     listenOnPostLikes?: boolean;
     listenOnCommentLikes?: boolean;
 }

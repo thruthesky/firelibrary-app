@@ -21,8 +21,10 @@
     <div>Content:
       <input name="description" [(ngModel)]="post.content">
     </div>
-    <button type="submit" *ngIf=" ! loader.creating ">Create a Post</button>
-    <span class="loader" *ngIf=" loader.creating ">Loading...</span>
+    <button type="submit" *ngIf=" ! post.id && ! loader.creating ">Create Post</button>
+    <button type="submit" *ngIf=" post.id && ! loader.editing ">Edit Post</button>
+    <button type="button" (click)="post={}">Cancel</button>
+    <span class="loader" *ngIf=" loader.creating || loader.editing ">Loading...</span>
   </form>
 </section>
 
