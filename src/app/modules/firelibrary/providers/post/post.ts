@@ -61,6 +61,7 @@ export class Post extends Base {
         return Promise.resolve(null);
     }
     private createSanitizer(post: POST) {
+        _.sanitize( post );
         post.uid = this.user.uid;
         post.created = firebase.firestore.FieldValue.serverTimestamp();
         // console.log(post);
@@ -115,6 +116,8 @@ export class Post extends Base {
     edit(post: POST): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
             .then(() => {
+                _.sanitize( post );
+                post.updated = firebase.firestore.FieldValue.serverTimestamp();
                 return this.collection.doc(post.id).update(post);
             })
             .then(() => {
@@ -275,11 +278,11 @@ export class Post extends Base {
      * @param postId Post Document ID
      * @param collectionName Subcollection name
      */
-    likeColllection(postId: string, collectionName: string) {
+    private likeColllection(postId: string, collectionName: string) {
         return this.collection.doc(postId)
             .collection(collectionName);
     }
-    likeDocument(postId: string, collectionName: string) {
+    private likeDocument(postId: string, collectionName: string) {
         console.log(`likeDocument(postId: ${postId}, collectionName: ${collectionName}`);
         const ref = this.likeColllection(postId, collectionName).doc(this.user.uid);
         console.log(`path: `, ref.path);

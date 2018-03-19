@@ -1,0 +1,11 @@
+
+<form (ngSubmit)=" onSubmit( $event ) ">
+  <input type="text" name="content" [(ngModel)]="comment.content">
+  <button type="submit" *ngIf=" ! loader.creating ">Create Comment</button>
+</form>
+<ul>
+  <li *ngFor=" let id of commentIds">
+    {{ comments(id).content }}
+  </li>
+</ul>
+

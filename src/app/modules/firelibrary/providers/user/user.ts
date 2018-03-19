@@ -89,6 +89,7 @@ export class User extends Base {
                 return this.updateAuthentication(user); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
             })
             .then((user: firebase.User) => {
+                console.log(`Going to set user data under users collection: `);
                 return this.set(user, data); // 3. update other information like birthday, gender on `users` collection.
             })
             .then(a => this.success(a))
@@ -181,7 +182,11 @@ export class User extends Base {
         data.created = firebase.firestore.FieldValue.serverTimestamp();
         // return this.collection.doc(user.uid).set(data).then(x => user);
         data.uid = user.uid;
-        return this.create(data);
+        return this.create(data)
+            .catch( e => {
+                console.log(`Failed to set data under users collection: `);
+                return this.failure(e);
+            });
     }
     create(data: USER): Promise<USER_CREATE> {
         console.log('create: ', data);

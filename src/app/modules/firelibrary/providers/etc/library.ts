@@ -130,8 +130,9 @@ export class Library {
      * You cannot set `undefiend` value into firestore `document`. It will produce a Critical error.
      *
      * @param obj Object to be set into `firestore`.
+     *      It is passed by reference.
      *
-     * @return object
+     * @return the input object that has sanitized.
      */
     static sanitize(obj): any {
         if (obj) {

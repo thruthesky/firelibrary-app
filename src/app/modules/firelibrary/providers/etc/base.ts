@@ -18,7 +18,11 @@ import { en } from './languages/en';
 export class Base {
     static firebase: firebase.app.App = null;
     static functions = false;
-    static http: HttpClient = null; // HttpClient object initiated from FireService
+    /**
+     * HttpClient object initiated from FireService
+     * It is needed to load JSON language files.
+     */
+    static http: HttpClient = null;
 
     /**
     *

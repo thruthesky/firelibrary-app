@@ -23,6 +23,7 @@ import { RegisterComponent } from './components/register/register.component';
 import { CategoryComponent } from './components/category/category.component';
 import { PostComponent } from './components/post/post.component';
 import { TestComponent } from './components/test/test.component';
+import { CommentComponent } from './components/comment/comment.component';
 
 
 
@@ -47,7 +48,8 @@ const appRoutes: Routes = [
     RegisterComponent,
     CategoryComponent,
     PostComponent,
-    TestComponent
+    TestComponent,
+    CommentComponent
   ],
   imports: [
     BrowserModule,

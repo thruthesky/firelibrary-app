@@ -5,6 +5,7 @@ import { Base } from './etc/base';
 import { User } from './user/user';
 import { Category } from './category/category';
 import { Post } from './post/post';
+import { Comment } from './comment/comment';
 
 
 @Injectable()
@@ -13,6 +14,7 @@ export class FireService extends Base {
   user: User;
   category: Category;
   post: Post;
+  comment: Comment;
 
   /** This runs only one time. contructor of Service will run only one time and re-used by container. */
   constructor(
@@ -23,6 +25,7 @@ export class FireService extends Base {
     this.user = new User();
     this.category = new Category();
     this.post = new Post();
+    this.comment = new Comment();
     Base.http = http;
     this.initUser();
   }
