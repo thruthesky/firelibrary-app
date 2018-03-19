@@ -3,8 +3,17 @@
 Firebase CMS Library for Frontend
 
 ## TODO
+* [ Start From Here ]
+ * Observe new post and add by user `addOnTop`. Remove adding post from the form. instead.
+ * create comment
+ * and add it under the parent by observing. In this way, all people will get the comment realtime.
+
 * Security rules on post if the category does not exist, then fail.
 * check uid is his uid. a user may put another user's uid on post and that can cause a problem
+* Functions options
+ * @see functions code https://github.com/firebase/functions-samples
+ * Counting comment, likes/dislikes, counting numberOfPosts, numberOfComments.
+ * Distribute functions on dashboard. Not through CLI.
 
 
 * Unit test
@@ -35,7 +44,7 @@ Firebase CMS Library for Frontend
 
 * Cleaning tool for deleted posts.
 
-* Make it work on `Vuejs`.
+* [ laster ] Make it work on `Vuejs`. Needs to consider to rewrite client app.
 
 
 ## Documents

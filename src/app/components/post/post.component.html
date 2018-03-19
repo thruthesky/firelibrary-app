@@ -43,6 +43,7 @@
     <button (click)="onClickDelete( id )">Delete</button>
     <button (click)="onClickLike(id)">Like({{getPost(id).numberOfLikes ? getPost(id).numberOfLikes : 0}})</button>
     <button (click)="onClickDislike(id)">Dislike({{getPost(id).numberOfDislikes ? getPost(id).numberOfDislikes : 0}})</button>
+    <app-comment [post]=" getPost(id) "></app-comment>
   </li>
 </ul>
 <button (click)=" loadPage() ">Load Next Page</button>

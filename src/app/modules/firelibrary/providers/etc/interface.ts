@@ -97,6 +97,16 @@ export interface POST {
 }
 
 
+export interface COMMENT {
+    id?: string;
+    postId?: string;                // root post id
+    parentCommentId?: string;              // parentCommentId
+    uid?: string;
+    content?: string;
+    created?: string;
+    updated?: string;
+
+}
 
 
 export interface SYSTEM_CONFIG {
@@ -152,3 +162,9 @@ export interface POST_DELETE extends RESPONSE {
     };
 }
 
+
+export interface COMMENT_CREATE extends RESPONSE {
+    data: {
+        id: string;
+    };
+}
