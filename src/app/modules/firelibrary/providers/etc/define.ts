@@ -1,7 +1,4 @@
 
-
-
-
 export const COLLECTIONS = {
     USERS: 'users',
     SETTINGS: 'settings',
@@ -14,3 +11,4 @@ export const COLLECTIONS = {
 };
 
 
+export const POST_DELETED = 'This post has been deleted!';

@@ -17,7 +17,8 @@ export class PostComponent implements OnInit, OnDestroy {
   // postIds: Array<string> = [];
 
   loader = {
-    creating: false
+    creating: false,
+    editing: false
   };
 
   /// post list
@@ -34,9 +35,14 @@ export class PostComponent implements OnInit, OnDestroy {
       }
     });
 
-    fire.post.settings = {
-      listenOnLikes: true
-    };
+    // fire.post.settings = {
+    //   listenOnLikes: true
+    // };
+    fire.setSettings({
+      listenOnPostChange: true,
+      listenOnPostLikes: true,
+      listenOnCommentLikes: true
+    });
     this.loadPage('all');
   }
 
@@ -69,21 +75,33 @@ export class PostComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Create or edit a post
+   * Create or edit a post.
+   *
+   * Post will be added on top by observing `posts` collection.
    */
   onSubmit(event: Event) {
     if (this.post.id) {
+      this.loader.editing = true;
       this.fire.post.edit(this.post).then(re => {
         console.log('post edit', re);
+        this.loader.editing = false;
       })
-        .catch(e => alert(e.message));
+        .catch(e => {
+          this.loader.editing = false;
+          alert(e.message);
+        });
     } else {
+      this.loader.creating = true;
       this.fire.post.create(this.post).then(re => {
         console.log('postId:', re.data.id);
-        this.post.id = re.data.id;
-        this.fire.post.addPostOnTop( this.post );
+        // this.post.id = re.data.id;
+        // this.fire.post.addPostOnTop( this.post );
         this.post = {};
-      }).catch(e => alert(e.message));
+        this.loader.creating = false;
+      }).catch(e => {
+        this.loader.creating = false;
+        alert(e.message);
+      });
     }
   }
 
@@ -104,7 +122,7 @@ export class PostComponent implements OnInit, OnDestroy {
 
 
   onClickEdit(post: POST) {
-    console.log('post: ', post);
+    console.log('Update edit form: ', post);
     this.post = post;
   }
   onClickDelete(id: string) {
@@ -120,6 +138,6 @@ export class PostComponent implements OnInit, OnDestroy {
   }
   onClickDislike(id: string) {
     this.fire.post.dislike(id).then()
-    .catch(e => alert(e.message));
+      .catch(e => alert(e.message));
   }
 }

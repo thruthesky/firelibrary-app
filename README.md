@@ -102,7 +102,8 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 
 ## Terms
-
+* `We` me and the core developers.
+* `You` are the ones who are using this `FireLibrary`.
 * `Action Methods` are defined in providers and are handling/manipulating with `Firebase`.
  * Some of `Action Methods` are `Category::create()`, `Category::edit()`, etc.
 
@@ -356,3 +357,16 @@ service cloud.firestore {
       The user cannot increase `numberOfLikes` anymore because he has a document under `like-confirmation`.
       This still be a problem. What if the user want to create a document only on `likes` collection
       and want to increase number 1 on `numbrerOfLikes` forever?
+
+## POST
+
+### No post delete.
+
+* When user clicks on delete button to delete the post, firelibrary does not actually delete the post.
+  Instead, it marks as deleted.
+  * Reasion. There might be comments that belongs to the post. And we consider it is not the poster's previlledge to delete all the comments which are belonging to the comment writers. They shouldn't be disappears only because the poster deleted his post. The comments should be still shown.
+
+* When there is no comments belong to the post, the post may be moved into `posts-trash` collection.
+
+
+
