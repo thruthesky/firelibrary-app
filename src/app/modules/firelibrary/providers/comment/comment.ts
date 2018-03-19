@@ -39,7 +39,7 @@ export class Comment extends Base {
      */
     load(postId: string): Promise<Array<string>> {
         const ref = this.commentCollection(postId);
-        console.log(`gets at: ${ref.path}`);
+        // console.log(`gets at: ${ref.path}`);
         return ref.get().then(s => {
             const commentIds = [];
             s.forEach(doc => {
@@ -47,18 +47,17 @@ export class Comment extends Base {
                 c.id = doc.id;
                 this.comments[c.id] = c;
                 commentIds.push(c.id);
+                // @todo sort comments by thread.
+                const sorted = this.sortComments(postId, c.id);
+                this.subscribeCommentChange(postId, c);
+                this.subscribeLikes(c);
 
-                if (this.settings.listenOnCommentChange) {
-                    this.subscribeCommentChange(postId, c);
-                }
             });
-            // @todo sort comments by thread.
-            const sorted = this.sortComments(postId, commentIds);
-            console.log('sorted: ', sorted);
+            // console.log('sorted: ', sorted);
             // observe like/dislike
 
             this.subscribeCommentAdd(postId);
-            return sorted;
+            return this.commentIds[postId];
         }).catch(e => this.failure(e));
     }
 
@@ -69,27 +68,32 @@ export class Comment extends Base {
      * Sorts the comments.
      * @param postId Post Document ID
      */
-    sortComments(postId: string, ids: Array<string>) {
+    sortComments(postId: string, commentId: string) {
         // console.log(`sortComments: `, postId, ids);
-        this.commentIds[postId] = [];
+        if (this.commentIds[postId] === void 0) {
+            this.commentIds[postId] = [];
+        }
         //
         // if (_.isEmpty(this.comments[postId])) {
         //     return;
         // }
-        ids.map(commentId => {
-            const comment: COMMENT = this.comments[commentId];
-            // console.log(`comment..: `, comment);
-            if (_.isEmpty(comment.parentCommentId)) {
-                this.commentIds[postId].push(comment.id);
-            } else {
-                console.log(`Children. find parent id in the array and insert it right afetr.`);
-            }
-        });
+        // ids.map(commentId => {
+        //     const comment: COMMENT = this.comments[commentId];
+        //     // console.log(`comment..: `, comment);
+        //     if (_.isEmpty(comment.parentCommentId)) {
+        //         this.commentIds[postId].push(comment.id);
+        //     } else {
+        //         console.log(`Children. find parent id in the array and insert it right afetr.`);
+        //     }
+        // });
+
+        this.commentIds[postId].push(commentId);
         return this.commentIds[postId];
     }
 
     create(comment: COMMENT): Promise<any> {
         _.sanitize(comment);
+        comment.created = firebase.firestore.FieldValue.serverTimestamp();
         const ref = this.commentCollection(comment.postId);
         console.log(`Going to add a comment under: ${ref.path}`);
         return ref.add(comment)
@@ -119,6 +123,9 @@ export class Comment extends Base {
     }
 
 
+    /**
+     * @todo when does it need to detach all the subscriptons?
+     */
     private subscribeCommentChange(postId: string, comment: COMMENT) {
         if (!this.settings.listenOnCommentChange) {
             return;
@@ -132,12 +139,77 @@ export class Comment extends Base {
         if (!this.settings.listenOnCommentChange) {
             return;
         }
-        // const path = this.commentCollection(postId).path;
-        // const unsubscribe = this.commentCollection(postId).onSnapshot(doc => {
-        //     console.log('Observe new comments on :', path, doc.data());
-        //     post = Object.assign(post, doc.data());
-        // });
-        // this._unsubscribePosts.push(unsubscribe);
+        const path = this.commentCollection(postId).path;
+        console.log(`watch for new comment: ${path}`);
+        const unsubscribe = this.commentCollection(postId).orderBy('created', 'desc').limit(1).onSnapshot(snapshot => {
+
+            console.log('watch the lastest comment: ');
+            snapshot.docChanges.forEach(change => {
+                const doc = change.doc;
+                if (doc.metadata.hasPendingWrites) {
+
+                    console.log('pending', doc.metadata.hasPendingWrites, 'from cache: ', doc.metadata.fromCache);
+
+                } else {
+                    console.log('pending', doc.metadata.hasPendingWrites, 'type: ', change.type,
+                        'from cache: ', doc.metadata.fromCache, doc.data());
+                    const comment: COMMENT = doc.data();
+                    comment.id = doc.id;
+                    // console.log(`exists: ${this.pagePosts[post.id]}`);
+                    if (change.type === 'added' && this.comments[comment.id] === void 0) {
+                        this.addCommentOnTop(postId, comment);
+                    } else if (change.type === 'modified') {
+                        this.updateComment(postId, comment);
+                    } else if (change.type === 'removed') {
+                        this.removeComment(comment);
+                    }
+                }
+            });
+        });
+        this._unsubscribeComments.push(unsubscribe);
+
+    }
+
+    /**
+     * Add a newly created post on top of post list on the page
+     *  - and subscribe post changes if `settings.listenPostChange` is set to true.
+     *  - and subscribe like/dislike based on the settings.
+     *
+     * @desc It's important to understand how `added` event fired on `onSnapshot)`.
+     *
+     */
+    private addCommentOnTop(postId, comment: COMMENT) {
+        if (this.comments[comment.id] === void 0) {
+            console.log(`addCommentOnTop: `, comment);
+            this.comments[comment.id] = comment;
+            this.sortComments(postId, comment.id);
+            this.subscribeCommentChange(postId, comment);
+            this.subscribeLikes(comment);
+        }
+    }
+    /**
+     * When listening the last post on collection in realtime, it often fires `modified` event on new docuemnt created.
+     */
+    private updateComment(postId, comment: COMMENT) {
+        console.log('updateComment id: ', comment.id);
+        if (this.comments[comment.id]) {
+            console.log(`updateComment`, comment);
+            this.comments[comment.id] = Object.assign(this.comments[comment.id], comment);
+        } else {
+            this.addCommentOnTop(postId, comment);
+        }
+    }
+    /**
+     * This method is no longer in use.
+     *
+     * @deprecated @see README### No post delete.
+     */
+    private removeComment(comment: COMMENT) {
+    }
+
+
+    subscribeLikes(comment: COMMENT) {
+
     }
 }
 

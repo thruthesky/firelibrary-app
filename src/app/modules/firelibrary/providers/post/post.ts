@@ -234,7 +234,7 @@ export class Post extends Base {
 
         const path = this.post(post.id).path;
         const unsubscribe = this.post(post.id).onSnapshot(doc => {
-            console.log('Update on :', path, doc.data());
+            // console.log('Update on :', path, doc.data());
             post = Object.assign(post, doc.data());
         });
         this._unsubscribePosts.push(unsubscribe);
@@ -249,7 +249,7 @@ export class Post extends Base {
             return;
         }
         const likeRef = this.likeColllection(post.id, COLLECTIONS.LIKES).doc('count');
-        console.log('subscribe on likes: ', post.id, `path: ${likeRef.path}`);
+        // console.log('subscribe on likes: ', post.id, `path: ${likeRef.path}`);
         const subscribeLik = likeRef.onSnapshot(doc => {
             if (doc.exists) {
                 const data = doc.data();
@@ -260,9 +260,9 @@ export class Post extends Base {
 
 
         const dislikeRef = this.likeColllection(post.id, COLLECTIONS.DISLIKES).doc('count');
-        console.log('subscribe on dislikes: ', post.id, `path: ${dislikeRef.path}`);
+        // console.log('subscribe on dislikes: ', post.id, `path: ${dislikeRef.path}`);
         const subscribeDislike = dislikeRef.onSnapshot(doc => {
-            console.log('changed on dislike: ', doc);
+            // console.log('changed on dislike: ', doc);
             if (doc.exists) {
                 const data = doc.data();
                 post.numberOfDislikes = data.count;

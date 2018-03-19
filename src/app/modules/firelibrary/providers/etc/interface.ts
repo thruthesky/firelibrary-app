@@ -103,8 +103,8 @@ export interface COMMENT {
     parentCommentId?: string;              // parentCommentId
     uid?: string;
     content?: string;
-    created?: string;
-    updated?: string;
+    created?: any;
+    updated?: any;
 
 }
 

@@ -4,9 +4,7 @@ Firebase CMS Library for Frontend
 
 ## TODO
 * [ Start From Here ]
- * Observe new post and add by user `addOnTop`. Remove adding post from the form. instead.
- * create comment
- * and add it under the parent by observing. In this way, all people will get the comment realtime.
+ * @bug realtime update is not working when there is no post. it works only after there is a post.
 
 * Security rules on post if the category does not exist, then fail.
 * check uid is his uid. a user may put another user's uid on post and that can cause a problem

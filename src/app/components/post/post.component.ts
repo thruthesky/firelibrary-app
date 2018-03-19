@@ -40,6 +40,7 @@ export class PostComponent implements OnInit, OnDestroy {
     // };
     fire.setSettings({
       listenOnPostChange: true,
+      listenOnCommentChange: true,
       listenOnPostLikes: true,
       listenOnCommentLikes: true
     });
