@@ -25,7 +25,7 @@ export class CommentComponent implements OnInit {
     if ( this.fire.comment.comments[id] === void 0 ) {
       return <any>[];
     }
-    console.log(this.fire.comment.comments[id]);
+    // console.log(this.fire.comment.comments[id]);
     return this.fire.comment.comments[id];
   }
   get commentIds(): Array<string> {
@@ -33,6 +33,10 @@ export class CommentComponent implements OnInit {
   }
 
   ngOnInit() {
+    if ( ! this.post.id ) {
+      console.error('Post ID is empty. Something is wrong.');
+      return;
+    }
     this.fire.comment.load(this.post.id).then(comments => {
       console.log(`comments: `, comments);
     }).catch(e => alert(e.message));

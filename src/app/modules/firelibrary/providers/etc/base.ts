@@ -12,7 +12,11 @@ import { en } from './languages/en';
 
 
 
-
+interface FIRESERVICE_SETTINGS {
+    listenOnPostCreate?: boolean;
+    listenOnPostLikes?: boolean;
+    listenOnCommentLikes?: boolean;
+}
 
 
 export class Base {
@@ -34,6 +38,12 @@ export class Base {
     static texts: { [language: string]: any } = { en: en };
 
 
+    /**
+     * Settings on how the FireService works
+     */
+
+    static settings: FIRESERVICE_SETTINGS = {};
+
     ///
     auth: firebase.auth.Auth = null;
     db: firebase.firestore.Firestore = null;
@@ -52,6 +62,15 @@ export class Base {
 
     version() {
         return '0.0.2';
+    }
+
+    get settings() {
+        return Base.settings;
+    }
+    setSettings( obj: FIRESERVICE_SETTINGS ) {
+        if ( obj ) {
+            Base.settings = Object.assign( Base.settings, obj );
+        }
     }
 
     get http(): HttpClient {
@@ -153,10 +172,10 @@ export class Base {
         // console.log('error: ', e.code, e.message);
         switch (e.code) {
             case 'not-found':
-            // console.log('not-found: ', e.message);
-            const str: string = e.message;
-            info['documentID'] = str.split('/').pop();
-            return true;
+                // console.log('not-found: ', e.message);
+                const str: string = e.message;
+                info['documentID'] = str.split('/').pop();
+                return true;
 
             case E.INVALID_EMAIL:
             case E.WRONG_PASSWORD:
@@ -167,11 +186,11 @@ export class Base {
             case E.USER_NOT_FOUND:
             case E.EXPIRED_ID_TOKEN:
             case E.PASSWORD_TOO_LONG:
-            info['info'] = e.message;
-            return true;
+                info['info'] = e.message;
+                return true;
 
             default:
-            return false;
+                return false;
         }
     }
     translateFirebaseError(e, info) {
@@ -198,100 +217,100 @@ export class Base {
             }
         }
         if (!text) { // if it's not English or the text of that language not found,
-        if (Base.texts['en'][code] !== void 0) { // get the text of the code in English
-            text = Base.texts['en'][code];
+            if (Base.texts['en'][code] !== void 0) { // get the text of the code in English
+                text = Base.texts['en'][code];
+            }
         }
-    }
-    if (!text) { // if no text found, return the code.
-        text = code;
-    }
-    return text;
-}
-
-getLanguage(): string {
-    return Base.language;
-}
-/**
-* Sets a language and loads the language file.
-* This will load JSON language file under `assets/lang` by default. You can change the path.
-* @desc If the input `ln` is 'en', then it will just return since `en` language is loaded by typescript by default.
-* @desc If the language is already loaded, it does not load again.
-*
-* @returns a Promise<any> on success. Otherwise error will be thrown.
-* @see README## Langulage Translation
-*
-* @code
-*          fire.setLanguage('cn')
-.catch( e => alert('Failed to load language file. ' + e.message) );
-*
-*/
-setLanguage(ln: string): Promise<any> {
-    Base.language = ln;
-    if (ln === 'en') {
-        return Promise.resolve();
-    }
-    if (Base.texts[ln]) {
-        return Promise.resolve();
-    }
-    return this.http.get(`/${Base.languageFolder}/${ln}.json`).toPromise()
-    .then(re => Base.texts[ln] = re);
-}
-
-
-/**
-*
-* Checks if the Document ID is in right format.
-*
-*
-* @param documentID Document ID
-* @returns null if there is no problem. Otherwise `ERROR CODE` will be returned.
-*
-*
-*
-*/
-checkDocumentIDFormat(documentID) {
-    if (_.isEmpty(documentID)) {
-        return E.NO_DOCUMENT_ID;
-    }
-    if (documentID.length > 128) {
-        return E.DOCUMENT_ID_TOO_LONG;
-    }
-    if (documentID.indexOf('/') !== -1) {
-        return E.DOCUMENT_ID_CANNOT_CONTAIN_SLASH;
-    }
-    return null;
-}
-
-
-/**
- * Get a document.
- * @desc This is a general method to get a document.
- *      - It can be overriden on each module.
- *
- * @return Promise<Document Data> or Error is thrown.
- *      If there is no document by that id, then NOT_FOUND errir will be thrown.
- */
-async getValidator(id: string): Promise<any> {
-    const idCheck = this.checkDocumentIDFormat(id);
-    if (idCheck) {
-        return this.failure(new Error(idCheck), { documentID: id });
-    }
-    return null;
-}
-get(id: string): Promise<any> {
-    return this.getValidator(id)
-    .then(() => {
-        return this.collection.doc(id).get();
-    })
-    .then(doc => {
-        if (doc.exists) {
-            return this.success(doc.data());
-        } else {
-            return this.failure(new Error(E.NOT_FOUND));
+        if (!text) { // if no text found, return the code.
+            text = code;
         }
-    })
-    .catch(e => this.failure(e));
-}
+        return text;
+    }
+
+    getLanguage(): string {
+        return Base.language;
+    }
+    /**
+    * Sets a language and loads the language file.
+    * This will load JSON language file under `assets/lang` by default. You can change the path.
+    * @desc If the input `ln` is 'en', then it will just return since `en` language is loaded by typescript by default.
+    * @desc If the language is already loaded, it does not load again.
+    *
+    * @returns a Promise<any> on success. Otherwise error will be thrown.
+    * @see README## Langulage Translation
+    *
+    * @code
+    *          fire.setLanguage('cn')
+    .catch( e => alert('Failed to load language file. ' + e.message) );
+    *
+    */
+    setLanguage(ln: string): Promise<any> {
+        Base.language = ln;
+        if (ln === 'en') {
+            return Promise.resolve();
+        }
+        if (Base.texts[ln]) {
+            return Promise.resolve();
+        }
+        return this.http.get(`/${Base.languageFolder}/${ln}.json`).toPromise()
+            .then(re => Base.texts[ln] = re);
+    }
+
+
+    /**
+    *
+    * Checks if the Document ID is in right format.
+    *
+    *
+    * @param documentID Document ID
+    * @returns null if there is no problem. Otherwise `ERROR CODE` will be returned.
+    *
+    *
+    *
+    */
+    checkDocumentIDFormat(documentID) {
+        if (_.isEmpty(documentID)) {
+            return E.NO_DOCUMENT_ID;
+        }
+        if (documentID.length > 128) {
+            return E.DOCUMENT_ID_TOO_LONG;
+        }
+        if (documentID.indexOf('/') !== -1) {
+            return E.DOCUMENT_ID_CANNOT_CONTAIN_SLASH;
+        }
+        return null;
+    }
+
+
+    /**
+     * Get a document.
+     * @desc This is a general method to get a document.
+     *      - It can be overriden on each module.
+     *
+     * @return Promise<Document Data> or Error is thrown.
+     *      If there is no document by that id, then NOT_FOUND errir will be thrown.
+     */
+    async getValidator(id: string): Promise<any> {
+        const idCheck = this.checkDocumentIDFormat(id);
+        if (idCheck) {
+            return this.failure(new Error(idCheck), { documentID: id });
+        }
+        return null;
+    }
+    get(id: string): Promise<any> {
+        return this.getValidator(id)
+            .then(() => {
+                return this.collection.doc(id).get();
+            })
+            .then(doc => {
+                if (doc.exists) {
+                    return this.success(doc.data());
+                } else {
+                    return this.failure(new Error(E.NOT_FOUND));
+                }
+            })
+            .catch(e => this.failure(e));
+    }
 
 }
 

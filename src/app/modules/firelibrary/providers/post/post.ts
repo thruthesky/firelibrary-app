@@ -16,16 +16,12 @@ export class Post extends Base {
     private user: User;
 
 
-    /// Post settings
-    settings: { listenOnLikes?: boolean } = {
-        listenOnLikes: false
-    };
     /// navigation
     private cursor: any = null; // null by default
-    private categoryId: string = null; // Category ID to get posts. null by default
+    private categoryId: string = null; // Category ID of current cateogry to load posts. null by default
 
 
-    /// post loading by page
+    /// posts and its ids that has already been loaded by `page()`
     pagePosts: { [id: string]: POST } = {}; // posts loaded by page indexed by key.
     pagePostIds: Array<string> = []; // posts keys loaded by page.
 
@@ -33,6 +29,8 @@ export class Post extends Base {
 
     ///
     private _unsubscribeLikes = [];
+
+    private unsubscribePage = null;
     constructor(
     ) {
         super(COLLECTIONS.POSTS);
@@ -58,7 +56,7 @@ export class Post extends Base {
         return Promise.resolve(null);
     }
     private createSanitizer(post: POST) {
-        _.sanitize( post );
+        _.sanitize(post);
         post.uid = this.user.uid;
         post.created = firebase.firestore.FieldValue.serverTimestamp();
         return post;
@@ -95,7 +93,9 @@ export class Post extends Base {
                 //         });
                 // });
             })
-            .then(doc => this.success({ id: doc.id, post: post }))
+            .then(doc => {
+                return this.success({ id: doc.id, post: post });
+            })
             .catch(e => this.failure(e));
     }
     private editValidator(post: POST): Promise<any> {
@@ -113,7 +113,7 @@ export class Post extends Base {
     edit(post: POST): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
             .then(() => {
-                _.sanitize( post );
+                _.sanitize(post);
                 post.updated = firebase.firestore.FieldValue.serverTimestamp();
                 return this.collection.doc(post.id).update(post);
             })
@@ -151,6 +151,7 @@ export class Post extends Base {
     }
     /**
      * For pagination.
+     *
      */
     private resetCursor(category: string) {
         this.categoryId = category;
@@ -161,18 +162,23 @@ export class Post extends Base {
      * Get posts for a page.
      * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
      *    Otherwise it gets posts for next page.
+     *
+     * @returns true if the category has been chagned and reset. other wise false.
      */
     private resetLoadPage(category: string) {
+        let reset = false;
         if (category) {
-            if (category === 'all' || this.categoryId !== category) {
+            if (category === 'all' || this.categoryId !== category) { /// new category. Category has changed to list(load pages)
                 this.pagePosts = {};
                 this.unsubscribeLikes();
                 this.pagePostIds = [];
                 this.categoryId = category;
                 this.resetCursor(category);
                 this.unsubscribeLikes();
+                reset = true;
             }
         }
+        return reset;
     }
     private unsubscribeLikes() {
         if (this._unsubscribeLikes.length) {
@@ -210,6 +216,7 @@ export class Post extends Base {
         });
         this._unsubscribeLikes.push(subscribeDislike);
     }
+
     /**
      * Get pages.
      *
@@ -218,10 +225,8 @@ export class Post extends Base {
      *      options['listenOnLikes'] if set true, it listens all the posts in the list.
      */
     page(options: { category?: string, limit: number }): Promise<Array<POST>> {
-
-        this.resetLoadPage(options.category);
-
-        let query: any = this.collection;
+        const reset = this.resetLoadPage(options.category);
+        let query: firebase.firestore.Query = <any>this.collection;
         if (this.categoryId && this.categoryId !== 'all') {
             query = query.where('category', '==', this.categoryId);
         }
@@ -230,7 +235,7 @@ export class Post extends Base {
             query = query.startAfter(this.cursor);
         }
         query = query.limit(options.limit);
-        return query.get().then(querySnapshot => {
+        return <any>query.get().then(querySnapshot => {
             if (querySnapshot.docs.length) {
                 querySnapshot.forEach(doc => {
                     const post: POST = <any>doc.data();
@@ -238,16 +243,64 @@ export class Post extends Base {
                     post['date'] = (new Date(post.created)).toLocaleString();
                     this.pagePosts[post.id] = post;
                     this.pagePostIds.push(post.id);
-                    if (this.settings.listenOnLikes) {
+                    if (this.settings.listenOnPostLikes) {
                         this.subscribeLikes(post);
                     }
                 });
                 // only one cursor is supported and normally one page has on pagination.
                 this.cursor = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+
+                // @see comment on subscribeNewPost()
+                if (reset) {
+                    this.subscribeNewPost(query);
+                }
                 return this.pagePosts;
             } else {
                 return [];
             }
+        });
+    }
+
+
+    /**
+     *  it subscribes added/updated/removed only after loading/displaying the post list.
+     *  In this way, it prevents double display of the last post.
+     */
+    private subscribeNewPost(query: firebase.firestore.Query) {
+        if (this.unsubscribePage) {
+            this.unsubscribePage();
+        }
+        this.unsubscribePage = query.limit(1).onSnapshot(snapshot => {
+            snapshot.forEach(doc => {
+                if (doc.metadata.hasPendingWrites) {
+
+                    console.log('pending', doc.metadata.hasPendingWrites, 'from cache: ', doc.metadata.fromCache);
+
+                } else {
+                    console.log('pending', doc.metadata.hasPendingWrites, 'from cache: ', doc.metadata.fromCache, doc.data());
+                    const post: POST = doc.data();
+                    post.id = doc.id;
+                    console.log(`exists: ${this.pagePosts[post.id]}`);
+                    if (this.pagePosts[post.id] === void 0) {
+                        this.addPostOnTop(post);
+                    } else {
+                        this.updatePost(post);
+                    }
+                }
+            });
+            // snapshot.docChanges.forEach(change => {
+            //     if (change.type === 'added') {
+            //         this.addPostOnTop(change.doc.data());
+            //     } else if (change.type === 'modified') {
+            //         this.updatePost(change.doc.data());
+            //     } else if (change.type === 'removed') {
+            //         this.removePost(change.doc.data());
+            //     }
+            //     // console.log("I am writing: ", change.doc.metadata.hasPendingWrites);
+            //     // console.log(`why many times: `, change.type);
+            //     // console.log('new post: ', change.doc.id);
+            // });
         });
     }
 
@@ -258,11 +311,27 @@ export class Post extends Base {
      *
      *
      */
-    addPostOnTop(post: POST) {
-        this.pagePosts[post.id] = post;
-        this.pagePostIds.unshift(post.id);
-        if (this.settings.listenOnLikes) {
-            this.subscribeLikes(post);
+    private addPostOnTop(post: POST) {
+        if (this.pagePosts[post.id] === void 0) {
+            console.log(`addPostOnTop: `, post);
+            this.pagePosts[post.id] = post;
+            this.pagePostIds.unshift(post.id);
+            if (this.settings.listenOnPostLikes) {
+                this.subscribeLikes(post);
+            }
+        }
+    }
+    private updatePost(post: POST) {
+        console.log('updatePost id: ', post.id);
+        if (this.pagePosts[post.id]) {
+            console.log(`updatePost`, post);
+            this.pagePosts[post.id] = Object.assign(this.pagePosts[post.id], post);
+        }
+    }
+    private removePost(post: POST) {
+        if (this.pagePosts[post.id]) {
+            console.log(`deletePost`, post);
+            delete this.pagePosts[post.id];
         }
     }
 

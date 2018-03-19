@@ -34,9 +34,14 @@ export class PostComponent implements OnInit, OnDestroy {
       }
     });
 
-    fire.post.settings = {
-      listenOnLikes: true
-    };
+    // fire.post.settings = {
+    //   listenOnLikes: true
+    // };
+    fire.setSettings({
+      listenOnPostCreate: true,
+      listenOnPostLikes: true,
+      listenOnCommentLikes: true
+    });
     this.loadPage('all');
   }
 
@@ -69,7 +74,9 @@ export class PostComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Create or edit a post
+   * Create or edit a post.
+   *
+   * Post will be added on top by observing `posts` collection.
    */
   onSubmit(event: Event) {
     if (this.post.id) {
@@ -80,8 +87,8 @@ export class PostComponent implements OnInit, OnDestroy {
     } else {
       this.fire.post.create(this.post).then(re => {
         console.log('postId:', re.data.id);
-        this.post.id = re.data.id;
-        this.fire.post.addPostOnTop( this.post );
+        // this.post.id = re.data.id;
+        // this.fire.post.addPostOnTop( this.post );
         this.post = {};
       }).catch(e => alert(e.message));
     }
