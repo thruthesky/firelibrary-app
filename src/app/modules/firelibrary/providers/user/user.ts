@@ -136,11 +136,6 @@ export class User extends Base {
         };
         return user.updateProfile(_.sanitize(up)).then(x => user);
     }
-    /**
-    *
-    */
-    updateProfile() {
-    }
 
     /**
     * Sets user information on user collection.

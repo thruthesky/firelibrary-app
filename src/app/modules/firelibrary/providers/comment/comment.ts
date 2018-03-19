@@ -18,6 +18,7 @@ export class Comment extends Base {
 
     ///
     private _unsubscribeLikes = [];
+    private _unsubscribeComments = [];
     constructor(
     ) {
         super(COLLECTIONS.COMMENTS);
@@ -44,14 +45,19 @@ export class Comment extends Base {
             s.forEach(doc => {
                 const c: COMMENT = doc.data();
                 c.id = doc.id;
-                this.comments[ c.id ] = c;
-                commentIds.push( c.id );
+                this.comments[c.id] = c;
+                commentIds.push(c.id);
+
+                if (this.settings.listenOnCommentChange) {
+                    this.subscribeCommentChange(postId, c);
+                }
             });
             // @todo sort comments by thread.
             const sorted = this.sortComments(postId, commentIds);
             console.log('sorted: ', sorted);
             // observe like/dislike
 
+            this.subscribeCommentAdd(postId);
             return sorted;
         }).catch(e => this.failure(e));
     }
@@ -71,7 +77,7 @@ export class Comment extends Base {
         //     return;
         // }
         ids.map(commentId => {
-            const comment: COMMENT = this.comments[ commentId ];
+            const comment: COMMENT = this.comments[commentId];
             // console.log(`comment..: `, comment);
             if (_.isEmpty(comment.parentCommentId)) {
                 this.commentIds[postId].push(comment.id);
@@ -113,5 +119,25 @@ export class Comment extends Base {
     }
 
 
+    private subscribeCommentChange(postId: string, comment: COMMENT) {
+        if (!this.settings.listenOnCommentChange) {
+            return;
+        }
+        const unsubscribe = this.commentCollection(postId).doc(comment.id).onSnapshot(doc => {
+            comment = Object.assign(comment, doc.data());
+        });
+        this._unsubscribeComments.push(unsubscribe);
+    }
+    private subscribeCommentAdd(postId: string) {
+        if (!this.settings.listenOnCommentChange) {
+            return;
+        }
+        // const path = this.commentCollection(postId).path;
+        // const unsubscribe = this.commentCollection(postId).onSnapshot(doc => {
+        //     console.log('Observe new comments on :', path, doc.data());
+        //     post = Object.assign(post, doc.data());
+        // });
+        // this._unsubscribePosts.push(unsubscribe);
+    }
 }
 

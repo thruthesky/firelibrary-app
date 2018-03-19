@@ -53,6 +53,10 @@ Firebase CMS Library for Frontend
 * Npm - https://www.npmjs.com/package/firelibrary
 * Webiste - www.firelibrary.net
 
+## What you can do with FireLibrary
+
+* @see ### Realtime update
+
 
 
 ## How to install firelibrary into another project
@@ -359,6 +363,21 @@ service cloud.firestore {
       and want to increase number 1 on `numbrerOfLikes` forever?
 
 ## POST
+
+### Realtime update
+
+* If the posts/comments are updated in realtime, you can build a forum with chatting fuctionality.
+ Normally chatting functinality has a realtime update with the messages of other users chat.
+ * When you have a QnA forum and person A asks something on the forum.
+ * Person B replies on it.
+ * the person A gets `push-notification` with the reply on his question.
+ * the person A opens the forum and may comments on the reply of person B.
+ * Person B gets `push-notification` and opens the qna post.
+ * Person B replies again
+ * And the chatting fuctionality begins since the comments are updated in realtime and the forum post page may really look like a chat room depending on the desing.
+ * It is still a forum. You can open the chat to public simple as a forum posts/comments.
+
+
 
 ### No post delete.
 
