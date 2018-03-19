@@ -298,9 +298,7 @@ export class Post extends Base {
                     this.pagePosts[post.id] = post;
                     this.pagePostIds.push(post.id);
                     this.subscribePostChange(post);
-
                     this.subscribeLikes(post);
-
                 });
                 // only one cursor is supported and normally one page has on pagination.
                 this.cursor = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -418,160 +416,13 @@ export class Post extends Base {
         return this.collection.doc(postId)
             .collection(collectionName);
     }
-    private likeDocument(postId: string, collectionName: string) {
-        console.log(`likeDocument(postId: ${postId}, collectionName: ${collectionName}`);
-        const ref = this.likeColllection(postId, collectionName).doc(this.user.uid);
-        console.log(`path: `, ref.path);
-        return ref;
-    }
-
-
-
-    /**
-     * Validating for like to a post.
-     *
-     * @desc if the user did `like` already, it returns `ALREADY_LIKED` error.
-     */
-    // likeValidatorOld(id: string): Promise<any> {
-    //     const idCheck = this.checkDocumentIDFormat(id);
-    //     if (idCheck) {
-    //         return this.failure(new Error(idCheck), { documentID: id });
-    //     }
-    //     return this.likeDocument(id).get()
-    //         .then(doc => {
-    //             if (doc.exists) {
-    //                 console.log('likeValidator. already liked');
-    //                 return this.failure(ALREADY_LIKED);
-    //             } else {
-    //                 return null; // NOT error. it resolves with not exists.
-    //             }
-    //         });
-    //     // .catch(e => null); // It cannot be here. If then, ALREADY LIKE becomes NOT error.
-    // }
 
     like(postId: string): Promise<any> {
-        return this.doLike(postId, COLLECTIONS.LIKES);
-        // return this.likeValidator(id)
-        //     .then(() => {
-        //         console.log('validator passed. Going to add a like', id);
-        //         return this.likeDocument(id).set({ time: firebase.firestore.FieldValue.serverTimestamp() });
-        //     })
-        //     .then(() => {
-        //         console.log('like has been added: ', id);
-        //         return this.countLikes(id);
-        //     })
-        //     .catch(e => {
-        //         if (e.code === ALREADY_LIKED) {
-        //             console.log('already liked it. going to unlike : ', id);
-        //             return this.unlike(id);
-        //         } else {
-        //             console.log('failed on other reason: ', e);
-        //             return this.failure(e);
-        //         }
-        //     });
+        return this.doLike(this.likeColllection(postId, COLLECTIONS.LIKES));
     }
 
-
-    // private unlike(id: string): Promise<any> {
-    //     return this.likeDocument(id).delete()
-    //         .then(() => {
-    //             console.log('like has been deleted: ', id);
-    //             return this.countLikes(id);
-    //         })
-    //         .catch(e => this.failure(e));
-    // }
-    dislike(id: string): Promise<any> {
-        return this.doLike(id, COLLECTIONS.DISLIKES);
-    }
-
-    /**
-     * This does validation for `like`, `unlike`, `dislike`, `undislike`.
-     */
-    private doLikeValidator(postId: string, collectionName: string): Promise<any> {
-        console.log(`doLikeValidator(postId: ${postId}, collectionName: ${collectionName})`);
-        const idCheck = this.checkDocumentIDFormat(postId);
-        if (idCheck) {
-            return this.failure(new Error(idCheck), { documentID: postId });
-        }
-        return this.likeDocument(postId, collectionName).get()
-            .then(doc => {
-                if (doc.exists) {
-                    console.log('likeValidator. already liked');
-                    return this.failure(ALREADY_LIKED);             // already liked or disliked.
-                } else {
-                    return null; // NOT error. it resolves with null. which means OK.
-                }
-            })
-            .catch(e => {
-                // return null;
-                console.log(`Caught on validation:Failed to get like/dislike document.This may be a permission error on security rule.`);
-                return this.failure(e);
-            });
-    }
-    /**
-     * This is a general method for `like`, `unlike`, `dislike`, `disunlike`.
-     * @desc The logic is the same for `like` and `dislike`.
-     */
-    private doLike(postId: string, collectionName: string): Promise<any> {
-
-        console.log(`doLike(postId: ${postId}, collectionName: ${collectionName})`);
-        return this.doLikeValidator(postId, collectionName)
-            .then(() => {
-                console.log(`validator passed. Going to ${collectionName} on`, postId);
-                return this.likeDocument(postId, collectionName)
-                    .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
-            })
-            .then(() => {
-                console.log(`${collectionName} like has been added: `, postId);
-                return this.countLikes(postId, collectionName);
-            })
-            .catch(e => {
-                if (e.code === ALREADY_LIKED) {
-                    console.log(`already ${collectionName} it. going to un${collectionName} : `, postId);
-                    return this.doUnlike(postId, collectionName);
-                } else {
-                    console.log(`${collectionName} failed because: `, e);
-                    return this.failure(e);
-                }
-            });
-    }
-
-
-    private doUnlike(postId: string, collectionName: string): Promise<any> {
-        console.log(`Going to un${collectionName} on ${postId}`);
-        return this.likeDocument(postId, collectionName).delete()
-            .then(() => {
-                console.log(`${collectionName} has been deleted: `, postId);
-                return this.countLikes(postId, collectionName);
-            })
-            .catch(e => this.failure(e));
-    }
-
-    /**
-     * Counts the number of Likes and saves it into `count` document.
-     */
-    private countLikes(postId: string, collectionName: string) {
-        console.log(`countLikes(postId: ${postId}, collectionName: ${collectionName})`);
-        return this.likeColllection(postId, collectionName).get()
-            .then(snapshot => {
-                let count = 0;
-                if (snapshot.size > 2) {      // if size is bigger than 2, it probablly has `count` document.
-                    count = snapshot.size - 1;
-                } else {                        // if size is 1 or 2, then it may not have `count` document yet.
-                    snapshot.forEach(doc => {
-                        if (doc && doc.exists) {
-                            if (doc.id !== 'count') {
-                                count++;
-                            }
-                        }
-                    });
-                }
-                console.log(`${collectionName} count: `, count);
-                return this.likeColllection(postId, collectionName).doc('count').set({ count: count });
-            })
-            .then(() => {
-                console.log(`${collectionName} counted: `, postId);
-            });
+    dislike(postId: string): Promise<any> {
+        return this.doLike(this.likeColllection(postId, COLLECTIONS.DISLIKES));
     }
 
 }

@@ -105,6 +105,8 @@ export interface COMMENT {
     content?: string;
     created?: any;
     updated?: any;
+    numberOfLikes?: number;
+    numberOfDislikes?: number;
 
 }
 
@@ -164,6 +166,12 @@ export interface POST_DELETE extends RESPONSE {
 
 
 export interface COMMENT_CREATE extends RESPONSE {
+    data: {
+        id: string;
+    };
+}
+
+export interface COMMENT_EDIT extends RESPONSE {
     data: {
         id: string;
     };

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { FireService, POST, COMMENT } from '../../../../public_api';
 
 
@@ -7,12 +7,13 @@ import { FireService, POST, COMMENT } from '../../../../public_api';
   templateUrl: './comment.component.html',
   styleUrls: ['./comment.component.css']
 })
-export class CommentComponent implements OnInit {
+export class CommentComponent implements OnInit, OnDestroy {
 
 
   @Input() post: POST = {};
   @Input() parent: COMMENT = {};
   comment: COMMENT = {};
+  edit: COMMENT = {};
   loader = {
     creating: false
   };
@@ -22,7 +23,7 @@ export class CommentComponent implements OnInit {
   }
 
   comments(id): COMMENT {
-    if ( this.fire.comment.comments[id] === void 0 ) {
+    if (this.fire.comment.comments[id] === void 0) {
       return <any>[];
     }
     // console.log(this.fire.comment.comments[id]);
@@ -33,13 +34,16 @@ export class CommentComponent implements OnInit {
   }
 
   ngOnInit() {
-    if ( ! this.post.id ) {
+    if (!this.post.id) {
       console.error('Post ID is empty. Something is wrong.');
       return;
     }
     this.fire.comment.load(this.post.id).then(comments => {
       console.log(`comments: `, comments);
     }).catch(e => alert(e.message));
+  }
+  ngOnDestroy() {
+    this.fire.comment.destory( this.post );
   }
 
   onSubmit(event: Event) {
@@ -48,10 +52,33 @@ export class CommentComponent implements OnInit {
     this.comment.parentCommentId = this.parent.parentCommentId;
     console.log('create: ', this.comment);
     this.fire.comment.create(this.comment).then(re => {
-      console.log('re: ', re);
+      // console.log('re: ', re);
     })
       .catch(e => alert(e.message));
     return false;
+  }
+  onSubmitEdit(event: Event, commentId: string) {
+    event.preventDefault();
+    this.edit.id = commentId;
+    this.fire.comment.edit(this.edit).then(re => {
+      // console.log('comment edit: ', re);
+      this.edit = {};
+    })
+      .catch(e => alert(e.message));
+    return false;
+  }
+
+
+  onClickLike(id: string) {
+    this.fire.comment.like(id).then(re => {
+      // console.log(`comment like. re: `, re);
+    }).catch(e => alert(e.message));
+  }
+  onClickDislike(id: string) {
+    this.fire.comment.dislike(id).then(re => {
+      // console.log(`comment dislike. re: `, re);
+    })
+      .catch(e => alert(e.message));
   }
 
 }
