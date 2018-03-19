@@ -33,7 +33,7 @@ export class Category extends Base {
                     return null; // NOT error.
                 }
             })
-            .catch( e => null ); // NOT error. The error is handled here and resolves with null.
+            .catch( e => this.failure(e) ); // NOT error. The error is handled here and resolves with null.
     }
     create(category: CATEGORY): Promise<CATEGORY_CREATE> {
         return this.createValidator(category)

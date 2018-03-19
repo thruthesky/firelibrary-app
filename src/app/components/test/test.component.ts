@@ -32,9 +32,11 @@ export class TestComponent extends TestTools implements OnInit {
   }
   ngOnInit() {
 
-    this.run();
+    // this.run();
 
     // (new TestRules).run();
+
+    (new TestError()).run();
 
     // (new TestCategory()).run(); // Run only one test file.
     // (new TestCategory()).categoryCreateExist();

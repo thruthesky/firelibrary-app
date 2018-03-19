@@ -146,6 +146,7 @@ export class Base {
     * @code this.failure( new Error(UNKNOWN) ); // same as above.
     *
     * @example test/test.error.ts
+    * @see test.error.ts on how it throws error.
     *
     */
     failure(obj: Error | string, info = {}): Promise<never> {
