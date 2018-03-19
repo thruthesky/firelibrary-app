@@ -1,6 +1,6 @@
 import {
     Base, _,
-    COLLECTIONS, POST,
+    COLLECTIONS, POST, PERMISSION_DENIED,
     CATEGORY_DOES_NOT_EXIST, USER_IS_NOT_LOGGED_IN, CATEGORY_ID_EMPTY, POST_CREATE,
     CATEGORY,
     POST_EDIT,
@@ -55,11 +55,15 @@ export class Post extends Base {
         if (_.isEmpty(post.category)) {
             return Promise.reject(new Error(CATEGORY_ID_EMPTY));
         }
+        // if ( !_.isEqual(post.uid, this.user.uid) ) {
+        //     return this.failure(PERMISSION_DENIED, {info: 'You cannot post on behalf of other users.'});
+        // }
         return Promise.resolve(null);
     }
     private createSanitizer(post: POST) {
         post.uid = this.user.uid;
         post.created = firebase.firestore.FieldValue.serverTimestamp();
+        // console.log(post);
         return post;
     }
     /**
@@ -71,8 +75,7 @@ export class Post extends Base {
     create(post: POST): Promise<POST_CREATE> {
         return this.createValidator(post)
             .then(() => {
-                this.createSanitizer(post);
-                return this.collection.add(post);
+                return this.collection.add(this.createSanitizer(post));
                 // const categoryRef = this.db.collection(COLLECTIONS.CATEGORIES).doc(post.category);
                 // const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
                 // return <any>this.db.runTransaction(t => {

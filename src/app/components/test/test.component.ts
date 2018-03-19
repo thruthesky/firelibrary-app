@@ -32,7 +32,7 @@ export class TestComponent extends TestTools implements OnInit {
   }
   ngOnInit() {
 
-    this.run();
+    // this.run();
 
     // (new TestRules).run();
 
@@ -46,7 +46,7 @@ export class TestComponent extends TestTools implements OnInit {
     // (new TestCategory).categoryCreateWrongID();
     // (new TestUser()).userRegisterEmailValidation();
     // (new TestUser()).run();
-    // (new TestPost).run();
+    (new TestPost).run();
   }
 
   get count() {

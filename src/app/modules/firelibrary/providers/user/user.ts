@@ -1,6 +1,7 @@
 ﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG, UNKNOWN, FIREBASE_API_ERROR } from '../etc/error';
 import { Base, _, USER, COLLECTIONS, RESPONSE, USER_CREATE } from './../etc/base';
 import * as firebase from 'firebase';
+import { PERMISSION_DENIED } from './../etc/error';
 export class User extends Base {
     constructor() {
         super(COLLECTIONS.USERS);
@@ -15,6 +16,8 @@ export class User extends Base {
     get isLogout(): boolean {
         return !this.isLogin;
     }
+
+    /**Get current user's uid. */
     get uid(): string {
         if (this.auth.currentUser) {
             return this.auth.currentUser.uid;
@@ -47,7 +50,7 @@ export class User extends Base {
         }
         // As prescribe in `https://stackoverflow.com/questions/98768/should-i-impose-a-maximum-length-on-passwords`
         if (user.password.length > 128) {
-            return this.failure(PASSWORD_TOO_LONG);
+            return Promise.reject(PASSWORD_TOO_LONG);
         }
         // if (user.displayName) {
         //     if (user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1) {
@@ -83,7 +86,7 @@ export class User extends Base {
                 return this.auth.createUserWithEmailAndPassword(data.email, data.password); // 1. create authentication.
             })
             .then((user: firebase.User) => {
-                return this.updateAuthentication(user, data); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
+                return this.updateAuthentication(user); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
             })
             .then((user: firebase.User) => {
                 return this.set(user, data); // 3. update other information like birthday, gender on `users` collection.
@@ -128,7 +131,7 @@ export class User extends Base {
     * @desc it does not update other information.
     * @see `this.updateProfile()` for updating user information.
     */
-    updateAuthentication(user: firebase.User, data: USER): Promise<firebase.User> {
+    updateAuthentication(user: firebase.User): Promise<firebase.User> {
         const up = {
             displayName: user.displayName,
             photoURL: user.photoURL
@@ -140,6 +143,33 @@ export class User extends Base {
     */
     updateProfile() {
     }
+    /**
+     * Validator for User.deleteUser
+     */
+    // deleteUserValidator(): Promise<any> {
+    //     if ( _.isEqual(this.uid, this.auth.currentUser.uid) ) {
+    //         return this.failure(PERMISSION_DENIED, {info: 'Cannot delete other user\'s account.'});
+    //     }
+    //     return null;
+    // }
+    /**
+     * Deletes user account.
+     * - First Delete user information in user collection
+     * - Second Delete user account.
+     * @author gem
+     */
+    // deleteUser(): Promise<any> {
+    //     return this.deleteUserValidator()
+    //         .then( () => {
+    //             return this.delete();  // delete user collection
+    //         })
+    //         .then( currentUser => { // delete user account
+    //             return this.auth.currentUser.delete();
+    //         })
+    //         .then( a => this.success(a) )
+    //         .catch( e => this.failure(e) );
+
+    // }
 
     /**
     * Sets user information on user collection.
@@ -174,15 +204,5 @@ export class User extends Base {
             .catch(e => this.failure(e));
     }
 
-
-
-    /**
-    * For Unit-testing - Get user to delete.
-    *
-    * @author gem
-    */
-    getCurrentUser() {
-        return this.auth.currentUser;
-    }
 }
 
