@@ -139,38 +139,6 @@ export class User extends Base {
         };
         return user.updateProfile(_.sanitize(up)).then(x => user);
     }
-    /**
-    *
-    */
-    updateProfile() {
-    }
-    /**
-     * Validator for User.deleteUser
-     */
-    // deleteUserValidator(): Promise<any> {
-    //     if ( _.isEqual(this.uid, this.auth.currentUser.uid) ) {
-    //         return this.failure(PERMISSION_DENIED, {info: 'Cannot delete other user\'s account.'});
-    //     }
-    //     return null;
-    // }
-    /**
-     * Deletes user account.
-     * - First Delete user information in user collection
-     * - Second Delete user account.
-     * @author gem
-     */
-    // deleteUser(): Promise<any> {
-    //     return this.deleteUserValidator()
-    //         .then( () => {
-    //             return this.delete();  // delete user collection
-    //         })
-    //         .then( currentUser => { // delete user account
-    //             return this.auth.currentUser.delete();
-    //         })
-    //         .then( a => this.success(a) )
-    //         .catch( e => this.failure(e) );
-
-    // }
 
     /**
     * Sets user information on user collection.

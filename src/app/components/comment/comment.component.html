@@ -1,11 +1,22 @@
-
 <form (ngSubmit)=" onSubmit( $event ) ">
   <input type="text" name="content" [(ngModel)]="comment.content">
   <button type="submit" *ngIf=" ! loader.creating ">Create Comment</button>
 </form>
 <ul>
   <li *ngFor=" let id of commentIds">
-    {{ comments(id).content }}
+    <div>{{ comments(id).content }}</div>
+    <div>
+      <form (ngSubmit)=" onSubmitEdit( $event, id ) ">
+        <input type="text" name="content" [(ngModel)]="edit.content">
+        <button type="submit" *ngIf=" ! loader.creating ">Edit Comment</button>
+      </form>
+    </div>
+    <div>
+      <button>Edit</button>
+      <button>Delete</button>
+      <button (click)="onClickLike(id)">Like({{comments(id).numberOfLikes ? comments(id).numberOfLikes : 0}})</button>
+      <button (click)="onClickDislike(id)">Dislike({{comments(id).numberOfDislikes ? comments(id).numberOfDislikes : 0}})</button>
+    </div>
   </li>
 </ul>
 

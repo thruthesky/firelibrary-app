@@ -4,7 +4,9 @@ export const COLLECTIONS = {
     SETTINGS: 'settings',
     CATEGORIES: 'categories',
     POSTS: 'posts',
-    POSTS_DELETED: 'posts_deleted',
+    // POSTS_DELETED: 'posts_deleted', // no more in use.
+
+    // sub collections.
     LIKES: 'likes',
     DISLIKES: 'dislikes',
     COMMENTS: 'comments'

@@ -4,10 +4,14 @@ Firebase CMS Library for Frontend
 
 ## TODO
 * [ Start From Here ]
- * Observe new post and add by user `addOnTop`. Remove adding post from the form. instead.
- * create comment
- * and add it under the parent by observing. In this way, all people will get the comment realtime.
-
+ * Reply on a commnet.
+ * @improve on comment nesting(threading). Do not use subcollection under comment to create child comment.
+  * Order of comment. Just put `parentCommentId` to arrange recursively.
+  * @improve: find a way to arrange the order of comments by not doing anything on client side.
+    do it when the comment is being saved without reading anything. find a real simple way.
+ * @bug realtime update is not working when there is no post. it works only after there is a post.
+ * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
+* @doc if it like/dislike double clicked quickly, there will be permission error. moderate it with loader.
 * Security rules on post if the category does not exist, then fail.
 * check uid is his uid. a user may put another user's uid on post and that can cause a problem
 * Functions options
@@ -52,6 +56,10 @@ Firebase CMS Library for Frontend
 * Github - https://github.com/thruthesky/firelibrary
 * Npm - https://www.npmjs.com/package/firelibrary
 * Webiste - www.firelibrary.net
+
+## What you can do with FireLibrary
+
+* @see ### Realtime update
 
 
 
@@ -269,6 +277,8 @@ When there are things to sanitize, it is one good idea to make a separate method
 
 ## posts_deleted collection
 
+* @since 2018-03-20. It is no longer used.
+
 * If a post is deleted, the post id will be saved under `posts_deleted` collection.
  * This is because deleted posts may have sub collections and they are still living in the `posts` collection.
  * So, `posts_deleted` is to clean the garbages under `posts` collection.
@@ -359,6 +369,21 @@ service cloud.firestore {
       and want to increase number 1 on `numbrerOfLikes` forever?
 
 ## POST
+
+### Realtime update
+
+* If the posts/comments are updated in realtime, you can build a forum with chatting fuctionality.
+ Normally chatting functinality has a realtime update with the messages of other users chat.
+ * When you have a QnA forum and person A asks something on the forum.
+ * Person B replies on it.
+ * the person A gets `push-notification` with the reply on his question.
+ * the person A opens the forum and may comments on the reply of person B.
+ * Person B gets `push-notification` and opens the qna post.
+ * Person B replies again
+ * And the chatting fuctionality begins since the comments are updated in realtime and the forum post page may really look like a chat room depending on the desing.
+ * It is still a forum. You can open the chat to public simple as a forum posts/comments.
+
+
 
 ### No post delete.
 

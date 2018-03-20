@@ -103,8 +103,10 @@ export interface COMMENT {
     parentCommentId?: string;              // parentCommentId
     uid?: string;
     content?: string;
-    created?: string;
-    updated?: string;
+    created?: any;
+    updated?: any;
+    numberOfLikes?: number;
+    numberOfDislikes?: number;
 
 }
 
@@ -164,6 +166,12 @@ export interface POST_DELETE extends RESPONSE {
 
 
 export interface COMMENT_CREATE extends RESPONSE {
+    data: {
+        id: string;
+    };
+}
+
+export interface COMMENT_EDIT extends RESPONSE {
     data: {
         id: string;
     };

@@ -46,6 +46,27 @@ export class TestError extends TestTools {
         this.test(eUnknownAgainAndAgain.code === UNKNOWN, 'Still it must be Unknown error',
             eUnknownAgainAndAgain.code, eUnknownAgainAndAgain.message);
 
+        try {
+            const catchLoop = await this.fire.failure(UNKNOWN)
+                .catch(e => {
+                    this.test(e.code === UNKNOWN, `Failure loop 1`);
+                    return this.fire.failure(e);
+                })
+                .catch(e => {
+                    this.test(e.code === UNKNOWN, `Failure loop 2`);
+                    return e; // Not throwing. Returns to next then.
+                })
+                .then(e => {
+                    this.test(e['code'] === UNKNOWN, 'Error was passed. not thrown.');
+                    return this.fire.failure(<any>e); // Throwing error agagin.
+                })
+                .catch(e => {
+                    this.test(e.code === UNKNOWN, `Failure loop 3. Now handle it outside.`);
+                    return this.fire.failure(e);
+                });
+        } catch (e) {
+            this.test(e['code'] === UNKNOWN, `Caught afetr catch => catch => then => catch : `, e);
+        }
 
     }
 }

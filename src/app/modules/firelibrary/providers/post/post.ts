@@ -14,25 +14,41 @@ import { User } from '../user/user';
 import * as firebase from 'firebase';
 export class Post extends Base {
 
+    /**
+     * User class object.
+     */
     private user: User;
 
 
-    /// navigation
-    private cursor: any = null; // null by default
-    private categoryId: string = null; // Category ID of current cateogry to load posts. null by default
+    /**
+     * Navigation
+     * `cursor` is indicating where to load from. It is null by default.
+     */
+    private cursor: any = null;
+    /**
+     * Navigation
+     * Category ID of current cateogry to load posts. null by default
+     */
+    private categoryId: string = null;
 
 
-    /// posts and its ids that has already been loaded by `page()`
+    /**
+     * Posts and its IDs that have been loaded by `page()`.
+     * Since object has no sequence, `pagePostIds` is holding the keys of the posts in order.
+     * These are public variasble which should be used on list component to display posts.
+     */
     pagePosts: { [id: string]: POST } = {}; // posts loaded by page indexed by key.
     pagePostIds: Array<string> = []; // posts keys loaded by page.
 
 
 
-    ///
+    /**
+     * Subscribing changes for realtime update.
+     */
     private _unsubscribeLikes = [];
     private _unsubscribePosts = [];
-
     private unsubscribePage = null;
+
     constructor(
     ) {
         super(COLLECTIONS.POSTS);
@@ -213,13 +229,18 @@ export class Post extends Base {
         }
     }
 
-    private subscribePosts(post: POST) {
-        const path = this.post( post.id ).path;
-        const unsubscribe = this.post( post.id ).onSnapshot( doc => {
-            console.log('Update on :', path, doc.data());
+    private subscribePostChange(post: POST) {
+
+        if (!this.settings.listenOnPostChange) {
+            return;
+        }
+
+        const path = this.post(post.id).path;
+        const unsubscribe = this.post(post.id).onSnapshot(doc => {
+            // console.log('Update on :', path, doc.data());
             post = Object.assign(post, doc.data());
         });
-        this._unsubscribePosts.push( unsubscribe );
+        this._unsubscribePosts.push(unsubscribe);
     }
     /**
      * Subscribes for likes/dislikes
@@ -227,8 +248,11 @@ export class Post extends Base {
      */
     private subscribeLikes(post: POST) {
 
+        if (!this.settings.listenOnPostLikes) {
+            return;
+        }
         const likeRef = this.likeColllection(post.id, COLLECTIONS.LIKES).doc('count');
-        console.log('subscribe on likes: ', post.id, `path: ${likeRef.path}`);
+        // console.log('subscribe on likes: ', post.id, `path: ${likeRef.path}`);
         const subscribeLik = likeRef.onSnapshot(doc => {
             if (doc.exists) {
                 const data = doc.data();
@@ -239,9 +263,9 @@ export class Post extends Base {
 
 
         const dislikeRef = this.likeColllection(post.id, COLLECTIONS.DISLIKES).doc('count');
-        console.log('subscribe on dislikes: ', post.id, `path: ${dislikeRef.path}`);
+        // console.log('subscribe on dislikes: ', post.id, `path: ${dislikeRef.path}`);
         const subscribeDislike = dislikeRef.onSnapshot(doc => {
-            console.log('changed on dislike: ', doc);
+            // console.log('changed on dislike: ', doc);
             if (doc.exists) {
                 const data = doc.data();
                 post.numberOfDislikes = data.count;
@@ -276,12 +300,8 @@ export class Post extends Base {
                     post['date'] = (new Date(post.created)).toLocaleString();
                     this.pagePosts[post.id] = post;
                     this.pagePostIds.push(post.id);
-                    if (this.settings.listenOnPostChange) {
-                        this.subscribePosts(post);
-                    }
-                    if (this.settings.listenOnPostLikes) {
-                        this.subscribeLikes(post);
-                    }
+                    this.subscribePostChange(post);
+                    this.subscribeLikes(post);
                 });
                 // only one cursor is supported and normally one page has on pagination.
                 this.cursor = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -289,7 +309,7 @@ export class Post extends Base {
 
                 // @see comment on subscribeNewPost()
                 if (reset) {
-                    this.subscribeNewPost(query);
+                    this.subscribePostAdd(query);
                 }
                 return this.pagePosts;
             } else {
@@ -304,7 +324,10 @@ export class Post extends Base {
      *  It subscribes added/updated/removed only after loading/displaying the post list.
      *  In this way, it prevents double display of the last post.
      */
-    private subscribeNewPost(query: firebase.firestore.Query) {
+    private subscribePostAdd(query: firebase.firestore.Query) {
+        if (!this.settings.listenOnPostChange) {
+            return;
+        }
         if (this.unsubscribePage) {
             this.unsubscribePage();
         }
@@ -330,26 +353,16 @@ export class Post extends Base {
                     }
                 }
             });
-            // snapshot.docChanges.forEach(change => {
-            //     if (change.type === 'added') {
-            //         this.addPostOnTop(change.doc.data());
-            //     } else if (change.type === 'modified') {
-            //         this.updatePost(change.doc.data());
-            //     } else if (change.type === 'removed') {
-            //         this.removePost(change.doc.data());
-            //     }
-            //     // console.log("I am writing: ", change.doc.metadata.hasPendingWrites);
-            //     // console.log(`why many times: `, change.type);
-            //     // console.log('new post: ', change.doc.id);
-            // });
         });
     }
 
 
     /**
-     * Add a post on top of post list on the page
+     * Add a newly created post on top of post list on the page
+     *  - and subscribe post changes if `settings.listenPostChange` is set to true.
      *  - and subscribe like/dislike based on the settings.
      *
+     * @desc It's important to understand how `added` event fired on `onSnapshot)`.
      *
      */
     private addPostOnTop(post: POST) {
@@ -357,12 +370,8 @@ export class Post extends Base {
             console.log(`addPostOnTop: `, post);
             this.pagePosts[post.id] = post;
             this.pagePostIds.unshift(post.id);
-            if (this.settings.listenOnPostChange) {
-                this.subscribePosts(post);
-            }
-            if (this.settings.listenOnPostLikes) {
-                this.subscribeLikes(post);
-            }
+            this.subscribePostChange(post);
+            this.subscribeLikes(post);
         }
     }
     /**
@@ -398,7 +407,7 @@ export class Post extends Base {
     /**
      * Returns post docuement reference.
      */
-    private post( postId: string ) {
+    private post(postId: string) {
         return this.collection.doc(postId);
     }
     /**
@@ -410,160 +419,13 @@ export class Post extends Base {
         return this.collection.doc(postId)
             .collection(collectionName);
     }
-    private likeDocument(postId: string, collectionName: string) {
-        console.log(`likeDocument(postId: ${postId}, collectionName: ${collectionName}`);
-        const ref = this.likeColllection(postId, collectionName).doc(this.user.uid);
-        console.log(`path: `, ref.path);
-        return ref;
-    }
-
-
-
-    /**
-     * Validating for like to a post.
-     *
-     * @desc if the user did `like` already, it returns `ALREADY_LIKED` error.
-     */
-    // likeValidatorOld(id: string): Promise<any> {
-    //     const idCheck = this.checkDocumentIDFormat(id);
-    //     if (idCheck) {
-    //         return this.failure(new Error(idCheck), { documentID: id });
-    //     }
-    //     return this.likeDocument(id).get()
-    //         .then(doc => {
-    //             if (doc.exists) {
-    //                 console.log('likeValidator. already liked');
-    //                 return this.failure(ALREADY_LIKED);
-    //             } else {
-    //                 return null; // NOT error. it resolves with not exists.
-    //             }
-    //         });
-    //     // .catch(e => null); // It cannot be here. If then, ALREADY LIKE becomes NOT error.
-    // }
 
     like(postId: string): Promise<any> {
-        return this.doLike(postId, COLLECTIONS.LIKES);
-        // return this.likeValidator(id)
-        //     .then(() => {
-        //         console.log('validator passed. Going to add a like', id);
-        //         return this.likeDocument(id).set({ time: firebase.firestore.FieldValue.serverTimestamp() });
-        //     })
-        //     .then(() => {
-        //         console.log('like has been added: ', id);
-        //         return this.countLikes(id);
-        //     })
-        //     .catch(e => {
-        //         if (e.code === ALREADY_LIKED) {
-        //             console.log('already liked it. going to unlike : ', id);
-        //             return this.unlike(id);
-        //         } else {
-        //             console.log('failed on other reason: ', e);
-        //             return this.failure(e);
-        //         }
-        //     });
+        return this.doLike(this.likeColllection(postId, COLLECTIONS.LIKES));
     }
 
-
-    // private unlike(id: string): Promise<any> {
-    //     return this.likeDocument(id).delete()
-    //         .then(() => {
-    //             console.log('like has been deleted: ', id);
-    //             return this.countLikes(id);
-    //         })
-    //         .catch(e => this.failure(e));
-    // }
-    dislike(id: string): Promise<any> {
-        return this.doLike(id, COLLECTIONS.DISLIKES);
-    }
-
-    /**
-     * This does validation for `like`, `unlike`, `dislike`, `undislike`.
-     */
-    private doLikeValidator(postId: string, collectionName: string): Promise<any> {
-        console.log(`doLikeValidator(postId: ${postId}, collectionName: ${collectionName})`);
-        const idCheck = this.checkDocumentIDFormat(postId);
-        if (idCheck) {
-            return this.failure(new Error(idCheck), { documentID: postId });
-        }
-        return this.likeDocument(postId, collectionName).get()
-            .then(doc => {
-                if (doc.exists) {
-                    console.log('likeValidator. already liked');
-                    return this.failure(ALREADY_LIKED);             // already liked or disliked.
-                } else {
-                    return null; // NOT error. it resolves with null. which means OK.
-                }
-            })
-            .catch(e => {
-                // return null;
-                console.log(`Caught on validation:Failed to get like/dislike document.This may be a permission error on security rule.`);
-                return this.failure(e);
-            });
-    }
-    /**
-     * This is a general method for `like`, `unlike`, `dislike`, `disunlike`.
-     * @desc The logic is the same for `like` and `dislike`.
-     */
-    private doLike(postId: string, collectionName: string): Promise<any> {
-
-        console.log(`doLike(postId: ${postId}, collectionName: ${collectionName})`);
-        return this.doLikeValidator(postId, collectionName)
-            .then(() => {
-                console.log(`validator passed. Going to ${collectionName} on`, postId);
-                return this.likeDocument(postId, collectionName)
-                    .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
-            })
-            .then(() => {
-                console.log(`${collectionName} like has been added: `, postId);
-                return this.countLikes(postId, collectionName);
-            })
-            .catch(e => {
-                if (e.code === ALREADY_LIKED) {
-                    console.log(`already ${collectionName} it. going to un${collectionName} : `, postId);
-                    return this.doUnlike(postId, collectionName);
-                } else {
-                    console.log(`${collectionName} failed because: `, e);
-                    return this.failure(e);
-                }
-            });
-    }
-
-
-    private doUnlike(postId: string, collectionName: string): Promise<any> {
-        console.log(`Going to un${collectionName} on ${postId}`);
-        return this.likeDocument(postId, collectionName).delete()
-            .then(() => {
-                console.log(`${collectionName} has been deleted: `, postId);
-                return this.countLikes(postId, collectionName);
-            })
-            .catch(e => this.failure(e));
-    }
-
-    /**
-     * Counts the number of Likes and saves it into `count` document.
-     */
-    private countLikes(postId: string, collectionName: string) {
-        console.log(`countLikes(postId: ${postId}, collectionName: ${collectionName})`);
-        return this.likeColllection(postId, collectionName).get()
-            .then(snapshot => {
-                let count = 0;
-                if (snapshot.size > 2) {      // if size is bigger than 2, it probablly has `count` document.
-                    count = snapshot.size - 1;
-                } else {                        // if size is 1 or 2, then it may not have `count` document yet.
-                    snapshot.forEach(doc => {
-                        if (doc && doc.exists) {
-                            if (doc.id !== 'count') {
-                                count++;
-                            }
-                        }
-                    });
-                }
-                console.log(`${collectionName} count: `, count);
-                return this.likeColllection(postId, collectionName).doc('count').set({ count: count });
-            })
-            .then(() => {
-                console.log(`${collectionName} counted: `, postId);
-            });
+    dislike(postId: string): Promise<any> {
+        return this.doLike(this.likeColllection(postId, COLLECTIONS.DISLIKES));
     }
 
 }

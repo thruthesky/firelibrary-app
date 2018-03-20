@@ -36,6 +36,8 @@ export class TestComponent extends TestTools implements OnInit {
 
     // (new TestRules).run();
 
+    (new TestError()).run();
+
     // (new TestCategory()).run(); // Run only one test file.
     // (new TestCategory()).categoryCreateExist();
     // (new TestCategory).categoryCreateGetEdit(); //

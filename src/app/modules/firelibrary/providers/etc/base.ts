@@ -18,6 +18,11 @@ interface FIRESERVICE_SETTINGS {
      * It does not listen the change by default.
      */
     listenOnPostChange?: boolean;
+    /**
+     * When comments are `added`, `edited`, `deleted`, the change will be updated in realtime.
+     * It does not listen the change by default.
+     */
+    listenOnCommentChange?: boolean;
     listenOnPostLikes?: boolean;
     listenOnCommentLikes?: boolean;
 }
@@ -71,9 +76,9 @@ export class Base {
     get settings() {
         return Base.settings;
     }
-    setSettings( obj: FIRESERVICE_SETTINGS ) {
-        if ( obj ) {
-            Base.settings = Object.assign( Base.settings, obj );
+    setSettings(obj: FIRESERVICE_SETTINGS) {
+        if (obj) {
+            Base.settings = Object.assign(Base.settings, obj);
         }
     }
 
@@ -141,6 +146,7 @@ export class Base {
     * @code this.failure( new Error(UNKNOWN) ); // same as above.
     *
     * @example test/test.error.ts
+    * @see test.error.ts on how it throws error.
     *
     */
     failure(obj: Error | string, info = {}): Promise<never> {
@@ -314,6 +320,118 @@ export class Base {
                 }
             })
             .catch(e => this.failure(e));
+    }
+
+
+
+
+
+    /**
+     * Returns the document of likes/dislikes.
+     *
+     * @desc This gets `document of like/dislike` and used by post/comment.
+     */
+    private likeDocument(collectionRef: firebase.firestore.CollectionReference) {
+
+        /**
+         * @todo needs to improve here. It shouldn't use `firebase` directly. It needs to refactor the structure.
+         */
+        const uid = firebase.auth().currentUser.uid;
+        const ref = collectionRef.doc(uid);
+        console.log(`likeDocument path: `, ref.path);
+        return ref;
+    }
+
+    /**
+     * This does validation for `like`, `unlike`, `dislike`, `undislike`.
+     * @desc This does validator for `document of like/dislike` and used by post/comment.
+     */
+    private doLikeValidator(collectionRef: firebase.firestore.CollectionReference): Promise<any> {
+        console.log(`doLikeValidator() on ${collectionRef.path}`);
+        return this.likeDocument(collectionRef).get()
+            .then(doc => {
+                if (doc.exists) {
+                    console.log('likeValidator. already liked');
+                    return this.failure(E.ALREADY_LIKED);             // already liked or disliked.
+                } else {
+                    return null; // NOT error. it resolves with null. which means OK.
+                }
+            })
+            .catch(e => {
+                // return null;
+                console.log(`Caught on validation:Failed to get like/dislike document.This may be a permission error on security rule.`);
+                return this.failure(e);
+            });
+    }
+    /**
+     * This is a general method for `like`, `unlike`, `dislike`, `disunlike`.
+     * @desc The logic is the same for `like` and `dislike` and used by post/comment.
+     */
+    protected doLike(collectionRef: firebase.firestore.CollectionReference): Promise<any> {
+
+        console.log(`doLike() on ${collectionRef.path}`);
+        return this.doLikeValidator(collectionRef)
+            .then(() => {
+                console.log(`validator passed. Going to like/dislike on ${collectionRef.path}`);
+                return this.likeDocument(collectionRef)
+                    .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
+            })
+            .then(() => {
+                console.log(`like/dislike under ${collectionRef.path} has been added: `);
+                return this.countLikes(collectionRef);
+            })
+            .catch(e => {
+                if (e.code === E.ALREADY_LIKED) {
+                    console.log(`already like/dislike it. Going to unlike/undislike`);
+                    return this.doUnlike(collectionRef);
+                } else {
+                    console.log(`doLike() failed because: `, e);
+                    return this.failure(e);
+                }
+            });
+    }
+
+
+    /**
+     *
+     * @desc This does unlike/undislike and used by post/comment.
+     */
+    protected doUnlike(collectionRef: firebase.firestore.CollectionReference): Promise<any> {
+        console.log(`Going to unlike/undislike on ${collectionRef.path}`);
+        return this.likeDocument(collectionRef).delete()
+            .then(() => {
+                console.log(`like/dislike has been deleted(unliked/undisliked) on ${collectionRef.path} `);
+                return this.countLikes(collectionRef);
+            })
+            .catch(e => this.failure(e));
+    }
+
+    /**
+     * Counts the number of Likes and saves it into `count` document.
+     * @desc This cont number of `like/dislike` and used by post/comment.
+     */
+    private countLikes(collectionRef: firebase.firestore.CollectionReference) {
+        console.log(`countLikes() on ${collectionRef.path}`);
+        return collectionRef.get()
+            .then(snapshot => {
+                let count = 0;
+                if (snapshot.size > 2) {      // if size is bigger than 2, it probablly has `count` document.
+                    count = snapshot.size - 1;
+                } else {                        // if size is 1 or 2, then it may not have `count` document yet.
+                    snapshot.forEach(doc => {
+                        if (doc && doc.exists) {
+                            if (doc.id !== 'count') {
+                                count++;
+                            }
+                        }
+                    });
+                }
+                console.log(`${collectionRef.path} count: `, count);
+                return collectionRef.doc('count').set({ count: count });
+            })
+            .then(() => {
+                console.log(`${collectionRef.path} counted: `);
+            });
     }
 
 }
