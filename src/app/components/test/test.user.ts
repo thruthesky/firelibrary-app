@@ -34,11 +34,17 @@ export class TestUser extends TestTools {
     /**
     *
     */
-    async run() {
+    async asAnonymous() {
         await this.userRegisterEmailValidation();
         await this.userRegisterPasswordValidation();
         await this.userRegisterSuccess();
         await this.userLoginTest();
+    }
+    async asMember() {
+    }
+
+    async asAdmin() {
+
     }
     /**
     * Test Email validation.
@@ -50,20 +56,20 @@ export class TestUser extends TestTools {
         */
         this.fire.user.register({email: '', password: '000sdfa000'})
         .then( () => { this.bad('Empty Email Validation. Expects to be error', 'Expects error: ' + INVALID_EMAIL ); })
-        .catch(e => { this.test( e.code === INVALID_EMAIL, 'User Register without email. Expects Error', e.code, e.message ); });
+        .catch(e => { this.test( e.code === INVALID_EMAIL, 'User Register without email. Expects Error'); });
         /**
         * Tests Register with bad email format
         */
         this.fire.user.register({ email: 'Gem@googlecom', password: '000asdf000' })
         .then(() => { this.bad('This should be error. Email format is bad.'); })
-        .catch(e => { this.test(e.code === INVALID_EMAIL, 'User Register bad email format. Expecting error', e.code, e.message); });
+        .catch(e => { this.test(e.code === INVALID_EMAIL, 'User Register bad email format. Expecting error'); });
         /**
         * Tests Register with undefined email
         */
         this.fire.user.register({ email: undefined, password: '000asdf000' })
         .then(() => { this.bad('Email is `undefined`. Should be error of FIREBASE_API_ERROR with message.'); })
-        .catch(e => { this.test(e.code === FIREBASE_API_ERROR,
-            'Email is `undefined` expect error FIREBASE_API_ERROR ', e.code, e.message);
+        .catch(e => {
+            this.test(e.code === FIREBASE_API_ERROR, 'Email is `undefined` expect error FIREBASE_API_ERROR ');
         });
         /**
         * Tests RegisterValidator success
@@ -107,31 +113,31 @@ export class TestUser extends TestTools {
         /**
         * Tests Register with password containing only letters.
         */
-        await this.fire.user.register({email: user.email, password: 'asdfgakjshgf'})
-        .then( () => { this.bad('Letter only password. password should contain atleast 1 number'); } )
-        .catch( e => { this.test( e.code === WEAK_PASSWORD,
-            'User Register letter only password. Expecting error', e.code, e.message );
-        });
+        // await this.fire.user.register({email: user.email, password: 'asdfgakjshgf'})
+        // .then( () => { this.bad('Letter only password. password should contain atleast 1 number'); } )
+        // .catch( e => { this.test( e.code === WEAK_PASSWORD,
+        //     'User Register letter only password. Expecting error', e.code, e.message );
+        // });
         /**
         * Tests Register with password containing only numbers.
         */
-        await this.fire.user.register({email: user.email, password: '123123123'})
-        .then( () => { this.bad('Number only password. password should contain atleast 1 letter'); } )
-        .catch( e => { this.test( e.code === WEAK_PASSWORD,
-            'User Register number only password. Expecting error', e.code, e.message );
-        });
+        // await this.fire.user.register({email: user.email, password: '123123123'})
+        // .then( () => { this.bad('Number only password. password should contain atleast 1 letter'); } )
+        // .catch( e => { this.test( e.code === WEAK_PASSWORD,
+        //     'User Register number only password. Expecting error', e.code, e.message );
+        // });
         /**
         * Tests Password. Password contains displayname
         */
-        await this.fire.user.register({email: 'pass' + user.email, password: 'myname123', displayName: 'myName'})
-        .then( () => this.bad('Password contains display name. Password is weak - expects error') )
-        .catch( e => {this.test( e.code === WEAK_PASSWORD, 'User Register `password contains display name`', e.code, e.message ); });
+        // await this.fire.user.register({email: 'pass' + user.email, password: 'myname123', displayName: 'myName'})
+        // .then( () => this.bad('Password contains display name. Password is weak - expects error') )
+        // .catch( e => {this.test( e.code === WEAK_PASSWORD, 'User Register `password contains display name`', e.code, e.message ); });
         /**
         * Tests Password. Password contains email
         */
-        await this.fire.user.register({email: user.email, password: user.email + '123sd'})
-        .then( () => this.bad('Password contains email. Password is weak - expects error') )
-        .catch( e => {this.test( e.code === WEAK_PASSWORD, 'User Register `password contains email`', e.code, e.message ); });
+        // await this.fire.user.register({email: user.email, password: user.email + '123sd'})
+        // .then( () => this.bad('Password contains email. Password is weak - expects error') )
+        // .catch( e => {this.test( e.code === WEAK_PASSWORD, 'User Register `password contains email`', e.code, e.message ); });
         /**
         * Tests Password. Password exceeds at max 128 characters
         */
@@ -214,5 +220,9 @@ export class TestUser extends TestTools {
         .then( () => this.fire.user.login(userInfo.email, 'invalidPassword123') )
         .then( a => { this.bad(a, 'This should be error. Password is not valid', a); })
         .catch( e => { this.test(e.code === WRONG_PASSWORD, 'Login test with wrong password', e.code, e.message); } );
+    }
+
+    async userUpdateTest() {
+
     }
 }

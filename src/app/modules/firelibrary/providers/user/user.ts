@@ -1,5 +1,5 @@
 ﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG, UNKNOWN, FIREBASE_API_ERROR } from '../etc/error';
-import { Base, _, USER, COLLECTIONS, RESPONSE, USER_CREATE } from './../etc/base';
+import { Base, _, USER, COLLECTIONS, RESPONSE, USER_CREATE, PERMISSION_DENIED } from './../etc/base';
 import * as firebase from 'firebase';
 export class User extends Base {
     constructor() {
@@ -15,6 +15,8 @@ export class User extends Base {
     get isLogout(): boolean {
         return !this.isLogin;
     }
+
+    /**Get current user's uid. */
     get uid(): string {
         if (this.auth.currentUser) {
             return this.auth.currentUser.uid;
@@ -47,7 +49,7 @@ export class User extends Base {
         }
         // As prescribe in `https://stackoverflow.com/questions/98768/should-i-impose-a-maximum-length-on-passwords`
         if (user.password.length > 128) {
-            return this.failure(PASSWORD_TOO_LONG);
+            return Promise.reject(PASSWORD_TOO_LONG);
         }
         // if (user.displayName) {
         //     if (user.password.toLowerCase().indexOf(user.displayName.toLowerCase()) > -1) {
@@ -83,7 +85,7 @@ export class User extends Base {
                 return this.auth.createUserWithEmailAndPassword(data.email, data.password); // 1. create authentication.
             })
             .then((user: firebase.User) => {
-                return this.updateAuthentication(user, data); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
+                return this.updateAuthentication(user); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
             })
             .then((user: firebase.User) => {
                 console.log(`Going to set user data under users collection: `);
@@ -129,7 +131,7 @@ export class User extends Base {
     * @desc it does not update other information.
     * @see `this.updateProfile()` for updating user information.
     */
-    updateAuthentication(user: firebase.User, data: USER): Promise<firebase.User> {
+    updateAuthentication(user: firebase.User): Promise<firebase.User> {
         const up = {
             displayName: user.displayName,
             photoURL: user.photoURL
@@ -146,7 +148,7 @@ export class User extends Base {
         delete data.password;
         data.created = firebase.firestore.FieldValue.serverTimestamp();
         // return this.collection.doc(user.uid).set(data).then(x => user);
-        data.uid = user.uid;
+        data.uid = this.uid;
         return this.create(data)
             .catch( e => {
                 console.log(`Failed to set data under users collection: `);
@@ -174,15 +176,5 @@ export class User extends Base {
             .catch(e => this.failure(e));
     }
 
-
-
-    /**
-    * For Unit-testing - Get user to delete.
-    *
-    * @author gem
-    */
-    getCurrentUser() {
-        return this.auth.currentUser;
-    }
 }
 
