@@ -32,12 +32,13 @@ export class TestComponent extends TestTools implements OnInit {
   }
   ngOnInit() {
 
-    // this.run();
+    // await this.asAnonymousTest();
 
+
+
+    this.run();
     // (new TestRules).run();
-
-    (new TestError()).run();
-
+    // (new TestError()).run();
     // (new TestCategory()).run(); // Run only one test file.
     // (new TestCategory()).categoryCreateExist();
     // (new TestCategory).categoryCreateGetEdit(); //
@@ -48,26 +49,60 @@ export class TestComponent extends TestTools implements OnInit {
     // (new TestCategory).categoryCreateWrongID();
     // (new TestUser()).userRegisterEmailValidation();
     // (new TestUser()).run();
-    (new TestPost).run();
+    // (new TestPost).run();
   }
 
   get count() {
     return TestTools.count;
   }
+  async asAnonymousTest() {
+  console.log('=========================> ANONYMOUS TEST');
+    await (new TestError()).asAnonymous();
+    await (new TestUser()).asAnonymous();
+
+  }
+
+  async asMemberTest() {
+  console.log('=========================> MEMBER TEST');
+    const user = { email: 'user' + (new Date).getTime() + '@test.com', password: 'UserTest123' };
+    // await this.loginAs(this.loginAs( user.email, user.password, async () => {
+    //   await (new TestPost()).asMember();
+    // });
+    const isLogin = await this.loginAs( user.email, user.password);
+    if ( isLogin ) {
+      await (new TestPost()).asMember();
+    } else {
+      return this.bad(`Testing as admin Member. email: ${user.email} password:${user.password}`);
+    }
+  }
+
+  async asAdminTest() {
+    console.log('=========================> ADMIN TEST');
+    const isLogin = await this.loginAsAdmin();
+    if ( isLogin ) {
+      await (new TestCategory()).asAdmin();
+    } else {
+      return this.bad('Failed to login as Administrator.');
+    }
+  }
   /**
   * Runs the all service testing.
   */
   async run() {
-    (new TestRules).run();
-    (new TestError()).run();
-    (new TestValidator()).run();
-    await (new TestUser()).run();
-    (new TestCategory()).run();
-    (new TestPost()).run();
-    this.version();
-    this.library();
-    this.translate();
+    await this.asAnonymousTest();
+    await this.asMemberTest();
+    await this.asAdminTest();
 
+    // .catch( e => this.bad(e) );
+    // (new TestRules).run();
+    // (new TestError()).run();
+    // (new TestValidator()).run();
+    // await (new TestUser()).run();
+    // (new TestCategory()).run();
+    // (new TestPost()).run();
+    // this.version();
+    // this.library();
+    // this.translate();
     // this.category();
     // this.post();
   }

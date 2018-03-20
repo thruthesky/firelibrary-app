@@ -34,12 +34,15 @@ export class TestUser extends TestTools {
     /**
     *
     */
-    async run() {
+    async asAnonymous() {
         await this.userRegisterEmailValidation();
         await this.userRegisterPasswordValidation();
         await this.userRegisterSuccess();
         await this.userLoginTest();
     }
+
+    // async asMember(){
+    // }
     /**
     * Test Email validation.
     */
