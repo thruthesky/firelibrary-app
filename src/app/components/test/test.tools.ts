@@ -66,7 +66,7 @@ export class TestTools {
     /**
      * Returns Promise<true> if logged in. Otherwise Promise<false>
      */
-    async registerOrLoginAs(email, password): Promise<Boolean> {
+    private async registerOrLoginAs(email, password): Promise<Boolean> {
 
         let re = await this.fire.user.login(email, password)
             .then(() => {
@@ -95,8 +95,8 @@ export class TestTools {
         return true;
 
     }
-    async loginAsAdmin( callback ) {
-        this.loginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD, callback );
+    async loginAsAdmin( callback?: () => Promise<any> ) {
+        return await this.loginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD, callback );
         // const admin = await this.registerOrLoginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD);
         // if (!admin) {
         //     return this.bad('Failed to login as admin in loginAsAdmin()');
@@ -116,18 +116,23 @@ export class TestTools {
      *      2. onAuthStateChanged()
      *
      */
-    async loginAs(email, password, callback) {
+    async loginAs(email, password, callback?: () => Promise<any>) {
         const login = await this.registerOrLoginAs( email, password);
         if (!login) {
-            return this.bad('Failed to login as ' + email);
+            // return this.bad('Failed to login as ' + email);
+            return false;
+        } else {
+            return this.fire.auth.onAuthStateChanged( user => user ? true : false );
+            // this.fire.auth.onAuthStateChanged( user => {
+            //     if ( user && user.email === email) {
+            //         console.log('loginAs: ', user.email);
+            //         callback();
+            //         // setTimeout(callback, 100);
+            //         // callback();
+            //     }
+            // });
         }
-        this.fire.auth.onAuthStateChanged(user => {
-            if ( user && user.email === email) {
-                console.log('loginAs: ', user.email);
-                setTimeout(callback, 100);
-                // callback();
-            }
-        });
+
     }
 }
 

@@ -22,7 +22,7 @@ en[ CATEGORY_ID_EMPTY ] = 'Category ID is empty.';
 en[ NOT_FOUND ] = 'Document was not found. Document ID: #documentID';
 en[ ALREADY_EXISTS ] = 'Category is already exists. Category ID: #categoryID';
 en[ DOCUMENT_ID_TOO_LONG ] = 'Document ID is too long. Document ID: #documentID';
-en[ PERMISSION_DENIED ] = 'Permission denied or insufficient permission.';
+en[ PERMISSION_DENIED ] = 'Permission denied or insufficient permission. #info';
 
 en[POST_ID_EMPTY] = 'Post ID is empty.';
 en[POST_ID_NOT_EMPTY] = 'Post ID is not empty.';
