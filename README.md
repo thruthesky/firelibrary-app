@@ -50,6 +50,9 @@ Firebase CMS Library for Frontend
 
 * [ laster ] Make it work on `Vuejs`. Needs to consider to rewrite client app.
 
+## Change log
+* @since 2018-03-20 admin email must be saved under /fire-library/{domain}/settings/admin/{email: ... }
+ * It can have only one email for admin now.
 
 ## Documents
 

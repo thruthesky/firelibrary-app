@@ -35,7 +35,7 @@ export class Comment extends Base {
      * @param postId the post document id.
      */
     private commentCollection(postId: string) {
-        return this.db.collection(COLLECTIONS.POSTS).doc(postId).collection(COLLECTIONS.COMMENTS);
+        return this.collectionRef(COLLECTIONS.POSTS).doc(postId).collection(COLLECTIONS.COMMENTS);
     }
     /**
      * Returns comment reference.
