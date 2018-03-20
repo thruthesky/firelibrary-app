@@ -138,7 +138,9 @@ export class Post extends Base {
             .then(() => {
                 _.sanitize(post);
                 post.updated = firebase.firestore.FieldValue.serverTimestamp();
-                return this.collection.doc(post.id).update(post);
+                const ref = this.collection.doc(post.id);
+                console.log('update at: ', ref.path);
+                return ref.update(post);
             })
             .then(() => {
                 return this.success({ id: post.id, post: post });
