@@ -101,6 +101,10 @@ export class Base {
     }
     /**
      * Returns a collection reference under the domain.
+     * @desc do not use this.db.collection(....)
+     *          Use this method to get a collection reference.
+     * @returns a collection reference.
+     *
      */
     collectionRef(name) {
         if (name) {

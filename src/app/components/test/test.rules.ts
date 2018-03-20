@@ -35,11 +35,11 @@ export class TestRules extends TestTools {
         })
         .catch(e => this.good('Expect error with wrong uid', e));
 
-        await this.fire.db.collection(COLLECTIONS.USERS).doc('wrong-user-uid').update({ email: 'wrong@email.com' })
+        await this.fire.collectionRef(COLLECTIONS.USERS).doc('wrong-user-uid').update({ email: 'wrong@email.com' })
         .then(() => this.bad('Expect error on update with wrong uid'))
         .catch(e => this.good('Expect error on update with wrong uid'));
 
-        await this.fire.db.collection(COLLECTIONS.USERS).doc('wrong-user-uid').delete()
+        await this.fire.collectionRef(COLLECTIONS.USERS).doc('wrong-user-uid').delete()
         .then(() => this.bad('Expect error on delete with wrong uid'))
         .catch(e => this.good('Expect error on deleting with wrong uid'));
 
@@ -80,7 +80,7 @@ export class TestRules extends TestTools {
         // await this.fire.auth.signOut();
 
 
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({ title: 'add' })
+        await this.fire.collectionRef(COLLECTIONS.POSTS).add({ title: 'add' })
         .then(() => {
             this.bad('Must failed due to NOT Logged in');
         })
@@ -96,49 +96,51 @@ export class TestRules extends TestTools {
     async postRulesAsMember() {
         console.log(`User has logged in `, this.fire.user.email);
         /// Must fail due to no Category ID.
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({ title: 'add' })
-        .then(doc => {
-            this.bad('Must failed with no category id', doc.id);
-        })
-        .catch(e => {
-            this.test(e.code === PERMISSION_DENIED, 'Failed due to no category id was given.', e);
-        });
-        /// Must fail due to no uid
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({ category: 'qna', title: 'add' })
-        .then(doc => {
-            this.bad('Must fail with no uid.', doc.id);
-        })
-        .catch(e => {
-            this.test(e.code === PERMISSION_DENIED, 'Failed due to no uid was given.', e);
-        });
+        // await this.fire.collectionRef(COLLECTIONS.POSTS).add({ title: 'add' })
+        // .then(doc => {
+        //     this.bad('Must failed with no category id', doc.id);
+        // })
+        // .catch(e => {
+        //     this.test(e.code === PERMISSION_DENIED, 'Failed due to no category id was given.', e);
+        // });
+        // /// Must fail due to no uid
+        // await this.fire.collectionRef(COLLECTIONS.POSTS).add({ category: 'qna', title: 'add' })
+        // .then(doc => {
+        //     this.bad('Must fail with no uid.', doc.id);
+        // })
+        // .catch(e => {
+        //     this.test(e.code === PERMISSION_DENIED, 'Failed due to no uid was given.', e);
+        // });
 
 
-        /// Must fail due to wrong category id.
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({ category: 'wrong-category-id', uid: 'uid-abc', title: 'add' })
-        .then(doc => {
-            this.bad('Must fail due to wrong category id.', doc.id);
-        })
-        .catch(e => {
-            this.test(e.code === PERMISSION_DENIED, 'Failed due to wrong category id', e);
-        });
+        // /// Must fail due to wrong category id.
+        // await this.fire.collectionRef(COLLECTIONS.POSTS).add({ category: 'wrong-category-id', uid: 'uid-abc', title: 'add' })
+        // .then(doc => {
+        //     this.bad('Must fail due to wrong category id.', doc.id);
+        // })
+        // .catch(e => {
+        //     this.test(e.code === PERMISSION_DENIED, 'Failed due to wrong category id', e);
+        // });
 
-        /// wrong uid
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({ category: CATEGORY_ID, uid: 'wrong-uid', title: 'add' })
-        .then(doc => {
-            this.bad('Must fail due to wrong uid', doc.id);
-        })
-        .catch(e => this.good('Expect fail due to wrong uid was given.'));
+        // /// wrong uid
+        // await this.fire.collectionRef(COLLECTIONS.POSTS).add({ category: CATEGORY_ID, uid: 'wrong-uid', title: 'add' })
+        // .then(doc => {
+        //     this.bad('Must fail due to wrong uid', doc.id);
+        // })
+        // .catch(e => this.good('Expect fail due to wrong uid was given.'));
 
 
         /// expect success.
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({ category: CATEGORY_ID, uid: this.fire.user.uid, title: 'add' })
+        const ref = this.fire.collectionRef(COLLECTIONS.POSTS);
+        console.log(`add at: ${ref.path}`, 'email: ', this.fire.user.email, 'category: ', CATEGORY_ID);
+        await ref.add({ category: CATEGORY_ID, uid: this.fire.user.uid, title: 'add' })
         .then(doc => {
             this.good('Success on create a post.', doc.id);
         })
-        .catch(e => this.bad('Must success.', e));
+        .catch(e => this.bad('Must success on add post.', e));
 
         /// expect success on update.
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({
+        await this.fire.collectionRef(COLLECTIONS.POSTS).add({
             category: CATEGORY_ID,
             uid: this.fire.user.uid,
             title: 'updated'
@@ -149,7 +151,7 @@ export class TestRules extends TestTools {
         .catch(e => this.bad('Must success', e));
 
         /// expect error on wrong uid.
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({
+        await this.fire.collectionRef(COLLECTIONS.POSTS).add({
             category: CATEGORY_ID,
             uid: 'worng-uid',
             title: 'updated'
@@ -161,7 +163,7 @@ export class TestRules extends TestTools {
 
 
         /// expect error on wrong category id.
-        await this.fire.db.collection(COLLECTIONS.POSTS).add({
+        await this.fire.collectionRef(COLLECTIONS.POSTS).add({
             category: 'wrong-category-id-oo',
             uid: this.fire.user.uid,
             title: 'updated'

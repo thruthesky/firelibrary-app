@@ -16,6 +16,7 @@ import { TestCategory } from './test.category';
 import { TestPost } from './test.post';
 import { TestRules } from './test.rules';
 
+import * as firebase from 'firebase';
 
 
 @Component({
@@ -38,13 +39,33 @@ export class TestComponent extends TestTools implements OnInit {
   * Runs the all service testing.
   */
   async run() {
-    await this.asAnonymousTest();
-    await this.asMemberTest();
-    await this.asAdminTest();
 
-    this.version();
-    this.library();
-    this.translate();
+
+    // let re = await this.loginAs('AAA@AAA.com', 'b018,z8*a~');
+    // console.log('re: ', re, firebase.auth().currentUser.email);
+    // re = await this.loginAs('BBB@BBB.com', 'b018,z8*a~');
+    // console.log('re: ', re, firebase.auth().currentUser.email);
+    // re = await this.loginAs('CCC@CCC.com', 'b018,z8*a~');
+    // console.log('re: ', re, firebase.auth().currentUser.email);
+    // await firebase.auth().signOut();
+    // re = await this.loginAsAdmin();
+    // console.log('re: ', re, firebase.auth().currentUser.email);
+    // re = await this.loginAs('DDD@DDD.com', 'b018,z8*a~');
+    // console.log('re: ', re, firebase.auth().currentUser.email);
+    // re = await this.loginAs('EEE@EEE.com', 'b018,z8*a~');
+    // console.log('re: ', re, firebase.auth().currentUser.email);
+
+
+    await this.asMemberTest();
+
+
+    // await this.asAnonymousTest();
+    // await this.asMemberTest();
+    // await this.asAdminTest();
+
+    // this.version();
+    // this.library();
+    // this.translate();
   }
 
   get count() {
@@ -77,14 +98,15 @@ export class TestComponent extends TestTools implements OnInit {
     if ( isLogin ) {
       console.log( 'Logged in..', this.fire.user.uid );
       // Run tests here
-      await (new TestError()).asMember();
-      await (new TestValidator()).asMember();
-      await (new TestRules()).asMember();
+      // await (new TestError()).asMember();
+      // await (new TestValidator()).asMember();
+      // await (new TestRules()).asMember();
 
-      await (new TestUser()).asMember();
-      await (new TestCategory()).asMember();
-      await (new TestPost()).asMember();
+      // await (new TestUser()).asMember();
+      // await (new TestCategory()).asMember();
+      // await (new TestPost()).asMember();
 
+      await (new TestRules()).postRulesAsMember();
 
     } else {
       return this.bad(`Testing as admin Member. email: ${user.email} password:${user.password}`);

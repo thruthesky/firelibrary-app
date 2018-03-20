@@ -2,6 +2,7 @@ import {
     FireService, RESPONSE, EMAIL_ALREADY_IN_USE
 } from '../../modules/firelibrary/core';
 import * as settings from './test.settings';
+import * as firebase from 'firebase';
 export class TestTools {
 
     static fire: FireService;
@@ -95,8 +96,8 @@ export class TestTools {
         return true;
 
     }
-    async loginAsAdmin( callback?: () => Promise<any> ) {
-        return await this.loginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD, callback );
+    async loginAsAdmin(callback?: () => Promise<any>) {
+        return await this.loginAs(settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD, callback);
         // const admin = await this.registerOrLoginAs( settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD);
         // if (!admin) {
         //     return this.bad('Failed to login as admin in loginAsAdmin()');
@@ -110,27 +111,49 @@ export class TestTools {
 
 
     /**
-     * Calls the callback When the user has completely logged
-     *  after
-     *      1. email/password login(or register)
-     *      2. onAuthStateChanged()
-     *
+     * Sleeps for ms.
+     * @code await this.sleep(10000).then(() => console.log('after 10 sec'));
      */
-    async loginAs(email, password, callback?: () => Promise<any>) {
-        const login = await this.registerOrLoginAs( email, password);
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Calls the callback When the user has completely logged
+     *
+     * @code
+        let re = await this.loginAs('AAA@AAA.com', 'b018,z8*a~');
+        console.log('re: ', re, firebase.auth().currentUser.email);
+        re = await this.loginAs('BBB@BBB.com', 'b018,z8*a~');
+        console.log('re: ', re, firebase.auth().currentUser.email);
+        re = await this.loginAs('CCC@CCC.com', 'b018,z8*a~');
+        console.log('re: ', re, firebase.auth().currentUser.email);
+        await firebase.auth().signOut();
+        re = await this.loginAsAdmin();
+        console.log('re: ', re, firebase.auth().currentUser.email);
+        re = await this.loginAs('DDD@DDD.com', 'b018,z8*a~');
+        console.log('re: ', re, firebase.auth().currentUser.email);
+        re = await this.loginAs('EEE@EEE.com', 'b018,z8*a~');
+        console.log('re: ', re, firebase.auth().currentUser.email);
+     *
+     * @endcode
+     */
+    async loginAs(email: string, password, $deprecated?) {
+        const login = await this.registerOrLoginAs(email, password);
         if (!login) {
             // return this.bad('Failed to login as ' + email);
             return false;
         } else {
-            return this.fire.auth.onAuthStateChanged( user => user ? true : false );
-            // this.fire.auth.onAuthStateChanged( user => {
-            //     if ( user && user.email === email) {
-            //         console.log('loginAs: ', user.email);
-            //         callback();
-            //         // setTimeout(callback, 100);
-            //         // callback();
-            //     }
-            // });
+            for (let i = 0; i < 100; i++) {
+                await this.sleep(150).then(() => console.log('after 150ms'));
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    if (user.email === email.toLowerCase()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
     }
