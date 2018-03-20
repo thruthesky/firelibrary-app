@@ -40,9 +40,12 @@ export class TestUser extends TestTools {
         await this.userRegisterSuccess();
         await this.userLoginTest();
     }
+    async asMember() {
+    }
 
-    // async asMember(){
-    // }
+    async asAdmin() {
+
+    }
     /**
     * Test Email validation.
     */
@@ -53,20 +56,20 @@ export class TestUser extends TestTools {
         */
         this.fire.user.register({email: '', password: '000sdfa000'})
         .then( () => { this.bad('Empty Email Validation. Expects to be error', 'Expects error: ' + INVALID_EMAIL ); })
-        .catch(e => { this.test( e.code === INVALID_EMAIL, 'User Register without email. Expects Error', e.code, e.message ); });
+        .catch(e => { this.test( e.code === INVALID_EMAIL, 'User Register without email. Expects Error'); });
         /**
         * Tests Register with bad email format
         */
         this.fire.user.register({ email: 'Gem@googlecom', password: '000asdf000' })
         .then(() => { this.bad('This should be error. Email format is bad.'); })
-        .catch(e => { this.test(e.code === INVALID_EMAIL, 'User Register bad email format. Expecting error', e.code, e.message); });
+        .catch(e => { this.test(e.code === INVALID_EMAIL, 'User Register bad email format. Expecting error'); });
         /**
         * Tests Register with undefined email
         */
         this.fire.user.register({ email: undefined, password: '000asdf000' })
         .then(() => { this.bad('Email is `undefined`. Should be error of FIREBASE_API_ERROR with message.'); })
-        .catch(e => { this.test(e.code === FIREBASE_API_ERROR,
-            'Email is `undefined` expect error FIREBASE_API_ERROR ', e.code, e.message);
+        .catch(e => {
+            this.test(e.code === FIREBASE_API_ERROR, 'Email is `undefined` expect error FIREBASE_API_ERROR ');
         });
         /**
         * Tests RegisterValidator success

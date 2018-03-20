@@ -31,60 +31,9 @@ export class TestComponent extends TestTools implements OnInit {
     TestTools.fire = fire;
   }
   ngOnInit() {
-
-    // await this.asAnonymousTest();
-
-
-
     this.run();
-    // (new TestRules).run();
-    // (new TestError()).run();
-    // (new TestCategory()).run(); // Run only one test file.
-    // (new TestCategory()).categoryCreateExist();
-    // (new TestCategory).categoryCreateGetEdit(); //
-    // (new TestCategory()).categoryEmptyID(); // Run only one test method.
-    // (new TestCategory()).categoryDelete(); // Run only one test method.
-    // (new TestCategory).categoryNotFoundForEditing(); //
-    // (new TestCategory).categoryGetWrongID();
-    // (new TestCategory).categoryCreateWrongID();
-    // (new TestUser()).userRegisterEmailValidation();
-    // (new TestUser()).run();
-    // (new TestPost).run();
   }
 
-  get count() {
-    return TestTools.count;
-  }
-  async asAnonymousTest() {
-  console.log('=========================> ANONYMOUS TEST');
-    await (new TestError()).asAnonymous();
-    await (new TestUser()).asAnonymous();
-
-  }
-
-  async asMemberTest() {
-  console.log('=========================> MEMBER TEST');
-    const user = { email: 'user' + (new Date).getTime() + '@test.com', password: 'UserTest123' };
-    // await this.loginAs(this.loginAs( user.email, user.password, async () => {
-    //   await (new TestPost()).asMember();
-    // });
-    const isLogin = await this.loginAs( user.email, user.password);
-    if ( isLogin ) {
-      await (new TestPost()).asMember();
-    } else {
-      return this.bad(`Testing as admin Member. email: ${user.email} password:${user.password}`);
-    }
-  }
-
-  async asAdminTest() {
-    console.log('=========================> ADMIN TEST');
-    const isLogin = await this.loginAsAdmin();
-    if ( isLogin ) {
-      await (new TestCategory()).asAdmin();
-    } else {
-      return this.bad('Failed to login as Administrator.');
-    }
-  }
   /**
   * Runs the all service testing.
   */
@@ -93,18 +42,74 @@ export class TestComponent extends TestTools implements OnInit {
     await this.asMemberTest();
     await this.asAdminTest();
 
-    // .catch( e => this.bad(e) );
-    // (new TestRules).run();
-    // (new TestError()).run();
-    // (new TestValidator()).run();
-    // await (new TestUser()).run();
-    // (new TestCategory()).run();
-    // (new TestPost()).run();
-    // this.version();
-    // this.library();
-    // this.translate();
-    // this.category();
-    // this.post();
+    this.version();
+    this.library();
+    this.translate();
+  }
+
+  get count() {
+    return TestTools.count;
+  }
+
+  /**
+  * Run test as anonymous
+  */
+  async asAnonymousTest() {
+    console.log('=========================> ANONYMOUS TEST');
+    // Run tests here.
+    await (new TestError()).asAnonymous();
+    await (new TestValidator()).asAnonymous();
+    await (new TestRules()).asAnonymous();
+
+    await (new TestUser()).asAnonymous();
+    await (new TestCategory()).asAnonymous();
+    await (new TestPost()).asAnonymous();
+
+  }
+  /**
+  * Run test as member
+  */
+  async asMemberTest() {
+    console.log('=========================> MEMBER TEST');
+    const user = { email: 'user' + (new Date).getTime() + '@test.com', password: 'UserTest123' };
+    const isLogin = await this.loginAs( user.email, user.password);
+
+    if ( isLogin ) {
+      console.log( 'Logged in..', this.fire.user.uid );
+      // Run tests here
+      await (new TestError()).asMember();
+      await (new TestValidator()).asMember();
+      await (new TestRules()).asMember();
+
+      await (new TestUser()).asMember();
+      await (new TestCategory()).asMember();
+      await (new TestPost()).asMember();
+
+
+    } else {
+      return this.bad(`Testing as admin Member. email: ${user.email} password:${user.password}`);
+    }
+  }
+  /**
+  * Run test as admin
+  */
+  async asAdminTest() {
+    console.log('=========================> ADMIN TEST');
+    const isLogin = await this.loginAsAdmin();
+
+    if ( isLogin ) {
+      // Run Tests here
+      await (new TestError()).asAdmin();
+      await (new TestValidator()).asAdmin();
+      await (new TestRules()).asAdmin();
+
+      await (new TestUser()).asAdmin();
+      await (new TestCategory()).asAdmin();
+      await (new TestPost()).asAdmin();
+
+    } else {
+      return this.bad('Failed to login as Administrator.');
+    }
   }
   /**
   * Tests current version
@@ -145,6 +150,11 @@ export class TestComponent extends TestTools implements OnInit {
     // this.test( this.fire.translate('home') === 'Home', 'Translate home to Home', this.fire.translate('home') );
     //
   }
+
+
+
+
+
   /**
   * Runs `Category` Service tests.
   */

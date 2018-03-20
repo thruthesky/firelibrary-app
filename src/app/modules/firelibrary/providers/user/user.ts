@@ -149,7 +149,7 @@ export class User extends Base {
         delete data.password;
         data.created = firebase.firestore.FieldValue.serverTimestamp();
         // return this.collection.doc(user.uid).set(data).then(x => user);
-        data.uid = user.uid;
+        data.uid = this.uid;
         return this.create(data)
             .catch( e => {
                 console.log(`Failed to set data under users collection: `);

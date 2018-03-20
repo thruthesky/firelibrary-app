@@ -11,10 +11,16 @@ export class TestCategory extends TestTools {
     ) {
         super();
     }
+    async asAnonymous() {
+        //
+    }
+    async asMember() {
+        //
+    }
     async asAdmin() {
         await this.categoryEmptyID();
-        await this.categoryCreateWrongID();
         await this.categoryGetWrongID();
+        await this.categoryCreateWrongID();
         await this.categoryCreateExist();
         await this.categoryNotFoundForEditing();
         await this.categoryCreateGetEdit();

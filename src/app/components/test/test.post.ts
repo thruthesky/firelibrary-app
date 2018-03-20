@@ -7,11 +7,17 @@ export class TestPost extends TestTools {
     ) {
         super();
     }
+    async asAnonymous() {
+        //
+    }
     async asMember() {
         // console.log('Iam am in test.post.asMember() $$$$$$$$$$$$$$$$$$$$$$$$$$$$');
         await this.createWithWrongCategoryId();
         await this.createPostWithDifferentUID();
         await this.PostCreate();
+    }
+    async asAdmin() {
+        //
     }
 
     async createWithWrongCategoryId() {
@@ -22,7 +28,7 @@ export class TestPost extends TestTools {
             this.bad('Wrong category, Expect error.');
         })
         .catch(e => {
-            this.test( e.code === PERMISSION_DENIED, 'Create post with wrong Category.', e.code, e.message );
+            this.test( e.code === PERMISSION_DENIED, 'Create post with wrong Category.');
         });
     }
 
@@ -31,7 +37,7 @@ export class TestPost extends TestTools {
         const data: POST = { category: 'qna', title: 'This is Error', uid: 'wrong-user' };
         await this.fire.post.create(data)
         .then(re => {
-            this.good('Wrong UID, firelibrary will sanitize UID.', re.data);
+            this.test(re.code === null, 'Wrong UID, firelibrary will sanitize UID.');
         })
         .catch(e => {
             this.bad('Create post with different UID', e.code );
@@ -43,11 +49,12 @@ export class TestPost extends TestTools {
         const data: POST = { category: 'qna', title: 'Latet' };
         await this.fire.post.create(data)
         .then(re => {
-            this.good('Post created: id:', re.data);
+            this.good('Post created: id:');
             // this.fire.user.logout();
         })
         .catch(e => {
-            console.log(e);
+            this.bad('Create post should be success.');
+            // console.log(e);
             // this.fire.user.logout();
         });
     }

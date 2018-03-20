@@ -6,6 +6,7 @@ export class TestError extends TestTools {
     ) {
         super();
     }
+
     async asAnonymous() {
 
         const e1 = await this.fire.failure(new Error(UNKNOWN)).catch(e => e);
@@ -67,6 +68,14 @@ export class TestError extends TestTools {
         } catch (e) {
             this.test(e['code'] === UNKNOWN, `Caught afetr catch => catch => then => catch : `, e);
         }
+
+    }
+
+    async asMember() {
+
+    }
+
+    async asAdmin() {
 
     }
 }
