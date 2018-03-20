@@ -2,13 +2,14 @@
   <input type="text" name="content" [(ngModel)]="comment.content">
   <button type="submit" *ngIf=" ! loader.creating ">Create Comment</button>
 </form>
+
 <ul>
   <li *ngFor=" let id of commentIds">
     <div>{{ comments(id).content }}</div>
     <div>
-      <form (ngSubmit)=" onSubmitEdit( $event, id ) ">
-        <input type="text" name="content" [(ngModel)]="edit.content">
-        <button type="submit" *ngIf=" ! loader.creating ">Edit Comment</button>
+      <form (ngSubmit)=" onSubmit( $event, id ) ">
+        <input type="text" name="content" [(ngModel)]="comment.content">
+        <button type="submit" *ngIf=" ! loader.creating ">Create Comment</button>
       </form>
     </div>
     <div>

@@ -50,15 +50,13 @@ export class Comment extends Base {
     load(postId: string): Promise<Array<string>> {
         const ref = this.commentCollection(postId);
         // console.log(`gets at: ${ref.path}`);
-        return ref.get().then(s => {
-            const commentIds = [];
+        return ref.orderBy('created').get().then(s => {
             s.forEach(doc => {
                 const c: COMMENT = doc.data();
                 c.id = doc.id;
                 this.comments[c.id] = c;
-                commentIds.push(c.id);
                 // @todo sort comments by thread.
-                const sorted = this.sortComments(postId, c.id);
+                const sorted = this.sortComments(postId, c);
                 this.subscribeCommentChange(postId, c);
                 this.subscribeLikes(c);
 
@@ -78,26 +76,18 @@ export class Comment extends Base {
      * Sorts the comments.
      * @param postId Post Document ID
      */
-    sortComments(postId: string, commentId: string) {
+    sortComments(postId: string, comment: COMMENT) {
         // console.log(`sortComments: `, postId, ids);
         if (this.commentIds[postId] === void 0) {
             this.commentIds[postId] = [];
         }
-        //
-        // if (_.isEmpty(this.comments[postId])) {
-        //     return;
-        // }
-        // ids.map(commentId => {
-        //     const comment: COMMENT = this.comments[commentId];
-        //     // console.log(`comment..: `, comment);
-        //     if (_.isEmpty(comment.parentCommentId)) {
-        //         this.commentIds[postId].push(comment.id);
-        //     } else {
-        //         console.log(`Children. find parent id in the array and insert it right afetr.`);
-        //     }
-        // });
-
-        this.commentIds[postId].push(commentId);
+        const pos = this.commentIds[postId].findIndex(id => id === comment.parentId);
+        if (pos === - 1) {
+            this.commentIds[postId].push(comment.id);
+        } else {
+            this.commentIds[postId].splice(pos, 0, comment.id);
+        }
+        // this.commentIds[postId].push(comment.id);
         return this.commentIds[postId];
     }
 
@@ -213,7 +203,7 @@ export class Comment extends Base {
         if (this.comments[comment.id] === void 0) {
             console.log(`addCommentOnTop: `, comment);
             this.comments[comment.id] = comment;
-            this.sortComments(postId, comment.id);
+            this.sortComments(postId, comment);
             this.subscribeCommentChange(postId, comment);
             this.subscribeLikes(comment);
         }
@@ -280,11 +270,11 @@ export class Comment extends Base {
      * If you don't unsubscribe, you have to pay more since it will still listen(read) the documents that are no longer needed.
      */
     unsubscribes(postId) {
-        if ( this._unsubscribeComments[postId] !== void 0 && this._unsubscribeComments[postId].length ) {
-            this._unsubscribeComments[postId].map( unsubscribe => unsubscribe() );
+        if (this._unsubscribeComments[postId] !== void 0 && this._unsubscribeComments[postId].length) {
+            this._unsubscribeComments[postId].map(unsubscribe => unsubscribe());
         }
-        if ( this._unsubscribeLikes[postId] !== void 0 && this._unsubscribeLikes[postId].length ) {
-            this._unsubscribeLikes[postId].map( unsubscribe => unsubscribe() );
+        if (this._unsubscribeLikes[postId] !== void 0 && this._unsubscribeLikes[postId].length) {
+            this._unsubscribeLikes[postId].map(unsubscribe => unsubscribe());
         }
     }
 

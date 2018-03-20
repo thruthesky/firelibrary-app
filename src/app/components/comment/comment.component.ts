@@ -11,9 +11,7 @@ export class CommentComponent implements OnInit, OnDestroy {
 
 
   @Input() post: POST = {};
-  @Input() parent: COMMENT = {};
   comment: COMMENT = {};
-  edit: COMMENT = {};
   loader = {
     creating: false
   };
@@ -43,30 +41,42 @@ export class CommentComponent implements OnInit, OnDestroy {
     }).catch(e => alert(e.message));
   }
   ngOnDestroy() {
-    this.fire.comment.destory( this.post );
+    this.fire.comment.destory(this.post);
   }
 
-  onSubmit(event: Event) {
+  /**
+   * Creates or Updates a comment.
+   * This is being invoked when user submits the comment form.
+   */
+  onSubmit(event: Event, parentId: string) {
+    console.log(`parentId: ${parentId}`);
     event.preventDefault();
     this.comment.postId = this.post.id;
-    this.comment.parentCommentId = this.parent.parentCommentId;
-    console.log('create: ', this.comment);
-    this.fire.comment.create(this.comment).then(re => {
-      // console.log('re: ', re);
-    })
-      .catch(e => alert(e.message));
+    this.comment.parentId = parentId;
+    if (this.comment.id) {
+      this.fire.comment.edit(this.comment).then(re => this.comment = {}).catch(e => alert(e.message));
+    } else {
+      this.fire.comment.create(this.comment).then(re => this.comment = {}).catch(e => alert(e.message));
+    }
     return false;
   }
-  onSubmitEdit(event: Event, commentId: string) {
-    event.preventDefault();
-    this.edit.id = commentId;
-    this.fire.comment.edit(this.edit).then(re => {
-      // console.log('comment edit: ', re);
-      this.edit = {};
-    })
-      .catch(e => alert(e.message));
-    return false;
-  }
+
+  /**
+   * Returns parent id of a comment.
+   * If the comment is a reply right under a post, then empty string will be returned.
+   */
+  // parentCommentId(commentId) {
+  //   if (commentId) {
+  //     const comment = this.comments(commentId);
+  //     if (comment.parentId) {
+  //       return comment.parentId;
+  //     } else {
+  //       return '';
+  //     }
+  //   }
+  //   return '';
+  // }
+
 
 
   onClickLike(id: string) {

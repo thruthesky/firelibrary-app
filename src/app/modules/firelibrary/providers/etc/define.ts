@@ -1,12 +1,15 @@
-
+import * as settings from '../../settings';
+const x = settings.COLLECTION_PREFIX;
 export const COLLECTIONS = {
-    USERS: 'users',
-    SETTINGS: 'settings',
-    CATEGORIES: 'categories',
-    POSTS: 'posts',
+    USERS: x + 'users',
+    SETTINGS: x + 'settings',
+    CATEGORIES: x + 'categories',
+    POSTS: x + 'posts',
     // POSTS_DELETED: 'posts_deleted', // no more in use.
 
-    // sub collections.
+    /**
+     * Sub collections. No prefix for subcollections.
+     */
     LIKES: 'likes',
     DISLIKES: 'dislikes',
     COMMENTS: 'comments'
