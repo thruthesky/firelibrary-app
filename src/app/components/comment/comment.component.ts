@@ -21,11 +21,7 @@ export class CommentComponent implements OnInit, OnDestroy {
   }
 
   comments(id): COMMENT {
-    if (this.fire.comment.comments[id] === void 0) {
-      return <any>[];
-    }
-    // console.log(this.fire.comment.comments[id]);
-    return this.fire.comment.comments[id];
+    return this.fire.comment.getComment(id);
   }
   get commentIds(): Array<string> {
     return this.fire.comment.commentIds[this.post.id];
@@ -47,6 +43,9 @@ export class CommentComponent implements OnInit, OnDestroy {
   /**
    * Creates or Updates a comment.
    * This is being invoked when user submits the comment form.
+   *
+   *
+   * @param parentnId is the parent id. if it is not set, it would be undefined.
    */
   onSubmit(event: Event, parentId: string) {
     console.log(`parentId: ${parentId}`);

@@ -27,12 +27,13 @@ export class FireService extends Base {
     this.post = new Post();
     this.comment = new Comment();
     Base.http = http;
+    Base.ngZone = ngZone;
     this.initUser();
   }
 
   initUser() {
     firebase.auth().onAuthStateChanged((user: firebase.User) => {
-      this.ngZone.run( x => {} );     /// refresh the view if state changes.
+      this.ngZone.run(x => { });     /// refresh the view if state changes.
       if (user) {
         // console.log('user signed in');
       } else {
@@ -40,9 +41,7 @@ export class FireService extends Base {
         // console.log('user is not signed in');
       }
     });
-
   }
-
 
 
 }

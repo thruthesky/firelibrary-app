@@ -107,7 +107,7 @@ export interface COMMENT {
     updated?: any;
     numberOfLikes?: number;
     numberOfDislikes?: number;
-
+    depth?: number;                 // for indenting.
 }
 
 

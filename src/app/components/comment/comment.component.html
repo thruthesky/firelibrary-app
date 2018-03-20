@@ -5,7 +5,7 @@
 
 <ul>
   <li *ngFor=" let id of commentIds">
-    <div>{{ comments(id).content }}</div>
+    <div [style.margin-left]="comments(id).depth * 30 + 'px'">({{comments(id).depth}})::{{ comments(id).content }}</div>
     <div>
       <form (ngSubmit)=" onSubmit( $event, id ) ">
         <input type="text" name="content" [(ngModel)]="comment.content">

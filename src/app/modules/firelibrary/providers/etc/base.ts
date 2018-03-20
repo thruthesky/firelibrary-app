@@ -53,6 +53,7 @@ export class Base {
 
     static settings: FIRESERVICE_SETTINGS = {};
 
+    static ngZone;
     ///
     auth: firebase.auth.Auth = null;
     db: firebase.firestore.Firestore = null;
@@ -80,6 +81,14 @@ export class Base {
         if (obj) {
             Base.settings = Object.assign(Base.settings, obj);
         }
+    }
+
+
+
+
+    renderPage(ms = 0) {
+        console.log(`run FireService.renderPage()`);
+        setTimeout(() => Base.ngZone.run(() => { }), ms);
     }
 
     get http(): HttpClient {

@@ -29,6 +29,31 @@ export class Comment extends Base {
         this.user = new User();
     }
 
+    /**
+     * Returns parent comment.
+     */
+    getParentComment(commentId): COMMENT {
+        if (commentId) {
+            const comment = this.getComment( commentId );
+            if (comment.parentId) {
+                return this.getComment( comment.parentId );
+            } else {
+                return <any>[];
+            }
+        }
+        return <any>[];
+    }
+
+    /**
+     * Returns the comment.
+     */
+    getComment(commentId): COMMENT {
+        if (this.comments[commentId] === void 0) {
+            return <any>[];
+        }
+        // console.log(this.fire.comment.comments[id]);
+        return this.comments[commentId];
+    }
 
     /**
      * Comment Collection under a post.
@@ -37,6 +62,7 @@ export class Comment extends Base {
     private commentCollection(postId: string) {
         return this.collectionRef(COLLECTIONS.POSTS).doc(postId).collection(COLLECTIONS.COMMENTS);
     }
+
     /**
      * Returns comment reference.
      */
@@ -50,7 +76,7 @@ export class Comment extends Base {
     load(postId: string): Promise<Array<string>> {
         const ref = this.commentCollection(postId);
         // console.log(`gets at: ${ref.path}`);
-        return ref.orderBy('created').get().then(s => {
+        return ref.orderBy('created', 'asc').get().then(s => {
             s.forEach(doc => {
                 const c: COMMENT = doc.data();
                 c.id = doc.id;
@@ -77,24 +103,35 @@ export class Comment extends Base {
      * @param postId Post Document ID
      */
     sortComments(postId: string, comment: COMMENT) {
-        // console.log(`sortComments: `, postId, ids);
+        console.log(`sortComment for: `, postId, comment);
         if (this.commentIds[postId] === void 0) {
             this.commentIds[postId] = [];
         }
         const pos = this.commentIds[postId].findIndex(id => id === comment.parentId);
+        console.log('pos: ', pos);
         if (pos === - 1) {
             this.commentIds[postId].push(comment.id);
         } else {
-            this.commentIds[postId].splice(pos, 0, comment.id);
+            this.commentIds[postId].splice(pos + 1, 0, comment.id);
         }
         // this.commentIds[postId].push(comment.id);
+        this.renderPage(100);
         return this.commentIds[postId];
     }
 
+    /**
+     * @param comment
+     *      comment[postId] and comment[parentId] is already set.
+     */
     create(comment: COMMENT): Promise<COMMENT_CREATE> {
         _.sanitize(comment);
         comment.uid = this.user.uid;
         comment.created = firebase.firestore.FieldValue.serverTimestamp();
+        if ( comment.parentId ) {
+            comment.depth = this.getComment( comment.parentId ).depth + 1;
+        } else {
+            comment.depth = 0;
+        }
         const ref = this.commentCollection(comment.postId);
         console.log(`Going to add a comment under: ${ref.path}`);
         return ref.add(comment)
@@ -173,7 +210,7 @@ export class Comment extends Base {
                     comment.id = doc.id;
                     // console.log(`exists: ${this.pagePosts[post.id]}`);
                     if (change.type === 'added' && this.comments[comment.id] === void 0) {
-                        this.addCommentOnTop(postId, comment);
+                        this.insertComment(postId, comment);
                     } else if (change.type === 'modified') {
                         this.updateComment(postId, comment);
                     } else if (change.type === 'removed') {
@@ -199,9 +236,9 @@ export class Comment extends Base {
      * @desc It's important to understand how `added` event fired on `onSnapshot)`.
      *
      */
-    private addCommentOnTop(postId, comment: COMMENT) {
+    private insertComment(postId, comment: COMMENT) {
         if (this.comments[comment.id] === void 0) {
-            console.log(`addCommentOnTop: `, comment);
+            console.log(`insertComment: `, comment);
             this.comments[comment.id] = comment;
             this.sortComments(postId, comment);
             this.subscribeCommentChange(postId, comment);
@@ -217,7 +254,7 @@ export class Comment extends Base {
             console.log(`updateComment`, comment);
             this.comments[comment.id] = Object.assign(this.comments[comment.id], comment);
         } else {
-            this.addCommentOnTop(postId, comment);
+            this.insertComment(postId, comment);
         }
     }
     /**
@@ -287,6 +324,7 @@ export class Comment extends Base {
         console.log(`Going to destroy comments for post.id: `, post.id);
         this.unsubscribes(post.id);
     }
+
 
 }
 
