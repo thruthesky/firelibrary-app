@@ -1,10 +1,9 @@
-import * as settings from '../../settings';
-const x = settings.COLLECTION_PREFIX;
+
 export const COLLECTIONS = {
-    USERS: x + 'users',
-    SETTINGS: x + 'settings',
-    CATEGORIES: x + 'categories',
-    POSTS: x + 'posts',
+    USERS: 'users',
+    SETTINGS: 'settings',
+    CATEGORIES: 'categories',
+    POSTS: 'posts',
     // POSTS_DELETED: 'posts_deleted', // no more in use.
 
     /**

@@ -8,7 +8,7 @@ export * from './define';
 import * as E from './error';
 export * from './error';
 import { en } from './languages/en';
-
+import * as settings from '../../settings';
 
 
 
@@ -92,7 +92,21 @@ export class Base {
     get collection(): firebase.firestore.CollectionReference {
         if (this.collectionName) {
             // console.log('col name: ', this.collectionName);
-            return this.db.collection(this.collectionName);
+            return this.db.collection(settings.COLLECTION_ROOT)
+                .doc(settings.COLLECTION_DOMAIN)
+                .collection(this.collectionName);
+        } else {
+            return null;
+        }
+    }
+    /**
+     * Returns a collection reference under the domain.
+     */
+    collectionRef(name) {
+        if (name) {
+            return this.db.collection(settings.COLLECTION_ROOT)
+                .doc(settings.COLLECTION_DOMAIN)
+                .collection(name);
         } else {
             return null;
         }
