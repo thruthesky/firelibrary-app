@@ -40,7 +40,9 @@ export class Category extends Base {
             .then(() => {
                 category.subcategories = _.removeSpaceBetween(',', category.subcategories);
                 category.created = firebase.firestore.FieldValue.serverTimestamp();
-                return this.collection.doc(category.id).set(_.sanitize(category));
+                const ref = this.collection.doc(category.id);
+                console.log(`set at: ${ref.path}`);
+                return ref.set(_.sanitize(category));
             })
             .then(() => this.success({ id: category.id }))
             .catch(e => {
@@ -69,6 +71,8 @@ export class Category extends Base {
 
     /**
      * Edits a category.
+     *
+     * @todo category exists validation.
      */
     async editValidator(category: CATEGORY): Promise<any> {
         const idCheck = this.checkDocumentIDFormat(category.id);

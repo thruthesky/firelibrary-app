@@ -6,7 +6,9 @@ export const COLLECTIONS = {
     POSTS: 'posts',
     // POSTS_DELETED: 'posts_deleted', // no more in use.
 
-    // sub collections.
+    /**
+     * Sub collections. No prefix for subcollections.
+     */
     LIKES: 'likes',
     DISLIKES: 'dislikes',
     COMMENTS: 'comments'

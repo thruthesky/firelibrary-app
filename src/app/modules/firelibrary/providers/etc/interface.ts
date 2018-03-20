@@ -100,7 +100,7 @@ export interface POST {
 export interface COMMENT {
     id?: string;
     postId?: string;                // root post id
-    parentCommentId?: string;              // parentCommentId
+    parentId?: string;              // comment parent id. If the comment is immediate reply of a post, then it is a empty stirng.
     uid?: string;
     content?: string;
     created?: any;

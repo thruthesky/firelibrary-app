@@ -156,8 +156,9 @@ export class User extends Base {
             });
     }
     create(data: USER): Promise<USER_CREATE> {
-        console.log('create: ', data);
-        return this.collection.doc(data.uid).set(data)
+        const ref = this.collection.doc(data.uid);
+        console.log(`set at: ${ref.path} with: `, data);
+        return ref.set(data)
             .then(() => this.success({ id: data.uid }))
             .catch(e => this.failure(e));
     }
