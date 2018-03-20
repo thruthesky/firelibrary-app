@@ -32,6 +32,19 @@ export class TestComponent extends TestTools implements OnInit {
   }
   ngOnInit() {
 
+    /// without login.
+
+    /// logged in A
+    // .....
+    // .....
+    // .....
+
+    /// logged in B
+
+
+    /// loggin as Amdin.
+    // ...
+
     // this.run();
 
     // (new TestRules).run();
