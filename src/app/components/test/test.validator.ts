@@ -6,15 +6,4 @@ export class TestValidator extends TestTools {
     ) {
         super();
     }
-    async asAnonymous() {
-
-    }
-
-    async asMember() {
-
-    }
-
-    async asAdmin() {
-
-    }
 }

@@ -1,5 +1,6 @@
 import { FireService, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY } from '../../../../public_api';
 import { TestTools } from './test.tools';
+import * as settings from './test.settings';
 import { PERMISSION_DENIED } from './../../modules/firelibrary/providers/etc/error';
 
 export class TestPost extends TestTools {
@@ -7,55 +8,66 @@ export class TestPost extends TestTools {
     ) {
         super();
     }
-    async asAnonymous() {
-        //
-    }
-    async asMember() {
-        // console.log('Iam am in test.post.asMember() $$$$$$$$$$$$$$$$$$$$$$$$$$$$');
+
+    async run() {
         await this.createWithWrongCategoryId();
         await this.createPostWithDifferentUID();
-        await this.PostCreate();
-    }
-    async asAdmin() {
-        //
+        await this.postCreate();
     }
 
     async createWithWrongCategoryId() {
         /**Failed with wrong category id */
         const data: POST = { category: 'wrong', title: 'This is Error' };
-        await this.fire.post.create(data)
-        .then(re => {
-            this.bad('Wrong category, Expect error.');
-        })
-        .catch(e => {
-            this.test( e.code === PERMISSION_DENIED, 'Create post with wrong Category.');
-        });
+        const isLogin = await this.loginAs('testing123@testing.com', '123456s');
+        if ( isLogin ) {
+            await this.fire.post.create(data)
+            .then(re => {
+                this.bad('Wrong category, Expect error.');
+            })
+            .catch(e => {
+                this.test( e.code === PERMISSION_DENIED, 'Create post with wrong Category.');
+            });
+        } else {
+            this.bad('createWithWrongCategoryId: Login failed');
+        }
+
+
     }
 
     async createPostWithDifferentUID() {
         /**Failed with wrong category id */
-        const data: POST = { category: 'qna', title: 'This is Error', uid: 'wrong-user' };
-        await this.fire.post.create(data)
-        .then(re => {
-            this.test(re.code === null, 'Wrong UID, firelibrary will sanitize UID.');
-        })
-        .catch(e => {
-            this.bad('Create post with different UID', e.code );
-        });
+        const data: POST = { category: settings.TEST_CATEGORY, title: 'This is Error', uid: 'wrong-user' };
+        const isLogin = await this.loginAs('testing123@testing.com', '123456s');
+        if ( isLogin ) {
+            await this.fire.post.create(data)
+            .then(re => {
+                this.good('Wrong UID, firelibrary will sanitize UID.');
+            })
+            .catch(e => {
+                this.bad('post.create(): Create post with different UID', e.code );
+            });
+        } else {
+            this.bad('createPostWithDifferentUID: Login failed');
+        }
+
+
     }
 
-    async PostCreate() {
+    async postCreate() {
         /**Success */
-        const data: POST = { category: 'qna', title: 'Latet' };
-        await this.fire.post.create(data)
-        .then(re => {
-            this.good('Post created: id:');
-            // this.fire.user.logout();
-        })
-        .catch(e => {
-            this.bad('Create post should be success.');
-            // console.log(e);
-            // this.fire.user.logout();
-        });
+        const data: POST = { category: settings.TEST_CATEGORY, title: 'Latest' };
+        const isLogin = await this.loginAs('testing123@testing.com', '123456s');
+        if ( isLogin ) {
+            await this.fire.post.create(data)
+            .then(re => {
+                this.good('Post created: id:');
+            })
+            .catch(e => {
+                this.bad('Create post should be success.', e);
+            });
+        } else {
+            this.bad('PostCreate: Login failed');
+        }
+
     }
 }
