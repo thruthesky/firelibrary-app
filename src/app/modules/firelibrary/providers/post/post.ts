@@ -27,9 +27,10 @@ export class Post extends Base {
     private cursor: any = null;
     /**
      * Navigation
-     * Category ID of current cateogry to load posts. null by default
+     * `categoryId` holds the selected category id to load and display posts from.
+     * null by default
      */
-    private categoryId: string = null;
+    public categoryId: string = null;
 
 
     /**

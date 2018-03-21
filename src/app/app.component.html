@@ -1,20 +1,20 @@
-<section>
-
-  <a [routerLink]="['/']">{{ fire.translate('HOME') }}</a> |
-  <a [routerLink]="['/register']">Register</a> |
-  <a [routerLink]="'login'">Login</a> |
-
-  <button (click)="fire.user.logout()">Logout</button> | Profile Update |
-  <a [routerLink]="'post'">Post</a> |
-  <a [routerLink]="'category'">Category</a> |
-  <a [routerLink]="'test'">Unit Test</a>
-
-
+<section class="layout">
+  <header>
+    <nav>
+      <button type="button" [routerLink]="['/']">{{ fire.translate('HOME') }}</button>
+      <button type="button" [routerLink]="['/register']" *ngIf="fire.user.isLogout">Register</button>
+      <button type="button" [routerLink]="'login'" *ngIf="fire.user.isLogout">Login</button>
+      <button type="button" (click)="fire.user.logout()" *ngIf="fire.user.isLogin">Logout</button>
+      <button type="button" (click)="true" *ngIf="fire.user.isLogin">Profile Update</button>
+      <button type="button" [routerLink]="'post'">Post</button>
+      <button type="button" [routerLink]="'category'">Category</button>
+      <button type="button" [routerLink]="'test'">Unit Test</button>
+    </nav>
+    <div *ngIf=" fire.user.isLogin ">Welcome, {{ fire.user.displayName ? fire.user.displayName : fire.user.email }}</div>
+  </header>
 
   <div class="outer-outlet">
     <router-outlet></router-outlet>
   </div>
-
-
 
 </section>
