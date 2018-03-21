@@ -17,6 +17,7 @@ import { TestPost } from './test.post';
 import { TestRules } from './test.rules';
 
 import * as firebase from 'firebase';
+import * as settings from './test.settings';
 
 
 @Component({
@@ -32,106 +33,30 @@ export class TestComponent extends TestTools implements OnInit {
     TestTools.fire = fire;
   }
   ngOnInit() {
-    this.run();
+    this.prepareTest()
+    .then(() => { console.log('Preparation done... test starts!'); })
+    .then(() => { this.run(); })
+    .catch( e => this.bad('Error preparing test...', e) );
   }
 
   /**
   * Runs the all service testing.
   */
   async run() {
+    this.version();
+    this.library();
+    this.translate();
 
+    await (new TestError()).run();
+    await (new TestCategory()).run();
+    await (new TestPost()).run();
+    await (new TestUser()).run();
+    await (new TestRules()).run();
 
-    // let re = await this.loginAs('AAA@AAA.com', 'b018,z8*a~');
-    // console.log('re: ', re, firebase.auth().currentUser.email);
-    // re = await this.loginAs('BBB@BBB.com', 'b018,z8*a~');
-    // console.log('re: ', re, firebase.auth().currentUser.email);
-    // re = await this.loginAs('CCC@CCC.com', 'b018,z8*a~');
-    // console.log('re: ', re, firebase.auth().currentUser.email);
-    // await firebase.auth().signOut();
-    // re = await this.loginAsAdmin();
-    // console.log('re: ', re, firebase.auth().currentUser.email);
-    // re = await this.loginAs('DDD@DDD.com', 'b018,z8*a~');
-    // console.log('re: ', re, firebase.auth().currentUser.email);
-    // re = await this.loginAs('EEE@EEE.com', 'b018,z8*a~');
-    // console.log('re: ', re, firebase.auth().currentUser.email);
-
-
-    await this.asMemberTest();
-
-
-    // await this.asAnonymousTest();
-    // await this.asMemberTest();
-    // await this.asAdminTest();
-
-    // this.version();
-    // this.library();
-    // this.translate();
   }
 
   get count() {
     return TestTools.count;
-  }
-
-  /**
-  * Run test as anonymous
-  */
-  async asAnonymousTest() {
-    console.log('=========================> ANONYMOUS TEST');
-    // Run tests here.
-    await (new TestError()).asAnonymous();
-    await (new TestValidator()).asAnonymous();
-    await (new TestRules()).asAnonymous();
-
-    await (new TestUser()).asAnonymous();
-    await (new TestCategory()).asAnonymous();
-    await (new TestPost()).asAnonymous();
-
-  }
-  /**
-  * Run test as member
-  */
-  async asMemberTest() {
-    console.log('=========================> MEMBER TEST');
-    const user = { email: 'user' + (new Date).getTime() + '@test.com', password: 'UserTest123' };
-    const isLogin = await this.loginAs( user.email, user.password);
-
-    if ( isLogin ) {
-      console.log( 'Logged in..', this.fire.user.uid );
-      // Run tests here
-      // await (new TestError()).asMember();
-      // await (new TestValidator()).asMember();
-      // await (new TestRules()).asMember();
-
-      // await (new TestUser()).asMember();
-      // await (new TestCategory()).asMember();
-      // await (new TestPost()).asMember();
-
-      await (new TestRules()).postRulesAsMember();
-
-    } else {
-      return this.bad(`Testing as admin Member. email: ${user.email} password:${user.password}`);
-    }
-  }
-  /**
-  * Run test as admin
-  */
-  async asAdminTest() {
-    console.log('=========================> ADMIN TEST');
-    const isLogin = await this.loginAsAdmin();
-
-    if ( isLogin ) {
-      // Run Tests here
-      await (new TestError()).asAdmin();
-      await (new TestValidator()).asAdmin();
-      await (new TestRules()).asAdmin();
-
-      await (new TestUser()).asAdmin();
-      await (new TestCategory()).asAdmin();
-      await (new TestPost()).asAdmin();
-
-    } else {
-      return this.bad('Failed to login as Administrator.');
-    }
   }
   /**
   * Tests current version

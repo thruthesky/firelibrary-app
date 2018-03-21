@@ -34,17 +34,11 @@ export class TestUser extends TestTools {
     /**
     *
     */
-    async asAnonymous() {
+    async run() {
         await this.userRegisterEmailValidation();
         await this.userRegisterPasswordValidation();
         await this.userRegisterSuccess();
         await this.userLoginTest();
-    }
-    async asMember() {
-    }
-
-    async asAdmin() {
-
     }
     /**
     * Test Email validation.
@@ -94,22 +88,34 @@ export class TestUser extends TestTools {
         .then(() => this.bad('Password is less then 6 characters. password is weak'))
         // .then( a => console.log('ERRORRR============', a) )
         .catch(e => {
-            this.test(e.code === WEAK_PASSWORD, 'User Register password less than 6 characters. Expecting error', e.message, e.code);
+            this.test(e.code === WEAK_PASSWORD, 'User Register password less than 6 characters. Expecting error');
         });
         /**
         * Tests Register without password
         */
         await this.fire.user.register({email: user.email, password: ''})
         .then( () => { this.bad('Password is empty. password is weak'); } )
-        .catch( e => { this.test( e.code === WEAK_PASSWORD, 'User Register Empty Password. Expecting error', e.code, e.message ); });
+        .catch( e => { this.test( e.code === WEAK_PASSWORD, 'User Register Empty Password. Expecting error'); });
         /**
         * Tests Register with password undefined
         */
         await this.fire.user.register({email: user.email, password: undefined})
         .then( () => { this.bad('Password undefined should be FIREBASE_API_ERROR with message'); } )
-        .catch( e => { this.test( e.code === FIREBASE_API_ERROR,
-            'User Register `undefined` Password. Expecting error', e.code, e.message );
+        .catch( e => { this.test( e.code === FIREBASE_API_ERROR, 'User Register `undefined` Password. Expecting error'); });
+        /**
+        * Tests Password. Password exceeds at max 128 characters
+        */
+        await this.fire.user.register({email: user.email, password: ('asdf1234').repeat(20)})
+        .then( () => this.bad('Password too long exceeds at 128 maximum characters') )
+        .catch( e => {
+            this.test(e.code === PASSWORD_TOO_LONG, 'User Register `password exceeds at 128 characters`');
         });
+        /**
+        * Tests Password Validation success
+        */
+        await this.fire.user.registerValidator({email: user.email, password: '123asdfasdf'})
+        .then( a => { this.test( a === null, 'Password is strong should be success and expecting a null.'); } )
+        .catch( e => { this.bad('Expecting null since password is strong', e.code, e.message ); });
         /**
         * Tests Register with password containing only letters.
         */
@@ -138,20 +144,7 @@ export class TestUser extends TestTools {
         // await this.fire.user.register({email: user.email, password: user.email + '123sd'})
         // .then( () => this.bad('Password contains email. Password is weak - expects error') )
         // .catch( e => {this.test( e.code === WEAK_PASSWORD, 'User Register `password contains email`', e.code, e.message ); });
-        /**
-        * Tests Password. Password exceeds at max 128 characters
-        */
-        await this.fire.user.register({email: user.email, password: ('asdf1234').repeat(20)})
-        .then( () => this.bad('Password too long exceeds at 128 maximum characters') )
-        .catch( e => {
-            this.test( e.code === PASSWORD_TOO_LONG, 'User Register `password exceeds at 128 characters`', e.code, e.message );
-        });
-        /**
-        * Tests Password Validation success
-        */
-        await this.fire.user.registerValidator({email: user.email, password: '123asdfasdf'})
-        .then( a => { this.test( a === null, 'Password is strong should be success and expecting a null.', a ); } )
-        .catch( e => { this.bad('Expecting null since password is strong', e.code, e.message ); });
+
     }
     /**
     * Tests` User.register` method and expects `success`.
@@ -185,19 +178,19 @@ export class TestUser extends TestTools {
         */
         await this.fire.user.login(undefined,  'Password123')
         .then( user => { this.bad('Email `undefined` test should be error', user); })
-        .catch( e => { this.test(FIREBASE_API_ERROR, 'Email is `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Email is `undefined` should be a valid string'); });
         /**
         * Test password is undefined
         */
         await this.fire.user.login('email@gmail.com',  undefined)
         .then( user => { this.bad('Password is `undefined`. Expect Error. ', user); })
-        .catch( e => { this.test(FIREBASE_API_ERROR, 'Password is `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password is `undefined` should be a valid string', e); });
         /**
         * Test both email and paswword are `undefined`
         */
         await this.fire.user.login(undefined,  undefined)
         .then( user => { this.bad('Password and Email are `undefined`. Expect Error. ', user); })
-        .catch( e => { this.test(FIREBASE_API_ERROR, 'Password and Email are `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password and Email are `undefined` should be a valid string', e); });
         /**
         * Test login invalid email.
         */

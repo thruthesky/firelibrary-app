@@ -3,6 +3,8 @@ import {
 } from '../../modules/firelibrary/core';
 import * as settings from './test.settings';
 import * as firebase from 'firebase';
+import { COLLECTIONS } from './../../modules/firelibrary/providers/etc/define';
+import { COLLECTION_DOMAIN } from './../../modules/firelibrary/settings';
 export class TestTools {
 
     static fire: FireService;
@@ -13,15 +15,14 @@ export class TestTools {
     };
 
     constructor() {
-
     }
     get fire(): FireService {
         return TestTools.fire;
     }
     /**
-     *
-     * @param params
-     */
+    *
+    * @param params
+    */
     good(...params) {
         TestTools.count.test++;
         TestTools.count.success++;
@@ -37,10 +38,10 @@ export class TestTools {
         console.log(str, ...params);
     }
     /**
-     *
-     * @deprecated since the method name is same as `Firebase::failure()`.
-     * @param params
-     */
+    *
+    * @deprecated since the method name is same as `Firebase::failure()`.
+    * @param params
+    */
     bad(...params) {
         TestTools.count.test++;
         TestTools.count.failure++;
@@ -52,10 +53,10 @@ export class TestTools {
         }
     }
     /**
-     * Calls success or failure based on `b`.
-     * @param b `Boolean` or `condition`.
-     * @param params some useful information that can give developer a clue to the problem.
-     */
+    * Calls success or failure based on `b`.
+    * @param b `Boolean` or `condition`.
+    * @param params some useful information that can give developer a clue to the problem.
+    */
     test(b, ...params) {
         if (b) {
             this.good(params);
@@ -65,26 +66,26 @@ export class TestTools {
     }
 
     /**
-     * Returns Promise<true> if logged in. Otherwise Promise<false>
-     */
+    * Returns Promise<true> if logged in. Otherwise Promise<false>
+    */
     private async registerOrLoginAs(email, password): Promise<Boolean> {
 
         let re = await this.fire.user.login(email, password)
-            .then(() => {
-                return true;
-            })
-            .catch(() => {
-                return false;
-            });
+        .then(() => {
+            return true;
+        })
+        .catch(() => {
+            return false;
+        });
 
         if (re) {
         } else {
             const data = { email: email, password: password };
             re = await this.fire.user.register(data)
-                .then(res => {
-                    return true;
-                })
-                .catch(e => false);
+            .then(res => {
+                return true;
+            })
+            .catch(e => false);
 
         }
 
@@ -111,33 +112,33 @@ export class TestTools {
 
 
     /**
-     * Sleeps for ms.
-     * @code await this.sleep(10000).then(() => console.log('after 10 sec'));
-     */
+    * Sleeps for ms.
+    * @code await this.sleep(10000).then(() => console.log('after 10 sec'));
+    */
     sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     /**
-     * Calls the callback When the user has completely logged
-     *
-     * @code
-        let re = await this.loginAs('AAA@AAA.com', 'b018,z8*a~');
-        console.log('re: ', re, firebase.auth().currentUser.email);
-        re = await this.loginAs('BBB@BBB.com', 'b018,z8*a~');
-        console.log('re: ', re, firebase.auth().currentUser.email);
-        re = await this.loginAs('CCC@CCC.com', 'b018,z8*a~');
-        console.log('re: ', re, firebase.auth().currentUser.email);
-        await firebase.auth().signOut();
-        re = await this.loginAsAdmin();
-        console.log('re: ', re, firebase.auth().currentUser.email);
-        re = await this.loginAs('DDD@DDD.com', 'b018,z8*a~');
-        console.log('re: ', re, firebase.auth().currentUser.email);
-        re = await this.loginAs('EEE@EEE.com', 'b018,z8*a~');
-        console.log('re: ', re, firebase.auth().currentUser.email);
-     *
-     * @endcode
-     */
+    * Calls the callback When the user has completely logged
+    *
+    * @code
+    let re = await this.loginAs('AAA@AAA.com', 'b018,z8*a~');
+    console.log('re: ', re, firebase.auth().currentUser.email);
+    re = await this.loginAs('BBB@BBB.com', 'b018,z8*a~');
+    console.log('re: ', re, firebase.auth().currentUser.email);
+    re = await this.loginAs('CCC@CCC.com', 'b018,z8*a~');
+    console.log('re: ', re, firebase.auth().currentUser.email);
+    await firebase.auth().signOut();
+    re = await this.loginAsAdmin();
+    console.log('re: ', re, firebase.auth().currentUser.email);
+    re = await this.loginAs('DDD@DDD.com', 'b018,z8*a~');
+    console.log('re: ', re, firebase.auth().currentUser.email);
+    re = await this.loginAs('EEE@EEE.com', 'b018,z8*a~');
+    console.log('re: ', re, firebase.auth().currentUser.email);
+    *
+    * @endcode
+    */
     async loginAs(email: string, password, $deprecated?) {
         const login = await this.registerOrLoginAs(email, password);
         if (!login) {
@@ -157,5 +158,34 @@ export class TestTools {
         }
 
     }
+
+    async logout(): Promise<boolean> {
+        let user = firebase.auth().currentUser;
+        // console.log(user);
+        if (user) {
+            firebase.auth().signOut();
+            for (let i = 0; i < 100; i++) {
+                await this.sleep(150).then(() => console.log('after 150ms'));
+                user = firebase.auth().currentUser;
+                console.log(user);
+                if (!user) { return true; }
+            }
+        } else {
+            return true;
+        }
+
+    }
+
+    async prepareTest(): Promise<any> {
+        // await this.setAdmin();
+        const isAdmin = await this.loginAsAdmin();
+        if (isAdmin) {
+            await this.fire.category.create({ id: settings.TEST_CATEGORY, name: 'Testing' })
+            .catch(e => console.log(settings.TEST_CATEGORY, ' already exists!'));
+        } else {
+            this.bad('Error login as admin...');
+        }
+    }
+
 }
 
