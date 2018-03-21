@@ -51,7 +51,7 @@
       <button (click)="onClickDislike(id)" *ngIf=" !getPost(id)['dislikeInProgress'] ">Dislike({{getPost(id).numberOfDislikes ? getPost(id).numberOfDislikes : 0}})</button>
       <span class="loader" *ngIf=" getPost(id)['dislikeInProgress'] ">Dislike...</span>
     </div>
-    <app-comment [post]=" getPost(id) "></app-comment>
+    <app-comment-list [post]=" getPost(id) "></app-comment-list>
   </li>
 </ul>
 <button (click)=" loadPage() ">Load Next Page</button>

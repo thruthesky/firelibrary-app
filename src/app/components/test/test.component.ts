@@ -6,7 +6,7 @@ import {
   _,
   CATEGORY_ID_EMPTY, CATEGORY_DOES_NOT_EXIST, UNKNOWN, INVALID_EMAIL,
   WEAK_PASSWORD, EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, CATEGORY_EXISTS,
-  USER_IS_NOT_LOGGED_IN, NOT_FOUND, DOCUMENT_ID_TOO_LONG, DOCUMENT_ID_CANNOT_CONTAIN_SLASH
+  USER_IS_NOT_LOGGED_IN, NOT_FOUND, DOCUMENT_ID_TOO_LONG, DOCUMENT_ID_CANNOT_CONTAIN_SLASH, Base
 } from '../../modules/firelibrary/core';
 
 import { TestValidator } from './test.validator';
@@ -31,6 +31,7 @@ export class TestComponent extends TestTools implements OnInit {
   ) {
     super();
     TestTools.fire = fire;
+    Base.collectionDomain = 'unit-test';
   }
   ngOnInit() {
     this.prepareTest()
@@ -43,6 +44,10 @@ export class TestComponent extends TestTools implements OnInit {
   * Runs the all service testing.
   */
   async run() {
+
+
+
+
     this.version();
     this.library();
     this.translate();

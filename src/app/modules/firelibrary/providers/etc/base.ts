@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import * as firebase from 'firebase';
-import { RESPONSE, SYSTEM_CONFIG } from './interface';
+import { RESPONSE, SYSTEM_CONFIG, INSTALLED } from './interface';
 export * from './interface';
 import { Library as _ } from './library';
 export { Library as _ } from './library';
@@ -8,7 +8,8 @@ export * from './define';
 import * as E from './error';
 export * from './error';
 import { en } from './languages/en';
-import * as settings from '../../settings';
+import * as SystemSettings from '../../settings';
+import { COLLECTIONS } from './define';
 
 
 
@@ -29,6 +30,16 @@ interface FIRESERVICE_SETTINGS {
 
 
 export class Base {
+    /**
+     * Root collection name.
+     */
+    static collectionRoot: string = SystemSettings.COLLECTION_ROOT;
+    /**
+     * Domain collection name under root collection.
+     * You can change the collectionDomain programatically.
+     * @code Base.collectionName = 'your-domain';
+     */
+    static collectionDomain: string = SystemSettings.COLLECTION_DOMAIN;
     static firebase: firebase.app.App = null;
     static functions = false;
     /**
@@ -77,6 +88,12 @@ export class Base {
     get settings() {
         return Base.settings;
     }
+    get collectionRoot() {
+        return Base.collectionRoot;
+    }
+    get collectionDomain() {
+        return Base.collectionDomain;
+    }
     setSettings(obj: FIRESERVICE_SETTINGS) {
         if (obj) {
             Base.settings = Object.assign(Base.settings, obj);
@@ -101,8 +118,8 @@ export class Base {
     get collection(): firebase.firestore.CollectionReference {
         if (this.collectionName) {
             // console.log('col name: ', this.collectionName);
-            return this.db.collection(settings.COLLECTION_ROOT)
-                .doc(settings.COLLECTION_DOMAIN)
+            return this.db.collection(this.collectionRoot)
+                .doc(this.collectionDomain)
                 .collection(this.collectionName);
         } else {
             return null;
@@ -117,14 +134,17 @@ export class Base {
      */
     collectionRef(name) {
         if (name) {
-            return this.db.collection(settings.COLLECTION_ROOT)
-                .doc(settings.COLLECTION_DOMAIN)
+            return this.db.collection(this.collectionRoot)
+                .doc(this.collectionDomain)
                 .collection(name);
         } else {
             return null;
         }
     }
 
+    get settingsReference(): firebase.firestore.CollectionReference {
+        return this.collectionRef(COLLECTIONS.SETTINGS);
+    }
 
     /**
     *
@@ -461,5 +481,39 @@ export class Base {
             });
     }
 
+
+    /**
+     * Returns a promise of <true|false>
+     * @desc This is an Action Method.
+     * @returns
+     *      true if the system is already installed.
+     *      false if it is not.
+     */
+    checkInstall(): Promise<INSTALLED> {
+        return this.settingsReference.doc('installed').get().then(doc => {
+            if (doc && doc.exists) {
+                return true;
+            } else {
+                return false;
+            }
+        })
+            .then(re => this.success({ installed: re }))
+            .catch(e => this.failure(e));
+    }
+    /**
+     * Installs the system.
+     * @desc This is an Action Method.
+     * @param options Options to install
+     */
+    install(options) {
+        const ref = this.settingsReference.doc('admin');
+        console.log(`Going to set admin email on ${ref.path}`);
+        return ref.set({ email: options.email }).then(() => {
+            return this.settingsReference.doc('installed')
+                    .set({time: firebase.firestore.FieldValue.serverTimestamp()});
+        })
+            .then(re => this.success(true))
+            .catch(e => this.failure(e));
+    }
 }
 

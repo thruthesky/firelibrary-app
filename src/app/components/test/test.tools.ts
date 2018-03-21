@@ -180,6 +180,13 @@ export class TestTools {
         // await this.setAdmin();
         const isAdmin = await this.loginAsAdmin();
         if (isAdmin) {
+            // awiat this.fire.checkInstall() {
+
+            // }
+            // await this.fire.install({email: firebase.auth().currentUser.email}).then(re => {
+            //     this.test( re.data === true, 'Installed?');
+            // })
+            // .catch(e => this.bad('failed to install'));
             await this.fire.category.create({ id: settings.TEST_CATEGORY, name: 'Testing' })
             .catch(e => console.log(settings.TEST_CATEGORY, ' already exists!'));
         } else {

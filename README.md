@@ -12,6 +12,9 @@ Firebase CMS Library for Frontend
  * @bug realtime update is not working when there is no post. it works only after there is a post.
  * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
 * @doc if it like/dislike double clicked quickly, there will be permission error. moderate it with loader.
+* Admin dashboard.
+ * installation page.
+  * If /settings/admin does not exist, you can install(put your email as admin).
 * Security rules on post if the category does not exist, then fail.
 * check uid is his uid. a user may put another user's uid on post and that can cause a problem
 * Functions options
@@ -398,3 +401,31 @@ service cloud.firestore {
 
 
 
+
+## Installation
+With the condition below, you can do installation.
+
+* If `/settings/installed` document exists, it is considered to be installed already.
+* `/settings` collection is writable only by admin.
+* `/settings/admin` is creatable only if it does not exist.
+ Meaning once it is set, it is no longer creatable.
+ It can be edited once it is set and if the user logged in as admin email.
+
+
+1. check if `/settings/installed` exists. If yes, it is installed already.
+2. if not, set `/settings/admin.email` with your email.
+3. and login as admin
+4. set `/settings/installed.time`.
+
+And with that admin account, you can do admin things.
+
+### Example
+
+* @see install.component ts/html
+
+
+### Case study
+
+* Somehow if `/settings/admin.email` is already set, but `/settings/installed` is not set,
+  then you may need to install.
+  You will only need to set `/settings/installed`. If you are going to set admin email when it is already exists, you get permission error on installation.

@@ -1,0 +1,12 @@
+<h1>System installation</h1>
+<div *ngIf="fire.user.isLogout">
+<h2>WARNING: YOU NEED TO LOGIN TO A USER WHO WILL BECOME ADMIN.</h2>
+</div>
+<div *ngIf="fire.user.isLogin">
+
+  <h3>Admin Email will be: {{ fire.user.email }}</h3>
+    <form (ngSubmit)="onSubmitInstall($event)">
+        <button type="submit">Install Now</button>
+      </form>
+      
+</div>

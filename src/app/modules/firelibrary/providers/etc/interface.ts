@@ -176,3 +176,10 @@ export interface COMMENT_EDIT extends RESPONSE {
         id: string;
     };
 }
+
+
+export interface INSTALLED extends RESPONSE {
+    data: {
+        installed: boolean;
+    };
+}

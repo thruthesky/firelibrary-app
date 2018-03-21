@@ -1,23 +1,21 @@
-<form (ngSubmit)=" onSubmit( $event ) ">
-  <input type="text" name="content" [(ngModel)]="comment.content">
-  <button type="submit" *ngIf=" ! loader.creating ">Create Comment</button>
-</form>
+<div class="content" [style.margin-left]="comment.depth * 30 + 'px'" *ngIf=" ! form.id ">
+  ({{comment.depth}})::{{ comment.content }}
+</div>
 
-<ul>
-  <li *ngFor=" let id of commentIds">
-    <div [style.margin-left]="comments(id).depth * 30 + 'px'">({{comments(id).depth}})::{{ comments(id).content }}</div>
-    <div>
-      <form (ngSubmit)=" onSubmit( $event, id ) ">
-        <input type="text" name="content" [(ngModel)]="comment.content">
-        <button type="submit" *ngIf=" ! loader.creating ">Create Comment</button>
-      </form>
-    </div>
-    <div>
-      <button>Edit</button>
-      <button>Delete</button>
-      <button (click)="onClickLike(id)">Like({{comments(id).numberOfLikes ? comments(id).numberOfLikes : 0}})</button>
-      <button (click)="onClickDislike(id)">Dislike({{comments(id).numberOfDislikes ? comments(id).numberOfDislikes : 0}})</button>
-    </div>
-  </li>
-</ul>
+
+<div class="form">
+  <form (ngSubmit)=" onSubmit( $event ) ">
+    <input type="text" name="content" [(ngModel)]="form.content">
+    <button type="submit" *ngIf=" ! loader.creating ">{{ form.id ? 'Edit' : 'Create' }} Comment</button>
+    <button type="button" (click)="onClickEditCancel()" *ngIf=" form.id ">Cancel</button>
+  </form>
+</div>
+
+
+<div class="buttons" *ngIf="!form.id">
+  <button (click)="onClickEdit()">Edit</button>
+  <button>Delete</button>
+  <button (click)="onClickLike()">Like({{comment.numberOfLikes ? comment.numberOfLikes : 0}})</button>
+  <button (click)="onClickDislike()">Dislike({{comment.numberOfDislikes ? comment.numberOfDislikes : 0}})</button>
+</div>
 

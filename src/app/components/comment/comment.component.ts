@@ -11,7 +11,8 @@ export class CommentComponent implements OnInit, OnDestroy {
 
 
   @Input() post: POST = {};
-  comment: COMMENT = {};
+  @Input() comment: COMMENT = {};
+  form: COMMENT = {};
   loader = {
     creating: false
   };
@@ -20,24 +21,24 @@ export class CommentComponent implements OnInit, OnDestroy {
   ) {
   }
 
-  comments(id): COMMENT {
-    return this.fire.comment.getComment(id);
-  }
-  get commentIds(): Array<string> {
-    return this.fire.comment.commentIds[this.post.id];
-  }
+  // comments(id): COMMENT {
+  //   return this.fire.comment.getComment(id);
+  // }
+  // get commentIds(): Array<string> {
+  //   return this.fire.comment.commentIds[this.post.id];
+  // }
 
   ngOnInit() {
     if (!this.post.id) {
       console.error('Post ID is empty. Something is wrong.');
       return;
     }
-    this.fire.comment.load(this.post.id).then(comments => {
-      console.log(`comments: `, comments);
-    }).catch(e => alert(e.message));
+    // this.fire.comment.load(this.post.id).then(comments => {
+    //   console.log(`comments: `, comments);
+    // }).catch(e => alert(e.message));
   }
   ngOnDestroy() {
-    this.fire.comment.destory(this.post);
+    // this.fire.comment.destory(this.post);
   }
 
   /**
@@ -47,44 +48,41 @@ export class CommentComponent implements OnInit, OnDestroy {
    *
    * @param parentnId is the parent id. if it is not set, it would be undefined.
    */
-  onSubmit(event: Event, parentId: string) {
-    console.log(`parentId: ${parentId}`);
+  onSubmit(event: Event) {
+    console.log(`parentId: ${this.comment.parentId}`, 'form: ', this.form, 'comment:', this.comment);
     event.preventDefault();
-    this.comment.postId = this.post.id;
-    this.comment.parentId = parentId;
-    if (this.comment.id) {
-      this.fire.comment.edit(this.comment).then(re => this.comment = {}).catch(e => alert(e.message));
+    this.form.postId = this.post.id;
+    this.form.parentId = this.comment.id;
+    if (this.form.id) {
+      this.fire.comment.edit(this.form).then(re => this.form = {}).catch(e => alert(e.message));
     } else {
-      this.fire.comment.create(this.comment).then(re => this.comment = {}).catch(e => alert(e.message));
+      this.fire.comment.create(this.form).then(re => this.form = {}).catch(e => alert(e.message));
     }
     return false;
   }
 
+
   /**
-   * Returns parent id of a comment.
-   * If the comment is a reply right under a post, then empty string will be returned.
+   * Sets the form to edit.
    */
-  // parentCommentId(commentId) {
-  //   if (commentId) {
-  //     const comment = this.comments(commentId);
-  //     if (comment.parentId) {
-  //       return comment.parentId;
-  //     } else {
-  //       return '';
-  //     }
-  //   }
-  //   return '';
-  // }
+  onClickEdit() {
+    this.form = this.comment;
+    this.form.id = this.comment.id;
+  }
+  /**
+   * Hide edit form and show comment.
+   */
+  onClickEditCancel() {
+    this.form = {};
+  }
 
-
-
-  onClickLike(id: string) {
-    this.fire.comment.like(id).then(re => {
+  onClickLike() {
+    this.fire.comment.like(this.comment.id).then(re => {
       // console.log(`comment like. re: `, re);
     }).catch(e => alert(e.message));
   }
-  onClickDislike(id: string) {
-    this.fire.comment.dislike(id).then(re => {
+  onClickDislike() {
+    this.fire.comment.dislike(this.comment.id).then(re => {
       // console.log(`comment dislike. re: `, re);
     })
       .catch(e => alert(e.message));

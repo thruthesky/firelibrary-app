@@ -10,10 +10,13 @@ import { FireService } from './modules/firelibrary/core';
 export class AppComponent {
   title = 'app';
 
+  installed = false;
   constructor(public fire: FireService) {
 
     fire.setLanguage('ko')
       .catch( e => alert('Failed to load language file. ' + e.message) );
+
+    fire.checkInstall().then( re => this.installed = re.data.installed ).catch(e => alert(e.message));
 
 
   }

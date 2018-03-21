@@ -24,6 +24,8 @@ import { CategoryComponent } from './components/category/category.component';
 import { PostComponent } from './components/post/post.component';
 import { TestComponent } from './components/test/test.component';
 import { CommentComponent } from './components/comment/comment.component';
+import { CommentListComponent } from './components/comment/comment-list.component';
+import { InstallComponent } from './components/install/install.component';
 
 
 
@@ -35,6 +37,7 @@ const appRoutes: Routes = [
   { path: 'category', component: CategoryComponent },
   { path: 'post', component: PostComponent },
   { path: 'test', component: TestComponent },
+  { path: 'install', component: InstallComponent },
   { path: '', component: HomeComponent },
   { path: '**', component: HomeComponent }
 ];
@@ -49,7 +52,9 @@ const appRoutes: Routes = [
     CategoryComponent,
     PostComponent,
     TestComponent,
-    CommentComponent
+    CommentComponent,
+    CommentListComponent,
+    InstallComponent
   ],
   imports: [
     BrowserModule,
