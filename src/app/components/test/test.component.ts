@@ -50,6 +50,7 @@ export class TestComponent extends TestTools implements OnInit {
     await (new TestError()).run();
     await (new TestCategory()).run();
     await (new TestPost()).run();
+    await (new TestUser()).run();
     await (new TestRules()).run();
 
   }

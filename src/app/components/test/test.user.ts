@@ -34,17 +34,11 @@ export class TestUser extends TestTools {
     /**
     *
     */
-    async asAnonymous() {
+    async run() {
         await this.userRegisterEmailValidation();
         await this.userRegisterPasswordValidation();
         await this.userRegisterSuccess();
         await this.userLoginTest();
-    }
-    async asMember() {
-    }
-
-    async asAdmin() {
-
     }
     /**
     * Test Email validation.
@@ -184,19 +178,19 @@ export class TestUser extends TestTools {
         */
         await this.fire.user.login(undefined,  'Password123')
         .then( user => { this.bad('Email `undefined` test should be error', user); })
-        .catch( e => { this.test(FIREBASE_API_ERROR, 'Email is `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Email is `undefined` should be a valid string'); });
         /**
         * Test password is undefined
         */
         await this.fire.user.login('email@gmail.com',  undefined)
         .then( user => { this.bad('Password is `undefined`. Expect Error. ', user); })
-        .catch( e => { this.test(FIREBASE_API_ERROR, 'Password is `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password is `undefined` should be a valid string', e); });
         /**
         * Test both email and paswword are `undefined`
         */
         await this.fire.user.login(undefined,  undefined)
         .then( user => { this.bad('Password and Email are `undefined`. Expect Error. ', user); })
-        .catch( e => { this.test(FIREBASE_API_ERROR, 'Password and Email are `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password and Email are `undefined` should be a valid string', e); });
         /**
         * Test login invalid email.
         */
