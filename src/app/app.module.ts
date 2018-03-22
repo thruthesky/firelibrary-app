@@ -27,6 +27,7 @@ import { CommentComponent } from './components/comment/comment.component';
 import { CommentListComponent } from './components/comment/comment-list.component';
 import { InstallComponent } from './components/install/install.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { DataComponent } from './components/data/data.component';
 
 
 
@@ -57,7 +58,8 @@ const appRoutes: Routes = [
     CommentComponent,
     CommentListComponent,
     InstallComponent,
-    ProfileComponent
+    ProfileComponent,
+    DataComponent
   ],
   imports: [
     BrowserModule,

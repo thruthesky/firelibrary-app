@@ -176,22 +176,6 @@ export class TestTools {
 
     }
 
-    async prepareTest(): Promise<any> {
-        // await this.setAdmin();
-            const is = await this.fire.checkInstall();
-            if (!is.data.installed) {
-                await this.fire.install({email: settings.ADMIN_EMAIL}).then(re => {
-                    this.test( re.data === true, 'Installed?');
-                }).catch(e => this.bad('failed to install'));
-            } else {
-                console.log('System installed!');
-            }
-            const isAdmin = await this.loginAsAdmin();
-            if (isAdmin) {
-            await this.fire.category.create({ id: settings.TEST_CATEGORY, name: 'Testing' })
-            .catch(e => console.log(settings.TEST_CATEGORY, ' already exists!'));
-            }
-        }
 
 }
 

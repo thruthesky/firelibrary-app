@@ -23,6 +23,7 @@ export class PostComponent implements OnInit, OnDestroy {
 
   /// post list
   // category;
+
   constructor(
     public fire: FireService
   ) {
@@ -158,4 +159,5 @@ export class PostComponent implements OnInit, OnDestroy {
     })
       .catch(e => alert(e.message));
   }
+
 }

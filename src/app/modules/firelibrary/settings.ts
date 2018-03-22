@@ -6,7 +6,7 @@
 
 
 let domain;
-domain = 'unit-test';
+domain = 'localhost';
 
 /**
  * Examples of domain.

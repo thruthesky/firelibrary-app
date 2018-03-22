@@ -9,7 +9,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "pack": "ng-packagr -p package.json"
+    "pack": "ng-packagr -p package.json",
+    "doc": "compodoc -p src/tsconfig.app.json --output ~/www/tmp/firelibrary-doc"
   },
   "private": false,
   "dependencies": {

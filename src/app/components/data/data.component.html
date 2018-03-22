@@ -1,0 +1,9 @@
+<div>
+  <input type="file" name="fileToUpload" (change)="onChangeFile($event)">
+</div>
+<div *ngIf="upload.progress">Uploaded: {{ upload.progress }}%</div>
+<div class="files" *ngIf="post?.data?.length">
+  <div *ngFor="let data of post.data" style="display: inline-block; margin: 2px; border: 1px solid grey; padding: 2px; width: 120px; height: 68px; overflow: hidden;">
+    <img width="100%" src="{{ data.url }}">
+  </div>
+</div>

@@ -22,7 +22,16 @@ export class Base {
     /**
      * Domain collection name under root collection.
      * You can change the collectionDomain programatically.
-     * @code Base.collectionName = 'your-domain';
+     * @code
+            oldDomain
+            constructor(...) {
+                this.oldDomain = Base.collectionDomain;
+                Base.collectionDomain = 'unit-test';
+            }
+            ngOnDestroy() {
+                Base.collectionDomain = this.oldDomain;
+            }
+     * @endcode
      */
     static collectionDomain: string = SystemSettings.COLLECTION_DOMAIN;
     static firebase: firebase.app.App = null;
@@ -490,7 +499,9 @@ export class Base {
         const ref = this.settingsReference.doc('admin');
         console.log(`Going to set admin email on ${ref.path}`);
         return ref.set({ email: options.email }).then(() => {
-            return this.settingsReference.doc('installed')
+            const installRef = this.settingsReference.doc('installed');
+            console.log(`Admin email is set. Going to set installed.time at ${installRef.path}`);
+            return installRef
                     .set({time: firebase.firestore.FieldValue.serverTimestamp()});
         })
             .then(re => this.success(true))

@@ -9,7 +9,8 @@ import {
     POST_ID_NOT_EMPTY,
     POST_DELETE,
     ALREADY_LIKED,
-    POST_DELETED
+    POST_DELETED,
+    POST_PAGE_OPTIONS
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -280,29 +281,31 @@ export class Post extends Base {
     }
 
     /**
-     * `Post.page()` - Gets post data to display on the page.
+     * Gets post data to display on the page.
      *
-     * @desc  1. Build the `query` for parsing data to firebase.
-     * - `collection()` - post collection super(COLLECTIONS.POST)
-     * - `.where()` - category
-     * - `.orderBy()` - created, desc
-     * - `.startAfter()` - last doc queried
-     * - `.limit()` - limits doc tobe queried.
+     * 1. Build the `query` for parsing data to firebase.
+     *  `collection()` - post collection super(COLLECTIONS.POST)
+     *  `.where()` - category
+     *  `.orderBy()` - created, desc
+     *  `.startAfter()` - last doc queried
+     *  `.limit()` - limits doc tobe queried.
      *
-     * @desc 2. Will get data based on query above.
+     * - Will get data based on query above.
      *  For each document `doc` parsed. We do.
      * - Gets document as object. as what `doc.data()` does.
      * - Pushes additional properties `id` amd `date` post date created.
      * - Subscribe or listen to `post changes` and `likes`.
      *
-     * @desc 3. Updates `cursor` based on the last `document` parsed.
+     * - Updates `cursor` based on the last `document` parsed.
      *
-     * @desc 4. if category changes `Post.page()` will start again and unsubscribe to posts from previous category.
+     * - if category changes `Post.page()` will start again and unsubscribe to posts from previous category.
      *
-     * @param
-     *      options['listenOnLikes'] if set true, it listens all the posts in the list.
+     * @param POST_PAGE_OPTIONS options is the options to load posts.
+     * @return Promise<Array<POST>> posts that are loaded.
+     *
+     *
      */
-    page(options: { category?: string, limit: number }): Promise<Array<POST>> {
+    page(options: POST_PAGE_OPTIONS): Promise<Array<POST>> {
         const reset = this.resetLoadPage(options.category);
         let query: firebase.firestore.Query = <any>this.collection;
         if (this.categoryId && this.categoryId !== 'all') {

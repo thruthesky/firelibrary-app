@@ -1,6 +1,6 @@
 ﻿import { TestUser } from './test.user';
 import { POST, USER } from './../../modules/firelibrary/providers/etc/interface';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FireService,
   _,
@@ -16,8 +16,10 @@ import { TestCategory } from './test.category';
 import { TestPost } from './test.post';
 import { TestRules } from './test.rules';
 
+
 import * as firebase from 'firebase';
 import * as settings from './test.settings';
+import { TestInstall } from './test.install';
 
 
 @Component({
@@ -25,28 +27,50 @@ import * as settings from './test.settings';
   templateUrl: './test.component.html',
   styleUrls: ['./test.component.css']
 })
-export class TestComponent extends TestTools implements OnInit {
+export class TestComponent extends TestTools implements OnInit, OnDestroy {
+  oldDomain = '';
   constructor(
     fire: FireService
   ) {
     super();
     TestTools.fire = fire;
+    this.oldDomain = Base.collectionDomain;
     Base.collectionDomain = 'unit-test';
   }
+
   ngOnInit() {
-    this.prepareTest()
-    .then(() => { console.log('Preparation done... test starts!'); })
-    .then(() => { this.run(); })
-    .catch( e => this.bad('Error preparing test...', e) );
+    this.run();
+  }
+  ngOnDestroy() {
+    Base.collectionDomain = this.oldDomain;
+  }
+
+
+  async prepareTest(): Promise<any> {
+    const isAdmin = await this.loginAsAdmin();
+    if (isAdmin) {
+      await this.fire.category.create({ id: settings.TEST_CATEGORY, name: 'Testing' })
+        .catch(e => console.log(settings.TEST_CATEGORY, ' already exists!'));
+    }
   }
 
   /**
   * Runs the all service testing.
   */
   async run() {
+    await (new TestInstall).run();
+
+    await this.prepareTest()
+      .then(() => { console.log('Preparation done... test starts!'); })
+      .then(() => {
+        // this.run();
+      })
+      .catch(e => this.bad('Error preparing test...', e));
+
     this.version();
     this.library();
     this.translate();
+
 
     await (new TestError()).run();
     await (new TestCategory()).run();
