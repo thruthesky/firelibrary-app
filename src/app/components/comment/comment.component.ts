@@ -14,7 +14,7 @@ export class CommentComponent implements OnInit, OnDestroy {
   @Input() comment: COMMENT = {};
   form: COMMENT = {};
   loader = {
-    creating: false
+    progress: false
   };
   constructor(
     public fire: FireService
@@ -53,12 +53,21 @@ export class CommentComponent implements OnInit, OnDestroy {
     event.preventDefault();
     this.form.postId = this.post.id;
     this.form.parentId = this.comment.id;
+    this.loader.progress = true;
     if (this.form.id) {
-      this.fire.comment.edit(this.form).then(re => this.form = {}).catch(e => alert(e.message));
+      this.fire.comment.edit(this.form).then(re => this.onSubmitThen(re)).catch(e => this.onSubmitCatch(e));
     } else {
-      this.fire.comment.create(this.form).then(re => this.form = {}).catch(e => alert(e.message));
+      this.fire.comment.create(this.form).then(re => this.onSubmitThen(re)).catch(e => this.onSubmitCatch(e));
     }
     return false;
+  }
+  onSubmitThen(re) {
+    this.form = {};
+    this.loader.progress = false;
+  }
+  onSubmitCatch(e) {
+    this.loader.progress = false;
+    alert(e.message);
   }
 
 
@@ -77,13 +86,15 @@ export class CommentComponent implements OnInit, OnDestroy {
   }
 
   onClickLike() {
+    this.comment['likeInProgress'] = true;
     this.fire.comment.like(this.comment.id).then(re => {
-      // console.log(`comment like. re: `, re);
+      this.comment['likeInProgress'] = false;
     }).catch(e => alert(e.message));
   }
   onClickDislike() {
+    this.comment['dislikeInProgress'] = true;
     this.fire.comment.dislike(this.comment.id).then(re => {
-      // console.log(`comment dislike. re: `, re);
+      this.comment['dislikeInProgress'] = false;
     })
       .catch(e => alert(e.message));
   }
