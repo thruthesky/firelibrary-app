@@ -1,21 +1,28 @@
-<div class="content" [style.margin-left]="comment.depth * 30 + 'px'" *ngIf=" ! form.id ">
-  ({{comment.depth}})::{{ comment.content }}
-</div>
+<section class="comment" [style.margin-left]="comment.depth * 30 + 'px'">
 
+  <div class="content" *ngIf=" ! form.id ">
+    <div>
+      {{ comment.displayName }} at {{ comment.created }}
+    </div>
+    ({{comment.depth}})::{{ comment.content }}
+  </div>
 
-<div class="form">
-  <form (ngSubmit)=" onSubmit( $event ) ">
-    <input type="text" name="content" [(ngModel)]="form.content">
-    <button type="submit" *ngIf=" ! loader.creating ">{{ form.id ? 'Edit' : 'Create' }} Comment</button>
-    <button type="button" (click)="onClickEditCancel()" *ngIf=" form.id ">Cancel</button>
-  </form>
-</div>
+  <div class="form">
+    <form (ngSubmit)=" onSubmit( $event ) ">
+      <input type="text" name="content" [(ngModel)]="form.content" [disabled]="loader.progress">
+      <button type="submit" *ngIf=" ! loader.progress ">{{ form.id ? 'Edit' : 'Create' }} Comment</button>
+      <button type="button" (click)="onClickEditCancel()" *ngIf=" form.id && ! loader.progress">Cancel</button>
+      <span class="loader" *ngIf="loader.progress">Requesting. Please wait.</span>
+    </form>
+  </div>
 
+  <div class="buttons" *ngIf="!form.id">
+    <button (click)="onClickEdit()">Edit</button>
+    <button>Delete</button>
+    <button (click)="onClickLike()" *ngIf=" !comment['likeInProgress'] ">Like({{comment.numberOfLikes ? comment.numberOfLikes : 0}})</button>
+    <span class="loader" *ngIf=" comment['likeInProgress'] ">Like...</span>
+    <button (click)="onClickDislike()" *ngIf=" !comment['dislikeInProgress'] ">Dislike({{comment.numberOfDislikes ? comment.numberOfDislikes : 0}})</button>
+    <span class="loader" *ngIf=" comment['dislikeInProgress'] ">Dislike...</span>
+  </div>
 
-<div class="buttons" *ngIf="!form.id">
-  <button (click)="onClickEdit()">Edit</button>
-  <button>Delete</button>
-  <button (click)="onClickLike()">Like({{comment.numberOfLikes ? comment.numberOfLikes : 0}})</button>
-  <button (click)="onClickDislike()">Dislike({{comment.numberOfDislikes ? comment.numberOfDislikes : 0}})</button>
-</div>
-
+</section>

@@ -126,6 +126,7 @@ export class Comment extends Base {
     create(comment: COMMENT): Promise<COMMENT_CREATE> {
         _.sanitize(comment);
         comment.uid = this.user.uid;
+        comment.displayName = this.user.displayName;
         comment.created = firebase.firestore.FieldValue.serverTimestamp();
         if ( comment.parentId ) {
             comment.depth = this.getComment( comment.parentId ).depth + 1;

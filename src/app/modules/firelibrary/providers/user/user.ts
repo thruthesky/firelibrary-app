@@ -1,5 +1,5 @@
-﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG, UNKNOWN, FIREBASE_API_ERROR } from '../etc/error';
-import { Base, _, USER, COLLECTIONS, RESPONSE, USER_CREATE, PERMISSION_DENIED } from './../etc/base';
+﻿import { INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG, UNKNOWN, FIREBASE_API_ERROR, USER_NOT_FOUND } from '../etc/error';
+import { Base, _, USER, COLLECTIONS, RESPONSE, USER_CREATE, PERMISSION_DENIED, USER_DATA } from './../etc/base';
 import * as firebase from 'firebase';
 export class User extends Base {
     constructor() {
@@ -38,6 +38,33 @@ export class User extends Base {
             return null;
         }
     }
+    get photoURL(): string {
+        if (this.auth.currentUser) {
+            return this.auth.currentUser.photoURL;
+        } else {
+            return null;
+        }
+    }
+    /**
+     * Returns user data
+     */
+    data(): Promise<USER_DATA> {
+        const user: USER = {
+            email: this.email,
+            displayName: this.displayName,
+            photoURL: this.photoURL,
+        };
+        return this.collection.doc(this.uid).get().then(doc => {
+            if (doc && doc.exists) {
+                // console.log('user: ', user, this.auth.currentUser);
+                return this.success({ user: Object.assign(user, doc.data()) });
+            } else {
+                return this.failure(USER_NOT_FOUND);
+            }
+        })
+            .catch(e => this.failure(e));
+    }
+
     /**
     * @desc Validates user data to be used for registration
     * @param user User data to validate
@@ -85,7 +112,7 @@ export class User extends Base {
                 return this.auth.createUserWithEmailAndPassword(data.email, data.password); // 1. create authentication.
             })
             .then((user: firebase.User) => {
-                return this.updateAuthentication(user); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
+                return this.updateAuthentication(user, data); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
             })
             .then((user: firebase.User) => {
                 console.log(`Going to set user data under users collection: `);
@@ -131,11 +158,12 @@ export class User extends Base {
     * @desc it does not update other information.
     * @see `this.updateProfile()` for updating user information.
     */
-    updateAuthentication(user: firebase.User): Promise<firebase.User> {
+    updateAuthentication(user: firebase.User, data: USER): Promise<firebase.User> {
         const up = {
-            displayName: user.displayName,
-            photoURL: user.photoURL
+            displayName: data.displayName,
+            photoURL: data.photoURL
         };
+        console.log('updateAuthentication: up: ', up);
         return user.updateProfile(_.sanitize(up)).then(x => user);
     }
 
@@ -150,7 +178,7 @@ export class User extends Base {
         // return this.collection.doc(user.uid).set(data).then(x => user);
         data.uid = this.uid;
         return this.create(data)
-            .catch( e => {
+            .catch(e => {
                 console.log(`Failed to set data under users collection: `);
                 return this.failure(e);
             });

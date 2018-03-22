@@ -11,7 +11,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
     @Input() post: POST = {};
     comment: COMMENT = {};
     loader = {
-        creating: false
+        creating: false,
+        commentList: false
     };
     constructor(
         public fire: FireService
@@ -30,8 +31,10 @@ export class CommentListComponent implements OnInit, OnDestroy {
             console.error('Post ID is empty. Something is wrong.');
             return;
         }
+        this.loader.commentList = true;
         this.fire.comment.load(this.post.id).then(comments => {
             console.log(`comments: `, comments);
+            this.loader.commentList = false;
         }).catch(e => alert(e.message));
     }
     ngOnDestroy() {
@@ -48,7 +51,14 @@ export class CommentListComponent implements OnInit, OnDestroy {
         event.preventDefault();
         this.comment.postId = this.post.id;
         this.comment.parentId = '';
-        this.fire.comment.create(this.comment).then(re => this.comment = {}).catch(e => alert(e.message));
+        this.loader.creating = true;
+        this.fire.comment.create(this.comment).then(re => {
+            this.comment = {};
+            this.loader.creating = false;
+        }).catch(e => {
+            this.loader.creating = false;
+            alert(e.message);
+        });
         return false;
     }
 

@@ -5,7 +5,7 @@
       <button type="button" [routerLink]="['/register']" *ngIf="fire.user.isLogout">Register</button>
       <button type="button" [routerLink]="'login'" *ngIf="fire.user.isLogout">Login</button>
       <button type="button" (click)="fire.user.logout()" *ngIf="fire.user.isLogin">Logout</button>
-      <button type="button" (click)="true" *ngIf="fire.user.isLogin">Profile Update</button>
+      <button type="button" [routerLink]="'profile'" (click)="true" *ngIf="fire.user.isLogin">Profile Update</button>
       <button type="button" [routerLink]="'post'">Post</button>
       <button type="button" [routerLink]="'category'">Category</button>
       <button type="button" [routerLink]="'test'">Unit Test</button>

@@ -18,7 +18,7 @@ export class RegisterComponent implements OnInit {
   onSubmitRegisterForm(event: Event) {
 
     event.preventDefault();
-
+    console.log('user data: ', this.user);
     this.fire.user.register(this.user).then(user => {
       console.log('user register: ', user);
     })
