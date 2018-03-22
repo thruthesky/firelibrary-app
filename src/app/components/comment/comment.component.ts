@@ -33,6 +33,7 @@ export class CommentComponent implements OnInit, OnDestroy {
       console.error('Post ID is empty. Something is wrong.');
       return;
     }
+    this.comment.date = (new Date(this.comment.created)).toLocaleTimeString();
     // this.fire.comment.load(this.post.id).then(comments => {
     //   console.log(`comments: `, comments);
     // }).catch(e => alert(e.message));

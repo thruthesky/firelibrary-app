@@ -126,6 +126,7 @@ export interface COMMENT {
     numberOfLikes?: number;
     numberOfDislikes?: number;
     depth?: number;                 // for indenting.
+    date?: string;                  // client only.
 }
 
 
