@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import * as firebase from 'firebase';
-import { RESPONSE, SYSTEM_CONFIG, INSTALLED } from './interface';
+import { RESPONSE, SYSTEM_CONFIG, INSTALLED, FIRESERVICE_SETTINGS } from './interface';
 export * from './interface';
 import { Library as _ } from './library';
 export { Library as _ } from './library';
@@ -12,21 +12,6 @@ import * as SystemSettings from '../../settings';
 import { COLLECTIONS } from './define';
 
 
-
-interface FIRESERVICE_SETTINGS {
-    /**
-     * When the post has `added`, `edited`, `deleted`, the change will be updated in realtime.
-     * It does not listen the change by default.
-     */
-    listenOnPostChange?: boolean;
-    /**
-     * When comments are `added`, `edited`, `deleted`, the change will be updated in realtime.
-     * It does not listen the change by default.
-     */
-    listenOnCommentChange?: boolean;
-    listenOnPostLikes?: boolean;
-    listenOnCommentLikes?: boolean;
-}
 
 
 export class Base {
@@ -64,7 +49,9 @@ export class Base {
 
     static settings: FIRESERVICE_SETTINGS = {};
 
-    static ngZone;
+    /// @todo this generate error on packagmr. it cannot be referenced as static.
+    // static ngZone;
+
     ///
     auth: firebase.auth.Auth = null;
     db: firebase.firestore.Firestore = null;
@@ -100,13 +87,6 @@ export class Base {
         }
     }
 
-
-
-
-    renderPage(ms = 0) {
-        console.log(`run FireService.renderPage()`);
-        setTimeout(() => Base.ngZone.run(() => { }), ms);
-    }
 
     get http(): HttpClient {
         return Base.http;

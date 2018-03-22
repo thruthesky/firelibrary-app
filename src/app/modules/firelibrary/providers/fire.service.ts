@@ -27,7 +27,6 @@ export class FireService extends Base {
     this.post = new Post();
     this.comment = new Comment();
     Base.http = http;
-    Base.ngZone = ngZone;
     this.initUser();
   }
 

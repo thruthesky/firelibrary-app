@@ -1,3 +1,20 @@
+
+export interface FIRESERVICE_SETTINGS {
+    /**
+     * When the post has `added`, `edited`, `deleted`, the change will be updated in realtime.
+     * It does not listen the change by default.
+     */
+    listenOnPostChange?: boolean;
+    /**
+     * When comments are `added`, `edited`, `deleted`, the change will be updated in realtime.
+     * It does not listen the change by default.
+     */
+    listenOnCommentChange?: boolean;
+    listenOnPostLikes?: boolean;
+    listenOnCommentLikes?: boolean;
+}
+
+
 export interface USER {
     uid?: string; // `uid` should not be saved in document. the document id is `uid`.
     email: string;

@@ -3,8 +3,6 @@
 Firebase CMS Library for Frontend
 
 ## TODO
-* Publish as npm.
-* Make it work with ionic/simple js/vuejs.
 * @bug realtime update is not working when there is no post. it works only after there is a post.
 * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
 * @doc if it like/dislike double clicked quickly, there will be permission error. moderate it with loader.
@@ -48,6 +46,7 @@ Firebase CMS Library for Frontend
 * Cleaning tool for deleted posts.
 
 * [ laster ] Make it work on `Vuejs`. Needs to consider to rewrite client app.
+ * To make it work on `vuejs` and other platform, it needs to be rewritten on simple javascript platform not in angular paltform.
 
 ## Change log
 * @since 2018-03-20 admin email must be saved under /fire-library/{domain}/settings/admin/{email: ... }
@@ -295,53 +294,122 @@ service cloud.firestore {
     function isLogin() {
     	return request.auth != null;
     }
-	  function isAdmin() {
+    function isMyDocument() {
+    	return resource.data.uid == request.auth.uid
+    }
+    function isDomainAdmin(domain) {
       return isLogin()
-        && exists(/databases/$(database)/documents/settings/admins/$(request.auth.token.email)/data);
+        && get(/databases/$(database)/documents/fire-library/$(domain)/settings/admin).data.email == request.auth.token.email;
     }
-    function isMy() {
-    	return resource.data.uid == request.auth.uid;
-    }
-    function userReadValidator() {
-    	return request.data.uid == request.auth.uid;
-    }
-    function userCreateValidator() {
-    	return isLogin() && request.resource.data.id == request.auth.uid;
-    }
-    function userUpdateValidator() {
-    	return isLogin() && request.data.uid == request.auth.uid;
-    }
-    function postCreateValidator() {
+    
+    function domainPostLikeCreateValidator(domain, post, col) {
     	return isLogin()
-        && request.resource.data.keys().hasAll(['category', 'uid'])
-        && exists(/databases/$(database)/documents/categories/$(request.resource.data.category))
-        && request.resource.data.uid == request.auth.uid;
+      	&& !exists(/databases/$(database)/documents/fire-library/$(domain)/posts/$(post)/$(col)/$(request.auth.uid));
     }
-    function postUpdateValidator() {
-    	return postCreateValidator() && isMy();
+    
+    function domainPostLikeDeleteValidator(domain, post, col) {
+    	return isLogin()
+      	&& exists(/databases/$(database)/documents/fire-library/$(domain)/posts/$(post)/$(col)/$(request.auth.uid));
     }
-    function postDeleteValidator() {
-    	return isMy() || isAdmin();
+  
+    function domainCommentLikeCreateValidator(domain, post, comment, col) {
+    	return isLogin()
+      	&& !exists(/databases/$(database)/documents/fire-library/$(domain)/posts/$(post)/comments/$(comment)/$(col)/$(request.auth.uid));
     }
-
-    match /users/{user} {
-    	allow read: if userReadValidator();
-      allow create: if userCreateValidator();
-      allow update: if userUpdateValidator();
-      allow delete: if isMy();
+    function domainCommentLikeDeleteValidator(domain, post, comment, col) {
+    	return isLogin()
+      	&& exists(/databases/$(database)/documents/fire-library/$(domain)/posts/$(post)/comments/$(comment)/$(col)/$(request.auth.uid));
     }
-    match /categories/{category} {
+    
+    // settings collection
+    match /fire-library/{domain}/settings {
+    	match /admin {
+      	allow read: if false;
+        allow create: if !exists(/databases/$(database)/documents/fire-library/$(domain)/settings/admin);
+        allow update: if isDomainAdmin( domain );
+      }
+      match /{document=**} {
+      	allow read: if true;
+        allow write: if isDomainAdmin( domain );
+      }
+    }
+    
+    // user collection (new rule)
+    match /fire-library/{domain}/users/{user} {
+    	allow read: if isMyDocument();
+      allow create: if isLogin();
+      allow update: if isMyDocument();
+      allow delete: if isMyDocument();
+    }
+    
+    // category collection (new urle)
+    match /fire-library/{domain}/categories/{category} {
     	allow read: if true;
-      allow create: if isAdmin();
-      allow update: if isAdmin();
+      allow create: if isDomainAdmin(domain);
+      allow update: if isDomainAdmin(domain);
+      allow delete: if isDomainAdmin(domain);
     }
-    match /posts/{post} {
-      allow read: if true;
-      allow create: if postCreateValidator();
-      allow update: if postUpdateValidator();
-      allow delete: if postDeleteValidator();
-      // allow get: if request.query.limit <= 10;
+    
+    // post collection ( new rule )
+    match /fire-library/{domain}/posts/{post} {
+      allow get: if true;
+      allow list: if request.query.limit <= 50;
+      allow create: if isLogin()
+        && request.resource.data.keys().hasAll(['category', 'uid'])
+        && exists(/databases/$(database)/documents/fire-library/$(domain)/categories/$(request.resource.data.category))
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if isLogin() && isMyDocument();
+      // allow delete: if postDeleteValidator();
+      
+      match /likes {
+        match /count {
+        	allow read, write: if true;
+        }
+      	match /{like} {
+          allow read: if true;
+          allow create: if domainPostLikeCreateValidator( domain, post, 'likes' );
+          allow delete: if domainPostLikeDeleteValidator( domain, post, 'likes' );
+        }
+      }   
+      match /dislikes {
+        match /count {
+        	allow read, write: if true;
+        }
+      	match /{like} {
+          allow read: if true;
+          allow create: if domainPostLikeCreateValidator( domain, post, 'dislikes' );
+          allow delete: if domainPostLikeDeleteValidator( domain, post, 'dislikes' );
+        }
+      }
+      match /comments {
+        match /{comment} {
+        	allow read: if true;
+        	allow create: if isLogin();
+          allow update: if isLogin() && isMyDocument();                
+          match /likes {
+            match /count {
+              allow read, write: if true;
+            }
+            match /{like} {
+              allow read: if true;
+              allow create: if domainCommentLikeCreateValidator( domain, post, comment, 'likes' );
+              allow delete: if domainCommentLikeDeleteValidator( domain, post, comment, 'likes' );
+            }
+          }   
+          match /dislikes {
+            match /count {
+              allow read, write: if true;
+            }
+            match /{like} {
+              allow read: if true;
+              allow create: if domainCommentLikeCreateValidator( domain, post, comment, 'dislikes' );
+              allow delete: if domainCommentLikeDeleteValidator( domain, post, comment, 'dislikes' );
+            }
+          }
+        }
+      }
     }
+    // eo new rule
   }
 }
 ````

@@ -100,6 +100,7 @@ export class Comment extends Base {
 
     /**
      * Sorts the comments.
+     * @desc The app may need to rerender the page depending on the app context.
      * @param postId Post Document ID
      */
     sortComments(postId: string, comment: COMMENT) {
@@ -115,7 +116,6 @@ export class Comment extends Base {
             this.commentIds[postId].splice(pos + 1, 0, comment.id);
         }
         // this.commentIds[postId].push(comment.id);
-        this.renderPage(100);
         return this.commentIds[postId];
     }
 
