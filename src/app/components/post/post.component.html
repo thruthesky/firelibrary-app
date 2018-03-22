@@ -39,7 +39,7 @@
 
 <ul>
   <li *ngFor=" let id of getPostIDs()">
-    <div>{{ getPost(id).category }} / {{ getPost(id).title }} / {{ getPost(id).date }}</div>
+    <div>{{ getPost(id).category }} / {{ getPost(id).title }} by {{ getPost(id).displayName }} / {{ getPost(id).date }}</div>
     <div style="padding: 1em; background-color: #eee;">
       {{ getPost(id).content }}
     </div>

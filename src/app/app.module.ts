@@ -26,6 +26,7 @@ import { TestComponent } from './components/test/test.component';
 import { CommentComponent } from './components/comment/comment.component';
 import { CommentListComponent } from './components/comment/comment-list.component';
 import { InstallComponent } from './components/install/install.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 
 
@@ -33,6 +34,7 @@ import { InstallComponent } from './components/install/install.component';
 
 const appRoutes: Routes = [
   { path: 'register', component: RegisterComponent },
+  { path: 'profile', component: ProfileComponent },
   { path: 'login', component: LoginComponent },
   { path: 'category', component: CategoryComponent },
   { path: 'post', component: PostComponent },
@@ -54,7 +56,8 @@ const appRoutes: Routes = [
     TestComponent,
     CommentComponent,
     CommentListComponent,
-    InstallComponent
+    InstallComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,

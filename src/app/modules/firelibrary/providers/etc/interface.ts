@@ -102,6 +102,7 @@ export interface COMMENT {
     postId?: string;                // root post id
     parentId?: string;              // comment parent id. If the comment is immediate reply of a post, then it is a empty stirng.
     uid?: string;
+    displayName?: string;
     content?: string;
     created?: any;
     updated?: any;
@@ -183,3 +184,11 @@ export interface INSTALLED extends RESPONSE {
         installed: boolean;
     };
 }
+
+
+export interface USER_DATA extends RESPONSE {
+    data: {
+        user: USER;
+    };
+}
+

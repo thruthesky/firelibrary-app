@@ -77,13 +77,16 @@ export class Post extends Base {
         // }
         return Promise.resolve(null);
     }
+
     private createSanitizer(post: POST) {
         _.sanitize(post);
         post.uid = this.user.uid;
+        post.date = this.user.displayName;
         post.created = firebase.firestore.FieldValue.serverTimestamp();
         // console.log(post);
         return post;
     }
+
     /**
      * Creates a post.
      * @desc if `post.id` exists, then it rejects.

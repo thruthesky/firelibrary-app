@@ -3,10 +3,8 @@
 Firebase CMS Library for Frontend
 
 ## TODO
-* Dispaly author name, date
 * Publish as npm.
-* Make a test app for firelibrary.
-* Make it work with simple js. vuejs.
+* Make it work with ionic/simple js/vuejs.
 * @bug realtime update is not working when there is no post. it works only after there is a post.
 * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
 * @doc if it like/dislike double clicked quickly, there will be permission error. moderate it with loader.

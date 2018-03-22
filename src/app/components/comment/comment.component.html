@@ -1,6 +1,9 @@
 <section class="comment" [style.margin-left]="comment.depth * 30 + 'px'">
 
   <div class="content" *ngIf=" ! form.id ">
+    <div>
+      {{ comment.displayName }} at {{ comment.created }}
+    </div>
     ({{comment.depth}})::{{ comment.content }}
   </div>
 

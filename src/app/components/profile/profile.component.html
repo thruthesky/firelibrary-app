@@ -1,0 +1,36 @@
+<h2 *ngIf="fire.user.isLogout">Please login to update profile.</h2>
+<form (ngSubmit)=" onSubmitForm( $event ) " *ngIf=" fire.user.isLogin ">
+  <div>
+    <label>Email:</label>
+    <span>
+      {{ fire.user.email }}
+    </span>
+  </div>
+  
+
+  <div>
+    <label>Name:</label>
+    <span>
+      <input type="text" name="displayName" [(ngModel)]="user.displayName">
+    </span>
+  </div>
+
+  <div>
+    <label>Mobile No.:</label>
+    <span>
+      <input type="number" name="mobile" [(ngModel)]="user.mobile">
+    </span>
+  </div>
+
+  <div>
+    <label>City:</label>
+    <span>
+      <input type="text" name="city" [(ngModel)]="user.city">
+    </span>
+  </div>
+
+  <button type="submit">Update Profile</button>
+  <button type="button" [routerLink]="'/'">Cancel</button>
+
+</form>
+
