@@ -122,7 +122,6 @@ export class Library {
     }
 
 
-
     /**
      *
      * Removes properties with `undefined` value from the object and returns it.

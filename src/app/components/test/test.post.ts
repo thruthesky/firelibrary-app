@@ -1,27 +1,28 @@
 import { POST_CREATE } from './../../modules/firelibrary/providers/etc/interface';
 import { CATEGORY_ID_EMPTY, POST_ID_EMPTY } from './../../modules/firelibrary/providers/etc/error';
 import {
-    FireService, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY,
+    FireService, _, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY,
     PERMISSION_DENIED, USER_IS_NOT_LOGGED_IN, POST_ID_NOT_EMPTY
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
+import * as firebase from 'firebase';
 
 export class TestPost extends TestTools {
     constructor(
     ) {
         super();
     }
-
+    /**
+    * Runs all post tests.
+    */
     async run() {
-        await this.createValidatorPostTest();
-        await this.createWithWrongCategoryId();
-        await this.createPostWithDifferentUID();
-        await this.editPostValidator();
+        await this.createValidatorTest();
         await this.postCreate();
+        await this.postEdit();
     }
 
-    async createValidatorPostTest() {
+    async createValidatorTest() {
         const isLogout = await this.logout();
         if (isLogout) {
             /**Validator User is not logged in. */
@@ -50,52 +51,44 @@ export class TestPost extends TestTools {
             this.bad('createValidatorPostTest: Test requires user to login.');
         }
     }
+    /**
+    * Tests post.create()
+    */
+    async postCreate() {
 
-    async createWithWrongCategoryId() {
-        /**Failed with wrong category id */
-        const data: POST = { category: 'wrong', title: 'This is Error' };
+        const data: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
         const isLogin = await this.loginAs('testing123@testing.com', '123456s');
         if ( isLogin ) {
+            /**Success */
             await this.fire.post.create(data)
-            .then(re => { this.bad('Wrong category, Expect error.'); })
-            .catch(e => { this.good('Create post with wrong Category. Permission will be denied by rules.'); });
-        } else {
-            this.bad('createWithWrongCategoryId: Login failed');
-        }
+            .then(re => { this.good('Post created: id:'); })
+            .catch(e => {  this.bad('Create post should be success.', e); });
 
-
-    }
-
-    async createPostWithDifferentUID() {
-        /**Failed with wrong category id */
-        const data: POST = { category: settings.TEST_CATEGORY, title: 'This is Error', uid: 'wrong-user' };
-        const isLogin = await this.loginAs('testing123@testing.com', '123456s');
-        if ( isLogin ) {
+            /**Failed with wrong category id */
+            const post_1 = data;
+            post_1.uid = 'wrong-uid';
             await this.fire.post.create(data)
             .then(re => { this.good('Wrong UID, firelibrary will sanitize UID.'); })
             .catch(e => {
                 this.bad('post.create(): Create post with different UID', e.code );
             });
-        } else {  this.bad('createPostWithDifferentUID: Login failed'); }
 
-
-    }
-
-    async postCreate() {
-        /**Success */
-        const data: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
-        const isLogin = await this.loginAs('testing123@testing.com', '123456s');
-        if ( isLogin ) {
+            /**Failed with wrong category id */
+            const post_2 = data;
+            post_2.category = 'wrong-category';
             await this.fire.post.create(data)
-            .then(re => { this.good('Post created: id:'); })
-            .catch(e => {  this.bad('Create post should be success.', e); });
+            .then(re => { this.bad('Wrong category, Expect error.'); })
+            .catch(e => { this.good('Create post with wrong Category. Permission will be denied by rules.'); });
+
         } else {
             this.bad('PostCreate: Login failed');
         }
 
     }
-
-    async editPostValidator() {
+    /**
+    * Tests post.edit()
+    */
+    async postEdit() {
         const data: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
         const editData: POST = { title: 'Should be error. No post id or no post to edit.' };
         let id = '';
@@ -115,7 +108,14 @@ export class TestPost extends TestTools {
             /**Success */
             editData.id = id;
             await this.fire.post.edit(editData)
-            .then(() => { this.good('success post edited.'); })
+            .then(a => {
+                // console.log('Updated==================>', a.data.post.updated);
+                if ( a.data.post.updated instanceof firebase.firestore.FieldValue ) {
+                    this.good('success post edited.');
+                } else {
+                    this.bad('post.updated is empty. Updating post is falsy.');
+                }
+            })
             .catch(e => { this.bad('Shoud be success post.edit', e); });
 
         } else {
@@ -125,15 +125,31 @@ export class TestPost extends TestTools {
         const isLogout = await this.logout();
         if (isLogout) {
             /**User not login */
-            // editData.id = id;
+            // editData.id = id; // -> editData already modified with id.
             await this.fire.post.edit(editData)
             .then(() => { this.bad('Should be error. User not logged in.'); })
             .catch(e => { this.test(e.code === USER_IS_NOT_LOGGED_IN, 'Expect error. user not login on post.edit'); });
-
+        } else {
+            this.bad('A user is still logged in on `User not logged in test.`');
         }
 
     }
+    /**
+    * Tests post.delete().
+    */
+    async deletePost() {
+        const post: POST = {
+            category: settings.TEST_CATEGORY,
+            title: 'This post will be deleted',
+            content: 'this post should be deleted for testing'
+        };
+        const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
+        if (isLogin) {
 
+        } else {
+
+        }
+    }
 
 }
 

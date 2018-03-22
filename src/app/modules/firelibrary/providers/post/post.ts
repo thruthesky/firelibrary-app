@@ -52,7 +52,7 @@ export class Post extends Base {
 
     constructor(
     ) {
-        super(COLLECTIONS.POSTS);
+        super(COLLECTIONS.POSTS); // Base constructor to Base.collectionName
         this.user = new User();
     }
 
