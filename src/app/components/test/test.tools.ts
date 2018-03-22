@@ -178,21 +178,20 @@ export class TestTools {
 
     async prepareTest(): Promise<any> {
         // await this.setAdmin();
-        const isAdmin = await this.loginAsAdmin();
-        if (isAdmin) {
-            // awiat this.fire.checkInstall() {
-
-            // }
-            // await this.fire.install({email: firebase.auth().currentUser.email}).then(re => {
-            //     this.test( re.data === true, 'Installed?');
-            // })
-            // .catch(e => this.bad('failed to install'));
+            const is = await this.fire.checkInstall();
+            if (!is.data.installed) {
+                await this.fire.install({email: settings.ADMIN_EMAIL}).then(re => {
+                    this.test( re.data === true, 'Installed?');
+                }).catch(e => this.bad('failed to install'));
+            } else {
+                console.log('System installed!');
+            }
+            const isAdmin = await this.loginAsAdmin();
+            if (isAdmin) {
             await this.fire.category.create({ id: settings.TEST_CATEGORY, name: 'Testing' })
             .catch(e => console.log(settings.TEST_CATEGORY, ' already exists!'));
-        } else {
-            this.bad('Error login as admin...');
+            }
         }
-    }
 
 }
 

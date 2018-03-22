@@ -184,18 +184,18 @@ export class TestUser extends TestTools {
         */
         await this.fire.user.login('email@gmail.com',  undefined)
         .then( user => { this.bad('Password is `undefined`. Expect Error. ', user); })
-        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password is `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password is `undefined` should be a valid string'); });
         /**
         * Test both email and paswword are `undefined`
         */
         await this.fire.user.login(undefined,  undefined)
         .then( user => { this.bad('Password and Email are `undefined`. Expect Error. ', user); })
-        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password and Email are `undefined` should be a valid string', e); });
+        .catch( e => { this.test(e.code === FIREBASE_API_ERROR, 'Password and Email are `undefined` should be a valid string'); });
         /**
         * Test login invalid email.
         */
         await this.fire.user.loginValidator(userInfo.email, userInfo.password)
-        .then( a => { this.test(a === null, 'email and password are both valid.', a); })
+        .then( a => { this.test(a === null, 'email and password are both valid.'); })
         .catch( e => { this.bad('Email and password should pass the validator.', e); } );
 
         /**
@@ -203,7 +203,7 @@ export class TestUser extends TestTools {
         */
         await this.fire.user.login('WrongEmail@x.com', 'Password123')
         .then( (a) => { this.bad('Wrong email should not be success.', a); })
-        .catch( e => { this.test(e.code === USER_NOT_FOUND, 'Login with wrong email, Expect user-not-found', e.code, e.message); } );
+        .catch( e => { this.test(e.code === USER_NOT_FOUND, 'Login with wrong email, Expect user-not-found'); } );
         /**
         * Test login invalid password.
         */
@@ -212,7 +212,7 @@ export class TestUser extends TestTools {
         .then( a => { this.fire.user.logout(); })
         .then( () => this.fire.user.login(userInfo.email, 'invalidPassword123') )
         .then( a => { this.bad(a, 'This should be error. Password is not valid', a); })
-        .catch( e => { this.test(e.code === WRONG_PASSWORD, 'Login test with wrong password', e.code, e.message); } );
+        .catch( e => { this.test(e.code === WRONG_PASSWORD, 'Login test with wrong password'); } );
     }
 
     async userUpdateTest() {

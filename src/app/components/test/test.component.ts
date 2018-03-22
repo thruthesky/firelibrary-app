@@ -44,10 +44,6 @@ export class TestComponent extends TestTools implements OnInit {
   * Runs the all service testing.
   */
   async run() {
-
-
-
-
     this.version();
     this.library();
     this.translate();
@@ -79,7 +75,7 @@ export class TestComponent extends TestTools implements OnInit {
     this.test(re.length === 2, 'Language test: 2 lettetr in short', re);
     //
     re = _.getBrowserLanguage(true);
-    this.test(re.length === 5, 'Language should be 5 letter', re);
+    this.test(re.length === 5, 'Language hould be 5 letter', re);
   }
   /**
   * Tests Language Translator

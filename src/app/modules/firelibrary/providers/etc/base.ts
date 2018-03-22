@@ -223,6 +223,7 @@ export class Base {
             case E.USER_NOT_FOUND:
             case E.EXPIRED_ID_TOKEN:
             case E.PASSWORD_TOO_LONG:
+            case E.USER_IS_NOT_LOGGED_IN:
                 info['info'] = e.message;
                 return true;
 

@@ -1,6 +1,7 @@
 import {
     ALREADY_EXISTS, NOT_FOUND, UNKNOWN, CATEGORY_ID_EMPTY, DOCUMENT_ID_TOO_LONG,
     EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG,
+    USER_IS_NOT_LOGGED_IN,
     PERMISSION_DENIED,
     POST_ID_EMPTY,
     POST_ID_NOT_EMPTY,
@@ -36,4 +37,5 @@ en[ WEAK_PASSWORD ] = 'Weak password, #info';
 en[ PASSWORD_TOO_LONG ] = 'Password length exceeds at maximum 128 characters.';
 en[ EXPIRED_ID_TOKEN ] = 'ID token is revoked/expired. Login again to get a new id token.';
 en[ WRONG_PASSWORD ] = 'Password was incorrect, #info';
+en[ USER_IS_NOT_LOGGED_IN ] = 'You are not logged in.';
 

@@ -1,3 +1,4 @@
+import { NOT_FOUND, NO_DOCUMENT_ID } from './../etc/error';
 import {
     Base, _,
     COLLECTIONS, POST, PERMISSION_DENIED,
@@ -15,53 +16,53 @@ import * as firebase from 'firebase';
 export class Post extends Base {
 
     /**
-     * User class object.
-     */
+    * User class object.
+    */
     private user: User;
 
 
     /**
-     * Navigation
-     * `cursor` is indicating where to load from. It is null by default.
-     */
+    * Navigation
+    * `cursor` is indicating where to load from. It is null by default.
+    */
     private cursor: any = null;
     /**
-     * Navigation
-     * `categoryId` holds the selected category id to load and display posts from.
-     * null by default
-     */
+    * Navigation
+    * `categoryId` holds the selected category id to load and display posts from.
+    * null by default
+    */
     public categoryId: string = null;
 
 
     /**
-     * Posts and its IDs that have been loaded by `page()`.
-     * Since object has no sequence, `pagePostIds` is holding the keys of the posts in order.
-     * These are public variasble which should be used on list component to display posts.
-     */
+    * Posts and its IDs that have been loaded by `page()`.
+    * Since object has no sequence, `pagePostIds` is holding the keys of the posts in order.
+    * These are public variasble which should be used on list component to display posts.
+    */
     pagePosts: { [id: string]: POST } = {}; // posts loaded by page indexed by key.
     pagePostIds: Array<string> = []; // posts keys loaded by page.
 
 
 
     /**
-     * Subscribing changes for realtime update.
-     */
+    * Subscribing changes for realtime update.
+    */
     private _unsubscribeLikes = [];
     private _unsubscribePosts = [];
     private unsubscribePage = null;
 
     constructor(
     ) {
-        super(COLLECTIONS.POSTS);
+        super(COLLECTIONS.POSTS); // Base constructor to Base.collectionName
         this.user = new User();
     }
 
 
     /**
-     * Validates the input data for creating a post.
-     * @desc validate the input for creating a post.
-     * @desc Don't check if the category id is really exists. Normally this won't make a trouble.
-     */
+    * Validates the input data for creating a post.
+    * @desc validate the input for creating a post.
+    * @desc Don't check if the category id is really exists. Normally this won't make a trouble.
+    */
     private createValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
@@ -88,46 +89,46 @@ export class Post extends Base {
     }
 
     /**
-     * Creates a post.
-     * @desc if `post.id` exists, then it rejects.
-     * @returns Promise<POST_CREATE> with Document ID if success.
-     * @since 2018-03-16 Category.numberOfPosts were removed. @see README## Client Side Coding Limitation and PUBLIC META DATA
-     */
+    * Creates a post.
+    * @desc if `post.id` exists, then it rejects.
+    * @returns Promise<POST_CREATE> with Document ID if success.
+    * @since 2018-03-16 Category.numberOfPosts were removed. @see README## Client Side Coding Limitation and PUBLIC META DATA
+    */
     create(post: POST): Promise<POST_CREATE> {
         return this.createValidator(post)
-            .then(() => {
-                return this.collection.add(this.createSanitizer(post));
-                // const categoryRef = this.db.collection(COLLECTIONS.CATEGORIES).doc(post.category);
-                // const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
-                // return <any>this.db.runTransaction(t => {
-                //     return t.get(categoryRef)
-                //         .then(category => {
-                //             if (!category.exists) {
-                //                 throw CATEGORY_DOES_NOT_EXIST;
-                //             }
-                //             const categoryData = <CATEGORY>category.data();
-                //             if (categoryData.numberOfPosts === void 0) {
-                //                 categoryData.numberOfPosts = 1;
-                //             } else {
-                //                 categoryData.numberOfPosts++;
-                //             }
-                //             t
-                //                 .set(categoryRef, categoryData)
-                //                 .set(postRef, post);
-                //             return postRef.id;
-                //         });
-                // });
-            })
-            .then(doc => {
-                return this.success({ id: doc.id, post: post });
-            })
-            .catch(e => this.failure(e));
+        .then(() => {
+            return this.collection.add(this.createSanitizer(post));
+            // const categoryRef = this.db.collection(COLLECTIONS.CATEGORIES).doc(post.category);
+            // const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
+            // return <any>this.db.runTransaction(t => {
+            //     return t.get(categoryRef)
+            //         .then(category => {
+            //             if (!category.exists) {
+            //                 throw CATEGORY_DOES_NOT_EXIST;
+            //             }
+            //             const categoryData = <CATEGORY>category.data();
+            //             if (categoryData.numberOfPosts === void 0) {
+            //                 categoryData.numberOfPosts = 1;
+            //             } else {
+            //                 categoryData.numberOfPosts++;
+            //             }
+            //             t
+            //                 .set(categoryRef, categoryData)
+            //                 .set(postRef, post);
+            //             return postRef.id;
+            //         });
+            // });
+        })
+        .then(doc => {
+            return this.success({ id: doc.id, post: post });
+        })
+        .catch(e => this.failure(e));
     }
 
     /**
-     * Validates edit.
-     * @desc on edit, category can be empty.
-     */
+    * Validates edit.
+    * @desc on edit, category can be empty.
+    */
     private editValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
@@ -142,28 +143,26 @@ export class Post extends Base {
     }
     edit(post: POST): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
-            .then(() => {
-                _.sanitize(post);
-                post.updated = firebase.firestore.FieldValue.serverTimestamp();
-                const ref = this.collection.doc(post.id);
-                console.log('update at: ', ref.path);
-                return ref.update(post);
-            })
-            .then(() => {
-                return this.success({ id: post.id, post: post });
-            })
-            .catch(e => this.failure(e));
+        .then(() => {
+            _.sanitize(post);
+            post.updated = firebase.firestore.FieldValue.serverTimestamp();
+            const ref = this.collection.doc(post.id);
+            console.log('update at: ', ref.path);
+            return ref.update(post);
+        })
+        .then(() => {
+            return this.success({ id: post.id, post: post });
+        })
+        .catch(e => this.failure(e));
     }
 
-
-
     /**
-     * Deletes a post.
-     *
-     * @desc It puts the post id under `posts_deleted` to indicate that the post has been deleted.
-     * @see REAMEMD## posts_deleted collection
-     * @todo test on deleting and marking.
-     */
+    * Deletes a post.
+    *
+    * @desc It puts the post id under `posts_deleted` to indicate that the post has been deleted.
+    * @see REAMEMD## posts_deleted collection
+    * @todo test on deleting and marking.
+    */
     delete(id: string): Promise<POST_DELETE> {
         const post: POST = {
             id: id,
@@ -182,28 +181,28 @@ export class Post extends Base {
 
 
     /**
-     * It remembers previous category for pagnation.
-     * If category changes, it will clear the cursor.
-     */
+    * It remembers previous category for pagnation.
+    * If category changes, it will clear the cursor.
+    */
     private categoryChanged(category): boolean {
         return this.categoryId !== category;
     }
     /**
-     * For pagination.
-     *
-     */
+    * For pagination.
+    *
+    */
     private resetCursor(category: string) {
         this.categoryId = category;
         this.cursor = null;
     }
 
     /**
-     * Get posts for a page.
-     * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
-     *    Otherwise it gets posts for next page.
-     *
-     * @returns true if the category has been chagned and reset. other wise false.
-     */
+    * Get posts for a page.
+    * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
+    *    Otherwise it gets posts for next page.
+    *
+    * @returns true if the category has been chagned and reset. other wise false.
+    */
     private resetLoadPage(category: string) {
         let reset = false;
         if (category) {
@@ -220,8 +219,8 @@ export class Post extends Base {
         return reset;
     }
     /**
-     * Unsubscribe all the posts.
-     */
+    * Unsubscribe all the posts.
+    */
     private unsubscribePosts() {
         if (this._unsubscribePosts.length) {
             this._unsubscribePosts.map(unsubscribe => unsubscribe());
@@ -249,9 +248,9 @@ export class Post extends Base {
         this._unsubscribePosts.push(unsubscribe);
     }
     /**
-     * Subscribes for likes/dislikes
-     * @param post post to subscribe for like, dislike
-     */
+    * Subscribes for likes/dislikes
+    * @param post post to subscribe for like, dislike
+    */
     private subscribeLikes(post: POST) {
 
         if (!this.settings.listenOnPostLikes) {
@@ -281,8 +280,24 @@ export class Post extends Base {
     }
 
     /**
-     * Get pages.
+     * `Post.page()` - Gets post data to display on the page.
      *
+     * @desc  1. Build the `query` for parsing data to firebase.
+     * - `collection()` - post collection super(COLLECTIONS.POST)
+     * - `.where()` - category
+     * - `.orderBy()` - created, desc
+     * - `.startAfter()` - last doc queried
+     * - `.limit()` - limits doc tobe queried.
+     *
+     * @desc 2. Will get data based on query above.
+     *  For each document `doc` parsed. We do.
+     * - Gets document as object. as what `doc.data()` does.
+     * - Pushes additional properties `id` amd `date` post date created.
+     * - Subscribe or listen to `post changes` and `likes`.
+     *
+     * @desc 3. Updates `cursor` based on the last `document` parsed.
+     *
+     * @desc 4. if category changes `Post.page()` will start again and unsubscribe to posts from previous category.
      *
      * @param
      *      options['listenOnLikes'] if set true, it listens all the posts in the list.
@@ -298,6 +313,7 @@ export class Post extends Base {
             query = query.startAfter(this.cursor);
         }
         query = query.limit(options.limit);
+
         return <any>query.get().then(querySnapshot => {
             if (querySnapshot.docs.length) {
                 querySnapshot.forEach(doc => {
@@ -326,10 +342,10 @@ export class Post extends Base {
 
 
     /**
-     * Listens on new post only. It does not listen for edit/delete.
-     *  It subscribes added/updated/removed only after loading/displaying the post list.
-     *  In this way, it prevents double display of the last post.
-     */
+    * Listens on new post only. It does not listen for edit/delete.
+    *  It subscribes added/updated/removed only after loading/displaying the post list.
+    *  In this way, it prevents double display of the last post.
+    */
     private subscribePostAdd(query: firebase.firestore.Query) {
         if (!this.settings.listenOnPostChange) {
             return;
@@ -346,7 +362,7 @@ export class Post extends Base {
 
                 } else {
                     console.log('pending', doc.metadata.hasPendingWrites, 'type: ', change.type,
-                        'from cache: ', doc.metadata.fromCache, doc.data());
+                    'from cache: ', doc.metadata.fromCache, doc.data());
                     const post: POST = doc.data();
                     post.id = doc.id;
                     console.log(`exists: ${this.pagePosts[post.id]}`);
@@ -364,13 +380,13 @@ export class Post extends Base {
 
 
     /**
-     * Add a newly created post on top of post list on the page
-     *  - and subscribe post changes if `settings.listenPostChange` is set to true.
-     *  - and subscribe like/dislike based on the settings.
-     *
-     * @desc It's important to understand how `added` event fired on `onSnapshot)`.
-     *
-     */
+    * Add a newly created post on top of post list on the page
+    *  - and subscribe post changes if `settings.listenPostChange` is set to true.
+    *  - and subscribe like/dislike based on the settings.
+    *
+    * @desc It's important to understand how `added` event fired on `onSnapshot)`.
+    *
+    */
     private addPostOnTop(post: POST) {
         if (this.pagePosts[post.id] === void 0) {
             console.log(`addPostOnTop: `, post);
@@ -381,8 +397,8 @@ export class Post extends Base {
         }
     }
     /**
-     * When listening the last post on collection in realtime, it often fires `modified` event on new docuemnt created.
-     */
+    * When listening the last post on collection in realtime, it often fires `modified` event on new docuemnt created.
+    */
     private updatePost(post: POST) {
         console.log('updatePost id: ', post.id);
         if (this.pagePosts[post.id]) {
@@ -393,10 +409,10 @@ export class Post extends Base {
         }
     }
     /**
-     * This method is no longer in use.
-     *
-     * @deprecated @see README### No post delete.
-     */
+    * This method is no longer in use.
+    *
+    * @deprecated @see README### No post delete.
+    */
     private removePost(post: POST) {
         // if (this.pagePosts[post.id]) {
         //     console.log(`deletePost`, post);
@@ -411,19 +427,19 @@ export class Post extends Base {
         this.unsubscribePosts();
     }
     /**
-     * Returns post docuement reference.
-     */
+    * Returns post docuement reference.
+    */
     private post(postId: string) {
         return this.collection.doc(postId);
     }
     /**
-     * Returns collection of like/dislike.
-     * @param postId Post Document ID
-     * @param collectionName Subcollection name
-     */
+    * Returns collection of like/dislike.
+    * @param postId Post Document ID
+    * @param collectionName Subcollection name
+    */
     private likeColllection(postId: string, collectionName: string) {
         return this.collection.doc(postId)
-            .collection(collectionName);
+        .collection(collectionName);
     }
 
     like(postId: string): Promise<any> {
