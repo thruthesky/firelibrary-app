@@ -20,6 +20,7 @@ export class TestPost extends TestTools {
         await this.createValidatorTest();
         await this.postCreate();
         await this.postEdit();
+        await this.postDelete();
     }
 
     async createValidatorTest() {
@@ -137,17 +138,34 @@ export class TestPost extends TestTools {
     /**
     * Tests post.delete().
     */
-    async deletePost() {
-        const post: POST = {
-            category: settings.TEST_CATEGORY,
-            title: 'This post will be deleted',
-            content: 'this post should be deleted for testing'
-        };
+    async postDelete() {
+        const data: POST = { category: settings.TEST_CATEGORY, title: 'Delete post Test', content: 'Successful posted in the dateabase.' };
+        // const post: POST = {
+        //     category: settings.TEST_CATEGORY,
+        //     title: 'This post will be deleted',
+        //     content: 'this post should be deleted for testing'
+        // };
         const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
         if (isLogin) {
+            // Will create a post
+            await this.fire.post.create(data)
+            .then(post => {
+                // Will delete post
+                return this.fire.post.delete(post.data.id);
+            })
+            .then(del => {
+                // check if deleted
+                if (del.data.id) {
+                    this.good('Post delete success. Deleted: ' + del.data.id);
+                }
+            })
+            .catch(e => {
+                this.bad('post.delete(0) error: ', e);
+            });
+
 
         } else {
-
+            this.bad('Error logging in on. deletePost() test');
         }
     }
 
