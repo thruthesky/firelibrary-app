@@ -1,4 +1,5 @@
-<form (ngSubmit)=" onSubmitRegisterForm( $event ) ">
+<h2 *ngIf="fire.user.isLogin">You have registered already.</h2>
+<form (ngSubmit)=" onSubmitRegisterForm( $event ) " *ngIf=" fire.user.isLogout ">
   <div>
     <label>Email:</label>
     <span>

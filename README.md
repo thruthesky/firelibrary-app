@@ -3,14 +3,12 @@
 Firebase CMS Library for Frontend
 
 ## TODO
-* [ Start From Here ]
- * Reply on a commnet.
- * @improve on comment nesting(threading). Do not use subcollection under comment to create child comment.
-  * Order of comment. Just put `parentCommentId` to arrange recursively.
-  * @improve: find a way to arrange the order of comments by not doing anything on client side.
-    do it when the comment is being saved without reading anything. find a real simple way.
- * @bug realtime update is not working when there is no post. it works only after there is a post.
- * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
+* Dispaly author name, date
+* Publish as npm.
+* Make a test app for firelibrary.
+* Make it work with simple js. vuejs.
+* @bug realtime update is not working when there is no post. it works only after there is a post.
+* @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
 * @doc if it like/dislike double clicked quickly, there will be permission error. moderate it with loader.
 * Admin dashboard.
  * installation page.
