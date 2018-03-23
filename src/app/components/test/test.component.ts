@@ -45,7 +45,9 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
     Base.collectionDomain = this.oldDomain;
   }
 
-
+  /**
+   * Logs in as admin and create `Testing` category.
+   */
   async prepareTest(): Promise<any> {
     const isAdmin = await this.loginAsAdmin();
     if (isAdmin) {
