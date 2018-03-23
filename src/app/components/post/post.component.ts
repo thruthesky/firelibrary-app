@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FireService, CATEGORY, POST, COLLECTIONS } from '../../../../public_api';
+import { FireService, CATEGORY, POST, COLLECTIONS, DATA_UPLOAD } from '../../../../public_api';
 import * as firebase from 'firebase';
 
 
@@ -12,7 +12,7 @@ export class PostComponent implements OnInit, OnDestroy {
 
   categories: { [id: string]: CATEGORY } = {};
   categoryIds: Array<string> = [];
-  post: POST = <POST>{};
+  post: POST = <POST>{ data: [] };
   // posts: { [id: string]: POST } = {};
   // postIds: Array<string> = [];
 
@@ -95,7 +95,7 @@ export class PostComponent implements OnInit, OnDestroy {
       this.fire.post.edit(this.post).then(re => {
         console.log('post edit', re);
         this.loader.editing = false;
-        this.post = {};
+        this.post = { data: [] };
       })
         .catch(e => {
           this.loader.editing = false;
@@ -107,7 +107,7 @@ export class PostComponent implements OnInit, OnDestroy {
         console.log('postId:', re.data.id);
         // this.post.id = re.data.id;
         // this.fire.post.addPostOnTop( this.post );
-        this.post = {};
+        this.post = { data: [] };
         this.loader.creating = false;
       }).catch(e => {
         this.loader.creating = false;

@@ -11,16 +11,12 @@ import { DATA_UPLOAD, FireService, POST } from '../../../../public_api';
 
 export class DataComponent implements OnInit {
 
-
-  @Input() post: POST;
-  upload: DATA_UPLOAD = {
-    progress: 0,
-    name: ''
-  };
-
-
-
-
+  /**
+   * @warning This `Input` property binding must be created and exists on parent.
+   * This is an pitfall.
+   */
+  @Input() data: Array<DATA_UPLOAD>;
+  progress = 0;
   constructor(
     public fire: FireService
   ) { }
@@ -28,37 +24,53 @@ export class DataComponent implements OnInit {
   ngOnInit() {
   }
 
+  addFile(upload: DATA_UPLOAD) {
+    if (!this.data) {
+      alert('Warning! developer made a mistake. `this.data` is not exists. It needs to be created on initializatino.');
+    }
+    this.data.push(upload);
+  }
+  removeFile(upload: DATA_UPLOAD) {
+    if (this.data) {
+      const pos = this.data.findIndex(file => file.fullPath === upload.fullPath);
+      if (pos !== -1) {
+        this.data.splice(pos, 1);
+      }
+    }
+  }
 
   onChangeFile(event) {
     const files: FileList = event.target.files;
-    console.log('onChangeFile(): ', files.length, files[0]);
+    if ( files.length === 0 ) {
+      return;
+    }
     const file = files[0];
-    const dataRef = firebase.storage().ref().child(`${file.name}`);
+    const upload: DATA_UPLOAD = {
+      name: ''
+    };
+
+    const dataRef = this.fire.data.getDataRef(file);
     const uploadTask = dataRef.put(file);
-    this.upload = { name: file.name };
+    upload.name = file.name;
     uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
-      (snapshot) => {
-        // upload in progress
-        this.upload['progress'] = Math.round((snapshot['bytesTransferred'] / snapshot['totalBytes']) * 100);
-        console.log('progress: ', this.upload['progress']);
+      (snapshot) => { // upload in progress
+        this.progress = Math.round((snapshot['bytesTransferred'] / snapshot['totalBytes']) * 100);
       },
-      (error) => {
-        // upload failed
-        console.log(error);
+      (e) => { // upload failed
+        alert(e.message);
       },
-      () => {
-        // upload success
-        if ( ! this.post.data ) {
-          this.post.data = [];
-        }
-        this.upload.progress = 0;
-        this.upload['url'] = uploadTask.snapshot['downloadURL'];
-        this.upload.fullPath = dataRef.fullPath;
-        delete this.upload.progress;
-        this.post.data.push(this.upload);
-        console.log(this.upload);
+      () => { // upload success
+        this.progress = 0;
+        upload.url = uploadTask.snapshot['downloadURL'];
+        upload.fullPath = dataRef.fullPath;
+        this.addFile(upload);
       }
     );
-
+  }
+  onClickDelete(data: DATA_UPLOAD) {
+    this.fire.data.delete(data).then(re => {
+      this.removeFile(data);
+    })
+      .catch(e => alert(e.message));
   }
 }
