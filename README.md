@@ -2,6 +2,16 @@
 
 Firebase CMS Library for Frontend
 
+## Goal
+
+* To make a forum with chatting functionality.
+ * Person A post a question.
+ * Person B answers.
+ * A gets push notification and view the answer and replies immedately.
+ * Realtime chat begins on the post
+  * and the comments will be open to public since it is merely a comments.
+
+
 ## TODO
 * @bug realtime update is not working when there is no post. it works only after there is a post.
 * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.

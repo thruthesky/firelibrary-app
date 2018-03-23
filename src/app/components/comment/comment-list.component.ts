@@ -9,7 +9,7 @@ import { FireService, POST, COMMENT } from '../../../../public_api';
 export class CommentListComponent implements OnInit, OnDestroy {
 
     @Input() post: POST = {};
-    comment: COMMENT = {};
+    comment: COMMENT = { data: [] };
     loader = {
         creating: false,
         commentList: false
@@ -53,7 +53,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
         this.comment.parentId = '';
         this.loader.creating = true;
         this.fire.comment.create(this.comment).then(re => {
-            this.comment = {};
+            this.comment = { data: [] };
             this.loader.creating = false;
         }).catch(e => {
             this.loader.creating = false;
@@ -61,18 +61,5 @@ export class CommentListComponent implements OnInit, OnDestroy {
         });
         return false;
     }
-
-
-    //   onClickLike(id: string) {
-    //     this.fire.comment.like(id).then(re => {
-    //       // console.log(`comment like. re: `, re);
-    //     }).catch(e => alert(e.message));
-    //   }
-    //   onClickDislike(id: string) {
-    //     this.fire.comment.dislike(id).then(re => {
-    //       // console.log(`comment dislike. re: `, re);
-    //     })
-    //       .catch(e => alert(e.message));
-    //   }
 
 }

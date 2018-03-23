@@ -12,7 +12,7 @@ export class CommentComponent implements OnInit, OnDestroy {
 
   @Input() post: POST = {};
   @Input() comment: COMMENT = {};
-  form: COMMENT = {};
+  form: COMMENT = { data: [] };
   loader = {
     progress: false
   };
@@ -63,7 +63,7 @@ export class CommentComponent implements OnInit, OnDestroy {
     return false;
   }
   onSubmitThen(re) {
-    this.form = {};
+    this.form = { data: [] };
     this.loader.progress = false;
   }
   onSubmitCatch(e) {
@@ -83,7 +83,7 @@ export class CommentComponent implements OnInit, OnDestroy {
    * Hide edit form and show comment.
    */
   onClickEditCancel() {
-    this.form = {};
+    this.form = { data: [] };
   }
 
   onClickLike() {
