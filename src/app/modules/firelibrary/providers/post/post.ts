@@ -202,7 +202,8 @@ export class Post extends Base {
         const post: POST = {
             id: id,
             title: POST_DELETED,
-            content: POST_DELETED
+            content: POST_DELETED,
+            deleted: true
         };
         return this.edit(post);
         // @deprecated ------------------------

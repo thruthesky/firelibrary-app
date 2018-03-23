@@ -183,7 +183,6 @@ export interface POST_PAGE_OPTIONS {
 
 
 export interface DATA_UPLOAD {
-    progress?: number;
     name?: string;
     url?: string;
     fullPath?: string;
@@ -226,5 +225,6 @@ export interface POST {
     updated?: any;
     date?: any; // generated only on client side.
     data?: Array<DATA_UPLOAD>;
+    deleted?: boolean;              // This will be true if deleted.
 }
 

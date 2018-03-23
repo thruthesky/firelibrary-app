@@ -25,7 +25,7 @@
       <input name="description" [(ngModel)]="post.content">
     </div>
     
-    <app-data [post]=" post "></app-data>
+    <app-data [data]=" post.data "></app-data>
 
     <button type="submit" *ngIf=" ! loader.creating ">{{ post.id ? 'EDIT' : 'CREATE' }} POST</button>
     <button type="button" (click)="post={}">Cancel</button>
@@ -46,7 +46,7 @@
     <div style="padding: 1em; background-color: #eee;">
       {{ getPost(id).content }}
     </div>
-    <div class="files" *ngIf=" getPost(id)?.data?.length " >
+    <div class="files" *ngIf=" ! getPost(id).deleted && getPost(id)?.data?.length " >
       <div class="file" style="display: inline-block; overflow: hidden; margin: 2px; padding: 2px; width: 120px; height: 100px; border: 1px solid grey;"
         *ngFor="let data of getPost(id).data">
         <img src="{{ data.url }}">

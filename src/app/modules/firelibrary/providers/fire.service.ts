@@ -5,6 +5,7 @@ import { Base } from './etc/base';
 import { User } from './user/user';
 import { Category } from './category/category';
 import { Post } from './post/post';
+import { Data } from './data/data';
 import { Comment } from './comment/comment';
 
 
@@ -15,6 +16,7 @@ export class FireService extends Base {
   category: Category;
   post: Post;
   comment: Comment;
+  data: Data;
 
   /** This runs only one time. contructor of Service will run only one time and re-used by container. */
   constructor(
@@ -26,6 +28,7 @@ export class FireService extends Base {
     this.category = new Category();
     this.post = new Post();
     this.comment = new Comment();
+    this.data = new Data();
     Base.http = http;
     this.initUser();
   }

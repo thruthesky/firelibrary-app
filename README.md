@@ -5,6 +5,8 @@ Firebase CMS Library for Frontend
 ## TODO
 * @bug realtime update is not working when there is no post. it works only after there is a post.
 * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
+* photo thumbnail on functions.
+* delete uploaded files when post/comment is deleted.
 * @doc if it like/dislike double clicked quickly, there will be permission error. moderate it with loader.
 * Admin dashboard.
  * installation page.
@@ -45,8 +47,9 @@ Firebase CMS Library for Frontend
 
 * Cleaning tool for deleted posts.
 
-* [ laster ] Make it work on `Vuejs`. Needs to consider to rewrite client app.
+* Rewrite firelibrary to support any kinds of platform.
  * To make it work on `vuejs` and other platform, it needs to be rewritten on simple javascript platform not in angular paltform.
+ 
 
 ## Change log
 * @since 2018-03-20 admin email must be saved under /fire-library/{domain}/settings/admin/{email: ... }
