@@ -43,6 +43,7 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     Base.collectionDomain = this.oldDomain;
+    this.fire.post.stopLoadPage();
   }
 
   /**

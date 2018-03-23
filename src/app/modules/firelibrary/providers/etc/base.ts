@@ -474,10 +474,12 @@ export class Base {
 
     /**
      * Returns a promise of <true|false>
-     * @desc This is an Action Method.
-     * @returns
-     *      true if the system is already installed.
-     *      false if it is not.
+     *
+     * This is an Action Method.
+     *
+     * @returns {boolean}
+     *      `true` if the system is already installed.
+     *      `false` if it is not.
      */
     checkInstall(): Promise<INSTALLED> {
         return this.settingsReference.doc('installed').get().then(doc => {
