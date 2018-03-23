@@ -1,8 +1,7 @@
-import { POST_CREATE } from './../../modules/firelibrary/providers/etc/interface';
-import { CATEGORY_ID_EMPTY, POST_ID_EMPTY } from './../../modules/firelibrary/providers/etc/error';
 import {
     FireService, _, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY,
-    PERMISSION_DENIED, USER_IS_NOT_LOGGED_IN, POST_ID_NOT_EMPTY
+    PERMISSION_DENIED, USER_IS_NOT_LOGGED_IN, POST_ID_NOT_EMPTY,
+    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -21,6 +20,7 @@ export class TestPost extends TestTools {
         await this.postCreate();
         await this.postEdit();
         await this.postDelete();
+        await this.postPage();
     }
 
     async createValidatorTest() {
@@ -90,15 +90,15 @@ export class TestPost extends TestTools {
     * Tests post.edit()
     */
     async postEdit() {
-        const data: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
-        const editData: POST = { title: 'Should be error. No post id or no post to edit.' };
+        const post: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
+        const editData: POST = { title: 'Updated!' };
         let id = '';
 
         const isLogin = await this.loginAs('testing123@testing.com', '123456s');
         if ( isLogin ) {
             /**Create post */
-            await this.fire.post.create(data)
-            .then(post => { id = post.data.id; });
+            await this.fire.post.create(post)
+            .then(p => { id = p.data.id; });
 
             /**Edit post without post id.*/
             await this.fire.post.edit(editData)
@@ -106,14 +106,15 @@ export class TestPost extends TestTools {
             .catch(e => { this.test(e.code === POST_ID_EMPTY, 'Expect error. no post id on post.edit'); });
 
             /**Success */
-            editData.id = id;
-            await this.fire.post.edit(editData)
+            post.title = editData.title;
+            post.id = id;
+            await this.fire.post.edit(post)
             .then(a => {
-                // console.log('Updated==================>', a.data.post.updated);
-                if ( a.data.post.updated instanceof firebase.firestore.FieldValue ) {
+                // console.log('Updated==================>', a);
+                if ( a.data.post.updated instanceof firebase.firestore.FieldValue && a.data.post === post ) {
                     this.good('success post edited.');
                 } else {
-                    this.bad('post.updated is empty. Updating post is falsy.');
+                    this.bad('Updating post is falsy. Fields that are missing are deleted.');
                 }
             })
             .catch(e => { this.bad('Shoud be success post.edit', e); });
@@ -124,8 +125,8 @@ export class TestPost extends TestTools {
         const isLogout = await this.logout();
         if (isLogout) {
             /**User not login */
-            // editData.id = id; // -> editData already modified with id.
-            await this.fire.post.edit(editData)
+            // post.id = id; // -> post already modified with id.
+            await this.fire.post.edit(post)
             .then(() => { this.bad('Should be error. User not logged in.'); })
             .catch(e => { this.test(e.code === USER_IS_NOT_LOGGED_IN, 'Expect error. user not login on post.edit'); });
         } else {
@@ -194,10 +195,107 @@ export class TestPost extends TestTools {
     }
 
     /**
-     * Tests post.page()
-     */
+    * Tests post.page()
+    */
     async postPage() {
+        /**Create 2 categories and populate each with 10 post */
+        let cat;
+        const category = <CATEGORY>{};
+        const category_list = [];
+        for ( cat = 0; cat <= 2; cat++ ) {
+            // Category creation
+            let exist;
+            const isLogin = await this.loginAsAdmin();
+            if (isLogin) {
+                category.id = 'category_' + cat;
+                category.name = 'Category' + cat;
+                category_list.push(category.id);
+                exist = await this.fire.category.create(category)
+                .catch(e => { this.test(e.code === CATEGORY_EXISTS, 'Posts are good for Post::page() testing'); return e.code; });
+            } else {
+                this.bad('Failed to login as admin failed. on postPage category creation');
+            }
 
+            if (exist === CATEGORY_EXISTS) {
+                // console.log('Exists==>', exist);
+                this.good('Test post are existing. post.page() test will start....');
+            } else {
+                const isMember = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
+                if (isMember ) {
+                    let post;
+                    for ( post = 0; post <= 10; post++ ) { // will post 11 times in a category;
+                        await this.fire.post.create({ category: category.id, title: 'Post_' + post, content: 'This is Post_' + post })
+                        .catch(e => { this.bad('Post creation failed.'); });
+                    }
+                } else {
+                    this.bad('Failed to login as member on postPage post creation');
+                }
+            }
+
+
+        }
+        this.good('Test post are existing. post.page() test will start....');
+
+        /**
+        * start test post::page()
+        */
+        let end, start, prevPageLen;
+        const limit = 5;
+        await this.fire.post.page({ category: category_list[1], limit: limit })
+        .then( list => {
+            this.test(Object.keys(list).length === limit, 'Post page should be okay. equal to 5');
+            return list;
+        })
+        .then( list => {
+            let last;
+            for ( const post in list ) {
+                if (list[post]) {
+                    console.log('POST=>', list[post].title);
+                    this.test(list[post].category === category_list[1], 'Post category are okay');
+                    this.test(list[post].date !== null, 'Post page set date is working.');
+                    last = list[post];
+                    prevPageLen = Object.keys(list).length;
+                } else {
+                    this.bad('Should be okay.');
+                    return null;
+                }
+            }
+            return <POST>last;
+        })
+        // .then( a => console.log(a) );
+        .then(last => {
+            if (last) {
+                end = last.title.split('_')[1];
+                // console.log('END=>', end);
+                return this.fire.post.page({ category: category_list[1], limit: limit }).then(a => a);
+            }
+        })
+        .then(list => { // 2nd post page will be pushed into 1st page.
+            start = Object.keys(list)[end - 1];
+            prevPageLen = Object.keys(list).length;
+            return <POST>list[start];
+        })
+        .then(first => {
+            if (first) {
+                start = first.title.split('_')[1];
+                this.test( start === (end - 1).toString(), 'Test if post are different from the first get.' );
+                return this.fire.post.page({ category: category_list[1], limit: limit });
+            }
+        })
+        .then(lastPage => {
+            // console.log('LAST PAGE:', Object.keys(lastPage).length);
+            // console.log('LAST PAGE:', lastPage);
+            this.test( Object.keys(lastPage).length - prevPageLen === 1, 'Post total is 11. Last page query should be 1 only.' );
+        })
+        .then(() => {
+            this.fire.post.stopLoadPage();
+        })
+        .catch( e => {
+            this.bad('Error on post.page() test', e);
+            this.fire.post.stopLoadPage();
+        });
+
+        // emulate next page.
     }
 
 }
