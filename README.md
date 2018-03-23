@@ -45,8 +45,9 @@ Firebase CMS Library for Frontend
 
 * Cleaning tool for deleted posts.
 
-* [ laster ] Make it work on `Vuejs`. Needs to consider to rewrite client app.
+* Rewrite firelibrary to support any kinds of platform.
  * To make it work on `vuejs` and other platform, it needs to be rewritten on simple javascript platform not in angular paltform.
+ 
 
 ## Change log
 * @since 2018-03-20 admin email must be saved under /fire-library/{domain}/settings/admin/{email: ... }
