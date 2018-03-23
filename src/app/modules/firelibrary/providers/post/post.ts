@@ -24,20 +24,25 @@ export class Post extends Base {
 
     /**
     * Navigation
-    * `cursor` is indicating where to load from. It is null by default.
+    *
+    * `cursor` is indicating where to load from. It is `null` by default.
     */
     private cursor: any = null;
     /**
     * Navigation
+    *
     * `categoryId` holds the selected category id to load and display posts from.
-    * null by default
+    *
+    * `null` by default
     */
     public categoryId: string = null;
 
 
     /**
     * Posts and its IDs that have been loaded by `page()`.
+    *
     * Since object has no sequence, `pagePostIds` is holding the keys of the posts in order.
+    *
     * These are public variasble which should be used on list component to display posts.
     */
     pagePosts: { [id: string]: POST } = {}; // posts loaded by page indexed by key.
@@ -61,8 +66,10 @@ export class Post extends Base {
 
     /**
     * Validates the input data for creating a post.
-    * @desc validate the input for creating a post.
-    * @desc Don't check if the category id is really exists. Normally this won't make a trouble.
+    *
+    * validate the input for creating a post.
+    *
+    * Don't check if the category id is really exists. Normally this won't make a trouble.
     */
     private createValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
@@ -91,14 +98,19 @@ export class Post extends Base {
 
     /**
     * Creates a post.
-    * @desc if `post.id` exists, then it rejects.
-    * @returns Promise<POST_CREATE> with Document ID if success.
+    *
+    * if `post.id` exists, then it rejects.
+    *
+    * @param {POST} post - `post` data to be pushed in database.
+    * @returns {Promise<POST_CREATE>} - Pushed `data` with Document ID if success.
+    *
     * @since 2018-03-16 Category.numberOfPosts were removed. @see README## Client Side Coding Limitation and PUBLIC META DATA
     */
     create(post: POST): Promise<POST_CREATE> {
         return this.createValidator(post)
         .then(() => {
             return this.collection.add(this.createSanitizer(post));
+            // @deprecated -------------------------
             // const categoryRef = this.db.collection(COLLECTIONS.CATEGORIES).doc(post.category);
             // const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
             // return <any>this.db.runTransaction(t => {
@@ -128,7 +140,8 @@ export class Post extends Base {
 
     /**
     * Validates edit.
-    * @desc on edit, category can be empty.
+    *
+    * On edit, category can be empty.
     */
     private editValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
@@ -142,11 +155,27 @@ export class Post extends Base {
         // }
         return Promise.resolve(null);
     }
+    /**
+     * Pushes new `post` in an existing `document` and adds `updated` field.
+     *
+     * Warning!
+     *
+     * - It overwrites an existing `document` in the database.
+     *
+     * - It deletes existing fields that are not in the new `post`.
+     *
+     * NOTE! Whenever you use this method, beware that `post` fields are complete. Missing fields will be deleted.
+     *
+     * @param {POST} post - The new data to be pushed.
+     * @returns {Promise<POST_EDIT>} - Updated data encapsulated inside RESPONSE object.
+     * @todo - retain old fields.
+     */
     edit(post: POST): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
         .then(() => {
             _.sanitize(post);
             post.updated = firebase.firestore.FieldValue.serverTimestamp();
+            // console.log(post);
             const ref = this.collection.doc(post.id);
             console.log('update at: ', ref.path);
             return ref.update(post);
@@ -160,9 +189,14 @@ export class Post extends Base {
     /**
     * Deletes a post.
     *
-    * @desc It puts the post id under `posts_deleted` to indicate that the post has been deleted.
+    * It puts the post id under `posts_deleted` to indicate that the post has been deleted.
+    *
     * @see REAMEMD## posts_deleted collection
+    *
     * @todo test on deleting and marking.
+    *
+    * @param {string} id - `id` of post to be deleted.
+    * @returns {Promise<POST_DELETE>} - `Id` Post id that was deleted inside REPONSE.
     */
     delete(id: string): Promise<POST_DELETE> {
         const post: POST = {
@@ -171,6 +205,7 @@ export class Post extends Base {
             content: POST_DELETED
         };
         return this.edit(post);
+        // @deprecated ------------------------
         // return this.collection.doc(id).delete()
         //     .then(() => {
         //         return this.db.collection(COLLECTIONS.POSTS_DELETED).doc(id)
@@ -183,26 +218,37 @@ export class Post extends Base {
 
     /**
     * It remembers previous category for pagnation.
+    *
     * If category changes, it will clear the cursor.
+    *
+    * @param {string} category Category ID to compare.
+    *
+    * @returns {boolean} - `true` if category has changed otherwise `false`.
     */
-    private categoryChanged(category): boolean {
+    private categoryChanged(category: string): boolean {
         return this.categoryId !== category;
     }
     /**
     * For pagination.
     *
+    * Reset the cursor to when category changes.
+    *
+    * @param {string} category New category to display.
+    *
     */
-    private resetCursor(category: string) {
+    private resetCursor(category: string): void {
         this.categoryId = category;
         this.cursor = null;
     }
 
     /**
     * Get posts for a page.
-    * @desc if input `category` is given, then it opens a new category and gets posts for the first page.
-    *    Otherwise it gets posts for next page.
     *
-    * @returns true if the category has been chagned and reset. other wise false.
+    * If input `category` is given, then it opens a new category and gets posts for the first page.
+    *
+    * Otherwise it gets posts for next page.
+    *
+    * @returns {boolean} - `true` if the category has been chagned and reset. otherwise `false`.
     */
     private resetLoadPage(category: string) {
         let reset = false;
@@ -249,7 +295,8 @@ export class Post extends Base {
         this._unsubscribePosts.push(unsubscribe);
     }
     /**
-    * Subscribes for likes/dislikes
+    * Subscribes for likes/dislikes.
+    *
     * @param post post to subscribe for like, dislike
     */
     private subscribeLikes(post: POST) {
@@ -284,25 +331,33 @@ export class Post extends Base {
      * Gets post data to display on the page.
      *
      * 1. Build the `query` for parsing data to firebase.
+     *
      *  `collection()` - post collection super(COLLECTIONS.POST)
+     *
      *  `.where()` - category
+     *
      *  `.orderBy()` - created, desc
+     *
      *  `.startAfter()` - last doc queried
+     *
      *  `.limit()` - limits doc tobe queried.
      *
-     * - Will get data based on query above.
-     *  For each document `doc` parsed. We do.
-     * - Gets document as object. as what `doc.data()` does.
-     * - Pushes additional properties `id` amd `date` post date created.
-     * - Subscribe or listen to `post changes` and `likes`.
+     * 2. Will get data based on query above. For each document `doc` parsed. We do.
      *
-     * - Updates `cursor` based on the last `document` parsed.
+     *    Gets document as object. as what `doc.data()` does.
      *
-     * - if category changes `Post.page()` will start again and unsubscribe to posts from previous category.
+     *    Pushes additional properties `id` amd `date` post date created.
      *
-     * @param POST_PAGE_OPTIONS options is the options to load posts.
-     * @return Promise<Array<POST>> posts that are loaded.
+     *    Subscribe or listen to `post changes` and `likes`.
      *
+     *    Updates `cursor` based on the last `document` parsed.
+     *
+     * 3. if category changes `Post.page()` will start again and unsubscribe to posts from previous category.
+     *
+     * @param {POST_PAGE_OPTIONS} options - `category` to load.
+     *                                    - `limit` number of post to get.
+     *
+     * @returns {Promise<Array<POST>>} - `posts` that are loaded.
      *
      */
     page(options: POST_PAGE_OPTIONS): Promise<Array<POST>> {
@@ -346,7 +401,9 @@ export class Post extends Base {
 
     /**
     * Listens on new post only. It does not listen for edit/delete.
+    *
     *  It subscribes added/updated/removed only after loading/displaying the post list.
+    *
     *  In this way, it prevents double display of the last post.
     */
     private subscribePostAdd(query: firebase.firestore.Query) {
@@ -384,10 +441,12 @@ export class Post extends Base {
 
     /**
     * Add a newly created post on top of post list on the page
+    *
     *  - and subscribe post changes if `settings.listenPostChange` is set to true.
+    *
     *  - and subscribe like/dislike based on the settings.
     *
-    * @desc It's important to understand how `added` event fired on `onSnapshot)`.
+    * It's important to understand how `added` event fired on `onSnapshot`.
     *
     */
     private addPostOnTop(post: POST) {
@@ -424,7 +483,11 @@ export class Post extends Base {
         // }
     }
 
-    stopLoadPage() {
+    /**
+     * Exits the page nicely by unsubscribing to `Post` and `Likes`
+     *
+     */
+    stopLoadPage(): void {
         this.resetLoadPage(undefined);
         this.unsubscribeLikes();
         this.unsubscribePosts();
@@ -437,6 +500,7 @@ export class Post extends Base {
     }
     /**
     * Returns collection of like/dislike.
+    *
     * @param postId Post Document ID
     * @param collectionName Subcollection name
     */
