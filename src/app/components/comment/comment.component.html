@@ -12,8 +12,18 @@
       </div>
     </div>
 
-
   </div>
+
+
+  <div class="buttons" *ngIf="!form.id">
+    <button (click)="onClickEdit()" *ngIf="myComment()">Edit</button>
+    <button (click)="onClickDelete()" *ngIf="myComment()">Delete</button>
+    <button (click)="onClickLike()" *ngIf=" !comment['likeInProgress'] ">Like({{comment.numberOfLikes ? comment.numberOfLikes : 0}})</button>
+    <span class="loader" *ngIf=" comment['likeInProgress'] ">Like...</span>
+    <button (click)="onClickDislike()" *ngIf=" !comment['dislikeInProgress'] ">Dislike({{comment.numberOfDislikes ? comment.numberOfDislikes : 0}})</button>
+    <span class="loader" *ngIf=" comment['dislikeInProgress'] ">Dislike...</span>
+  </div>
+
 
   <div class="form">
     <form (ngSubmit)=" onSubmit( $event ) ">
@@ -23,15 +33,6 @@
       <button type="button" (click)="onClickEditCancel()" *ngIf=" form.id && ! loader.progress">Cancel</button>
       <span class="loader" *ngIf="loader.progress">Requesting. Please wait.</span>
     </form>
-  </div>
-
-  <div class="buttons" *ngIf="!form.id">
-    <button (click)="onClickEdit()">Edit</button>
-    <button>Delete</button>
-    <button (click)="onClickLike()" *ngIf=" !comment['likeInProgress'] ">Like({{comment.numberOfLikes ? comment.numberOfLikes : 0}})</button>
-    <span class="loader" *ngIf=" comment['likeInProgress'] ">Like...</span>
-    <button (click)="onClickDislike()" *ngIf=" !comment['dislikeInProgress'] ">Dislike({{comment.numberOfDislikes ? comment.numberOfDislikes : 0}})</button>
-    <span class="loader" *ngIf=" comment['dislikeInProgress'] ">Dislike...</span>
   </div>
 
 </section>

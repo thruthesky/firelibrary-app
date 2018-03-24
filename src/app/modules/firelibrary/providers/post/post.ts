@@ -131,6 +131,9 @@ export class Post extends Base {
     * @desc on edit, category can be empty.
     */
     private editValidator(post: POST): Promise<any> {
+        if ( post.deleted ) {
+            return this.failure('Post is already deleted.');
+        }
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
         }

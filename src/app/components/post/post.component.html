@@ -53,8 +53,8 @@
       </div>
     </div>
     <div>
-      <button (click)="onClickEdit( getPost(id) )">Edit</button>
-      <button (click)="onClickDelete( id )">Delete</button>
+      <button (click)="onClickEdit( getPost(id) )" *ngIf="myPost(getPost(id))">Edit</button>
+      <button (click)="onClickDelete( id )" *ngIf="myPost(getPost(id))">Delete</button>
       <button (click)="onClickLike(id)" *ngIf=" !getPost(id)['likeInProgress'] ">Like({{getPost(id).numberOfLikes ? getPost(id).numberOfLikes : 0}})</button>
       <span class="loader" *ngIf=" getPost(id)['likeInProgress'] ">Like...</span>
       <button (click)="onClickDislike(id)" *ngIf=" !getPost(id)['dislikeInProgress'] ">Dislike({{getPost(id).numberOfDislikes ? getPost(id).numberOfDislikes : 0}})</button>

@@ -131,12 +131,25 @@ export class PostComponent implements OnInit, OnDestroy {
     }
   }
 
+  myPost(post: POST) {
+    return post.uid === this.fire.user.uid;
+  }
 
   /**
    * Updates the post edit form with the post to edit.
    */
   onClickEdit(post: POST) {
+    if (post.deleted) {
+      return alert('Post is already deleted.');
+    }
     console.log('Update edit form: ', post);
+    if (this.fire.user.isLogout) {
+      alert('Please login first');
+      return;
+    } else if (this.post.uid !== this.fire.user.uid) {
+      alert('You are not the owner of the post');
+      return;
+    }
     this.post = post;
   }
 

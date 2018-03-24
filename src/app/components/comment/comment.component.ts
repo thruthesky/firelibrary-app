@@ -42,6 +42,9 @@ export class CommentComponent implements OnInit, OnDestroy {
     // this.fire.comment.destory(this.post);
   }
 
+  myComment() {
+    return this.comment.uid === this.fire.user.uid;
+  }
   /**
    * Creates or Updates a comment.
    * This is being invoked when user submits the comment form.
@@ -84,6 +87,14 @@ export class CommentComponent implements OnInit, OnDestroy {
    */
   onClickEditCancel() {
     this.form = { data: [] };
+  }
+
+
+  onClickDelete() {
+    console.log('Going to delete: ', this.comment.id);
+    this.fire.comment.delete(this.comment.id).then(re => {
+      console.log('deleted: ', re.data.id);
+    }).catch(e => alert(e.message));
   }
 
   onClickLike() {

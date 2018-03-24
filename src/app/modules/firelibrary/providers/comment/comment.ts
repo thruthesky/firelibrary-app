@@ -4,7 +4,9 @@ import {
     POST,
     COMMENT,
     COMMENT_CREATE,
-    COMMENT_EDIT
+    COMMENT_EDIT,
+    COMMENT_DELETE,
+    POST_DELETED
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -146,6 +148,9 @@ export class Comment extends Base {
     }
 
     edit(comment: COMMENT): Promise<COMMENT_EDIT> {
+        if ( comment.deleted ) {
+            return this.failure('Comment is already deleted.');
+        }
         _.sanitize(comment);
         comment.uid = this.user.uid;
         comment.postId = this.comments[comment.id].postId;
@@ -326,6 +331,13 @@ export class Comment extends Base {
         this.unsubscribes(post.id);
     }
 
-
+    delete(id: string): Promise<COMMENT_DELETE> {
+        const comment: COMMENT = {
+            id: id,
+            content: POST_DELETED,
+            deleted: true
+        };
+        return this.edit(comment);
+    }
 }
 

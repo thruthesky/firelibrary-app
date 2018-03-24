@@ -17,16 +17,18 @@ Firebase CMS Library for Frontend
 * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
 * photo thumbnail on functions.
 * delete uploaded files when post/comment is deleted.
-* @doc if it like/dislike double clicked quickly, there will be permission error. moderate it with loader.
 * Admin dashboard.
  * installation page.
   * If /settings/admin does not exist, you can install(put your email as admin).
 * Security rules on post if the category does not exist, then fail.
-* check uid is his uid. a user may put another user's uid on post and that can cause a problem
+* check post's uid on creation. a user may put another user's uid on post and that can cause a problem
 * Functions options
  * @see functions code https://github.com/firebase/functions-samples
  * Counting comment, likes/dislikes, counting numberOfPosts, numberOfComments.
- * Distribute functions on dashboard. Not through CLI.
+ * Distribute functions on dashboard. Not through CLI if it is possible. ( but may be cli is required for installing node modules.)
+ * Image thumbnail.
+ * Push notificaton.
+  * User can have options. push on reply.
 
 
 * Unit test

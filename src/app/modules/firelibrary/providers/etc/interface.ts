@@ -146,6 +146,11 @@ export interface COMMENT_EDIT extends RESPONSE {
     };
 }
 
+export interface COMMENT_DELETE extends RESPONSE {
+    data: {
+        id: string;
+    };
+}
 
 export interface INSTALLED extends RESPONSE {
     data: {
