@@ -22,11 +22,18 @@ Firebase CMS Library for Frontend
   * If /settings/admin does not exist, you can install(put your email as admin).
 * Security rules on post if the category does not exist, then fail.
 * check post's uid on creation. a user may put another user's uid on post and that can cause a problem
+
+* file upload
+ * if a file uploaded successfully,
+    the file's metadata will have `success: true`.
+    Without it, the file is not uploaded. The user may stop posting after uploading.
+ * all files without `success: true` must be deleted some time laster.
+
+
 * Functions options
+ * git repo: https://github.com/thruthesky/firelibrary-functions
  * @see functions code https://github.com/firebase/functions-samples
  * Counting comment, likes/dislikes, counting numberOfPosts, numberOfComments.
- * Distribute functions on dashboard. Not through CLI if it is possible. ( but may be cli is required for installing node modules.)
- * Image thumbnail.
  * Push notificaton.
   * User can have options. push on reply.
 
@@ -500,6 +507,18 @@ With the condition below, you can do installation.
 
 And with that admin account, you can do admin things.
 
+
+### FireLibrary Functions Installation
+
+If you want a better performance, you can use `firelibrary-functions`.
+
+````
+$ git clone https://github.com/thruthesky/firelibrary-functions
+$ cd firelibrary-functions/
+````
+
+
+
 ### Example
 
 * @see install.component ts/html
@@ -510,3 +529,18 @@ And with that admin account, you can do admin things.
 * Somehow if `/settings/admin.email` is already set, but `/settings/installed` is not set,
   then you may need to install.
   You will only need to set `/settings/installed`. If you are going to set admin email when it is already exists, you get permission error on installation.
+
+## File Upload
+
+* File is uploaded on
+ * for files - `firelibrary/{domain}/{user-uid}/{post-document-id}/{files}`.
+ * for comments - `firelibrary/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
+
+* We don't generate thumbnails because
+ * It's not easy to do it.
+  * There is no way to use thumbnail right after upload. You have to wait until `functions` generates.
+  * Image files will be uploaded and thumbnails generated before post/comment created.
+    This makes difficult to update thumbnails onto post/comment.
+    There are many possible senario but it isn't worthy because Images without thumbnails are just fine.
+
+* @see `todo file upload` to see more to do.

@@ -1,10 +1,13 @@
 <section class="comment" [style.margin-left]="comment.depth * 30 + 'px'">
 
-  <div class="content" *ngIf=" ! form.id ">
+
+  <div class="content" *ngIf=" ! form.created ">
     <div>
       {{ comment.displayName }} at {{ comment.date }}
     </div>
-    <div style="padding: 1em; background-color:aquamarine;">{{ comment.content }}</div>
+    <div style="padding: 1em; background-color:aquamarine;">
+      {{ comment.content }}
+    </div>
     <div class="files" *ngIf=" !comment.deleted && comment.data?.length ">
       <div class="file" style="display: inline-block; overflow: hidden; margin: 2px; padding: 2px; width: 120px; height: 100px; border: 1px solid grey;"
         *ngFor="let data of comment.data">
@@ -15,7 +18,7 @@
   </div>
 
 
-  <div class="buttons" *ngIf="!form.id">
+  <div class="buttons" *ngIf="!form.created">
     <button (click)="onClickEdit()" *ngIf="myComment()">Edit</button>
     <button (click)="onClickDelete()" *ngIf="myComment()">Delete</button>
     <button (click)="onClickLike()" *ngIf=" !comment['likeInProgress'] ">Like({{comment.numberOfLikes ? comment.numberOfLikes : 0}})</button>
@@ -28,9 +31,9 @@
   <div class="form">
     <form (ngSubmit)=" onSubmit( $event ) ">
       <input type="text" name="content" [(ngModel)]="form.content" [disabled]="loader.progress">
-      <app-data [data]=" form.data "></app-data>
-      <button type="submit" *ngIf=" ! loader.progress ">{{ form.id ? 'Edit' : 'Create' }} Comment</button>
-      <button type="button" (click)="onClickEditCancel()" *ngIf=" form.id && ! loader.progress">Cancel</button>
+      <app-data [path]=" post.id + '/comments/' + form.id " [data]=" form.data "></app-data>
+      <button type="submit" *ngIf=" ! loader.progress ">{{ form.created ? 'Edit' : 'Create' }} Comment</button>
+      <button type="button" (click)="onClickEditCancel()" *ngIf=" form.created && ! loader.progress">Cancel</button>
       <span class="loader" *ngIf="loader.progress">Requesting. Please wait.</span>
     </form>
   </div>
