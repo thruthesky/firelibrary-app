@@ -16,6 +16,7 @@ export class DataComponent implements OnInit {
    * This is an pitfall.
    */
   @Input() data: Array<DATA_UPLOAD>;
+  @Input() path: string;
   progress = 0;
   constructor(
     public fire: FireService
@@ -49,7 +50,7 @@ export class DataComponent implements OnInit {
       name: ''
     };
 
-    const dataRef = this.fire.data.getDataRef(file);
+    const dataRef = this.fire.data.getDataRef(this.path, file);
     const uploadTask = dataRef.put(file);
     upload.name = file.name;
     uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,

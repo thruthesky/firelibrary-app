@@ -12,13 +12,14 @@ export class CommentComponent implements OnInit, OnDestroy {
 
   @Input() post: POST = {};
   @Input() comment: COMMENT = {};
-  form: COMMENT = {};
+  form: COMMENT;
   loader = {
     progress: false
   };
   constructor(
     public fire: FireService
   ) {
+    this.initComment();
   }
 
   // comments(id): COMMENT {
@@ -28,6 +29,9 @@ export class CommentComponent implements OnInit, OnDestroy {
   //   return this.fire.comment.commentIds[this.post.id];
   // }
 
+  initComment() {
+    this.form = { id: this.fire.comment.getId(), data: [] };
+  }
   ngOnInit() {
     if (!this.post.id) {
       console.error('Post ID is empty. Something is wrong.');
@@ -42,6 +46,9 @@ export class CommentComponent implements OnInit, OnDestroy {
     // this.fire.comment.destory(this.post);
   }
 
+  myComment() {
+    return this.comment.uid === this.fire.user.uid;
+  }
   /**
    * Creates or Updates a comment.
    * This is being invoked when user submits the comment form.
@@ -55,7 +62,7 @@ export class CommentComponent implements OnInit, OnDestroy {
     this.form.postId = this.post.id;
     this.form.parentId = this.comment.id;
     this.loader.progress = true;
-    if (this.form.id) {
+    if (this.form.created) {
       this.fire.comment.edit(this.form).then(re => this.onSubmitThen(re)).catch(e => this.onSubmitCatch(e));
     } else {
       this.fire.comment.create(this.form).then(re => this.onSubmitThen(re)).catch(e => this.onSubmitCatch(e));
@@ -63,7 +70,7 @@ export class CommentComponent implements OnInit, OnDestroy {
     return false;
   }
   onSubmitThen(re) {
-    this.form = {};
+    this.initComment();
     this.loader.progress = false;
   }
   onSubmitCatch(e) {
@@ -76,14 +83,23 @@ export class CommentComponent implements OnInit, OnDestroy {
    * Sets the form to edit.
    */
   onClickEdit() {
+    // this.form = this.comment;
+    // this.form.id = this.comment.id;
     this.form = this.comment;
-    this.form.id = this.comment.id;
   }
   /**
    * Hide edit form and show comment.
    */
   onClickEditCancel() {
-    this.form = {};
+    this.form = this.comment;
+  }
+
+
+  onClickDelete() {
+    console.log('Going to delete: ', this.comment.id);
+    this.fire.comment.delete(this.comment.id).then(re => {
+      console.log('deleted: ', re.data.id);
+    }).catch(e => alert(e.message));
   }
 
   onClickLike() {

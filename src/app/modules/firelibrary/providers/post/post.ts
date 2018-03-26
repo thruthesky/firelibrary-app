@@ -65,18 +65,29 @@ export class Post extends Base {
 
 
     /**
+     * Returns a temporary post document id.
+     *
+     * @return string post document id.
+     */
+    getId(): string {
+        return this.collection.doc().id;
+    }
+
+    /**
     * Validates the input data for creating a post.
-    *
-    * validate the input for creating a post.
-    *
-    * Don't check if the category id is really exists. Normally this won't make a trouble.
+    * 
+    * @desc validate the input for creating a post.
+    * 
+    * @desc Don't check if the category id is really exists. Normally this won't make a trouble.
+    * 
+    * @since 2018-03-24. When creating a post, post document id must exist.
     */
     private createValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
         }
-        if (post.id) {
-            return Promise.reject(new Error(POST_ID_NOT_EMPTY));
+        if (!post.id) {
+            return Promise.reject(new Error(POST_ID_EMPTY));
         }
         if (_.isEmpty(post.category)) {
             return Promise.reject(new Error(CATEGORY_ID_EMPTY));
@@ -90,8 +101,10 @@ export class Post extends Base {
     private createSanitizer(post: POST) {
         _.sanitize(post);
         post.uid = this.user.uid;
-        post.date = this.user.displayName;
+        post.displayName = this.user.displayName;
         post.created = firebase.firestore.FieldValue.serverTimestamp();
+
+        delete post.id; // documnet id must not saved.
         // console.log(post);
         return post;
     }
@@ -107,35 +120,15 @@ export class Post extends Base {
     * @since 2018-03-16 Category.numberOfPosts were removed. @see README## Client Side Coding Limitation and PUBLIC META DATA
     */
     create(post: POST): Promise<POST_CREATE> {
+        const id = post.id;
         return this.createValidator(post)
-        .then(() => {
-            return this.collection.add(this.createSanitizer(post));
-            // @deprecated -------------------------
-            // const categoryRef = this.db.collection(COLLECTIONS.CATEGORIES).doc(post.category);
-            // const postRef = this.db.collection(COLLECTIONS.POSTS).doc();
-            // return <any>this.db.runTransaction(t => {
-            //     return t.get(categoryRef)
-            //         .then(category => {
-            //             if (!category.exists) {
-            //                 throw CATEGORY_DOES_NOT_EXIST;
-            //             }
-            //             const categoryData = <CATEGORY>category.data();
-            //             if (categoryData.numberOfPosts === void 0) {
-            //                 categoryData.numberOfPosts = 1;
-            //             } else {
-            //                 categoryData.numberOfPosts++;
-            //             }
-            //             t
-            //                 .set(categoryRef, categoryData)
-            //                 .set(postRef, post);
-            //             return postRef.id;
-            //         });
-            // });
-        })
-        .then(doc => {
-            return this.success({ id: doc.id, post: post });
-        })
-        .catch(e => this.failure(e));
+            .then(() => {
+                return this.collection.doc(id).set(this.createSanitizer(post));
+            })
+            .then(() => {
+                return this.success({ id: id, post: post });
+            })
+            .catch(e => this.failure(e));
     }
 
     /**
@@ -144,6 +137,9 @@ export class Post extends Base {
     * On edit, category can be empty.
     */
     private editValidator(post: POST): Promise<any> {
+        if (post.deleted) {
+            return this.failure('Post is already deleted.');
+        }
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
         }
@@ -172,18 +168,17 @@ export class Post extends Base {
      */
     edit(post: POST): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
-        .then(() => {
-            _.sanitize(post);
-            post.updated = firebase.firestore.FieldValue.serverTimestamp();
-            // console.log(post);
-            const ref = this.collection.doc(post.id);
-            console.log('update at: ', ref.path);
-            return ref.update(post);
-        })
-        .then(() => {
-            return this.success({ id: post.id, post: post });
-        })
-        .catch(e => this.failure(e));
+            .then(() => {
+                _.sanitize(post);
+                post.updated = firebase.firestore.FieldValue.serverTimestamp();
+                const ref = this.collection.doc(post.id);
+                console.log('update at: ', ref.path);
+                return ref.update(post);
+            })
+            .then(() => {
+                return this.success({ id: post.id, post: post });
+            })
+            .catch(e => this.failure(e));
     }
 
     /**
@@ -423,7 +418,7 @@ export class Post extends Base {
 
                 } else {
                     console.log('pending', doc.metadata.hasPendingWrites, 'type: ', change.type,
-                    'from cache: ', doc.metadata.fromCache, doc.data());
+                        'from cache: ', doc.metadata.fromCache, doc.data());
                     const post: POST = doc.data();
                     post.id = doc.id;
                     console.log(`exists: ${this.pagePosts[post.id]}`);
@@ -507,7 +502,7 @@ export class Post extends Base {
     */
     private likeColllection(postId: string, collectionName: string) {
         return this.collection.doc(postId)
-        .collection(collectionName);
+            .collection(collectionName);
     }
 
     like(postId: string): Promise<any> {

@@ -1,6 +1,10 @@
 
 export interface FIRESERVICE_SETTINGS {
     /**
+     * If it is set to true, then the firelibrary will use cloud functions.
+     */
+    functions?: boolean;
+    /**
      * When the post has `added`, `edited`, `deleted`, the change will be updated in realtime.
      * It does not listen the change by default.
      */
@@ -79,21 +83,6 @@ export interface CATEGORY {
 
 
 
-export interface COMMENT {
-    id?: string;
-    postId?: string;                // root post id
-    parentId?: string;              // comment parent id. If the comment is immediate reply of a post, then it is a empty stirng.
-    uid?: string;
-    displayName?: string;
-    content?: string;
-    created?: any;
-    updated?: any;
-    numberOfLikes?: number;
-    numberOfDislikes?: number;
-    depth?: number;                 // for indenting.
-    date?: string;                  // client only.
-}
-
 
 export interface SYSTEM_CONFIG {
     firebaseApp: firebase.app.App;
@@ -161,6 +150,11 @@ export interface COMMENT_EDIT extends RESPONSE {
     };
 }
 
+export interface COMMENT_DELETE extends RESPONSE {
+    data: {
+        id: string;
+    };
+}
 
 export interface INSTALLED extends RESPONSE {
     data: {
@@ -228,3 +222,21 @@ export interface POST {
     deleted?: boolean;              // This will be true if deleted.
 }
 
+
+
+export interface COMMENT {
+    id?: string;
+    postId?: string;                // root post id
+    parentId?: string;              // comment parent id. If the comment is immediate reply of a post, then it is a empty stirng.
+    uid?: string;
+    displayName?: string;
+    content?: string;
+    created?: any;
+    updated?: any;
+    numberOfLikes?: number;
+    numberOfDislikes?: number;
+    depth?: number;                 // for indenting.
+    date?: string;                  // client only.
+    data?: Array<DATA_UPLOAD>;
+    deleted?: boolean;              // This will be true if deleted.
+}

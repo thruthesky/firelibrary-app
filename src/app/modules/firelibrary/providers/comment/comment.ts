@@ -4,7 +4,10 @@ import {
     POST,
     COMMENT,
     COMMENT_CREATE,
-    COMMENT_EDIT
+    COMMENT_EDIT,
+    COMMENT_DELETE,
+    POST_DELETED,
+    COMMENT_ID_EMPTY
 } from './../etc/base';
 import { User } from '../user/user';
 import * as firebase from 'firebase';
@@ -29,14 +32,25 @@ export class Comment extends Base {
         this.user = new User();
     }
 
+
+    /**
+     * Returns a temporary comment document id.
+     *
+     * @return string comment document id.
+     */
+    getId(): string {
+        return this.collection.doc().id;
+    }
+
+
     /**
      * Returns parent comment.
      */
     getParentComment(commentId): COMMENT {
         if (commentId) {
-            const comment = this.getComment( commentId );
+            const comment = this.getComment(commentId);
             if (comment.parentId) {
-                return this.getComment( comment.parentId );
+                return this.getComment(comment.parentId);
             } else {
                 return <any>[];
             }
@@ -119,25 +133,34 @@ export class Comment extends Base {
         return this.commentIds[postId];
     }
 
+
+
     /**
+     * Creates a comment.
      * @param comment
      *      comment[postId] and comment[parentId] is already set.
      */
     create(comment: COMMENT): Promise<COMMENT_CREATE> {
+        if ( ! comment.id ) {
+            return this.failure(COMMENT_ID_EMPTY);
+        }
         _.sanitize(comment);
         comment.uid = this.user.uid;
         comment.displayName = this.user.displayName;
         comment.created = firebase.firestore.FieldValue.serverTimestamp();
-        if ( comment.parentId ) {
-            comment.depth = this.getComment( comment.parentId ).depth + 1;
+        if (comment.parentId) {
+            comment.depth = this.getComment(comment.parentId).depth + 1;
         } else {
             comment.depth = 0;
         }
         const ref = this.commentCollection(comment.postId);
         console.log(`Going to add a comment under: ${ref.path}`);
-        return ref.add(comment)
+
+        const id = comment.id;
+        delete comment.id;
+        return ref.doc(id).set(comment)
             .then(doc => {
-                return this.success({ id: doc.id });
+                return this.success({ id: id });
             })
             .catch(e => {
                 console.log(`failed: `, e);
@@ -146,6 +169,9 @@ export class Comment extends Base {
     }
 
     edit(comment: COMMENT): Promise<COMMENT_EDIT> {
+        if (comment.deleted) {
+            return this.failure('Comment is already deleted.');
+        }
         _.sanitize(comment);
         comment.uid = this.user.uid;
         comment.postId = this.comments[comment.id].postId;
@@ -267,6 +293,10 @@ export class Comment extends Base {
     }
 
 
+    /**
+     * Updates number of likes/dislikes.
+     * @desc It may need to be rerendered after event handling.
+     */
     private subscribeLikes(comment: COMMENT) {
         if (!this.settings.listenOnCommentLikes) {
             return;
@@ -277,6 +307,7 @@ export class Comment extends Base {
             if (doc.exists) {
                 const data = doc.data();
                 comment.numberOfLikes = data.count;
+                // console.log('like: ', comment.numberOfLikes);
             }
         });
         // this._unsubscribeLikes.push(subscribeLik);
@@ -289,6 +320,7 @@ export class Comment extends Base {
             if (doc.exists) {
                 const data = doc.data();
                 comment.numberOfDislikes = data.count;
+                // console.log('dislike: ', comment.numberOfDislikes);
             }
         });
         // this._unsubscribeLikes.push(subscribeDislike);
@@ -326,6 +358,13 @@ export class Comment extends Base {
         this.unsubscribes(post.id);
     }
 
-
+    delete(id: string): Promise<COMMENT_DELETE> {
+        const comment: COMMENT = {
+            id: id,
+            content: POST_DELETED,
+            deleted: true
+        };
+        return this.edit(comment);
+    }
 }
 

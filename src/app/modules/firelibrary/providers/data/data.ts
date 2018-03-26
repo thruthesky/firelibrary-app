@@ -5,11 +5,8 @@ import {
 import { User } from '../user/user';
 export class Data extends Base {
 
-    /**
-    * User class object.
-    */
-    private user: User;
 
+    user: User;
     constructor(
 
     ) {
@@ -20,8 +17,12 @@ export class Data extends Base {
     /**
      * Get the storage data reference of a file.
      */
-    getDataRef(file: File) {
-        return firebase.storage().ref().child(`${this.user.uid}`).child(`${file.name}`);
+    getDataRef(path: string, file: File) {
+        if (typeof path !== 'string' || !path) {
+            alert('Error. path must give in string.');
+        }
+        path = 'firelibrary/' + Base.collectionDomain + '/' + this.user.uid + '/' + path;
+        return firebase.storage().ref().child(path).child(`${file.name}`);
     }
 
     delete(data: DATA_UPLOAD): Promise<any> {

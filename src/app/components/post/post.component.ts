@@ -12,7 +12,7 @@ export class PostComponent implements OnInit, OnDestroy {
 
   categories: { [id: string]: CATEGORY } = {};
   categoryIds: Array<string> = [];
-  post: POST = <POST>{ data: [] };
+  post: POST;
   // posts: { [id: string]: POST } = {};
   // postIds: Array<string> = [];
 
@@ -27,6 +27,7 @@ export class PostComponent implements OnInit, OnDestroy {
   constructor(
     public fire: FireService
   ) {
+    this.initPost();
     this.fire.category.categories().then(re => {
       if (re.length) {
         re.map(category => {
@@ -49,10 +50,19 @@ export class PostComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.openCreateForm();
   }
   ngOnDestroy() {
     this.fire.post.stopLoadPage();
   }
+
+  initPost() {
+    this.post = { id: this.fire.post.getId(), data: [] };
+  }
+  openCreateForm() {
+
+  }
+
 
   getSelectedCategoryName() {
     if (this.fire.post.categoryId === 'all') {
@@ -90,12 +100,12 @@ export class PostComponent implements OnInit, OnDestroy {
    * Post will be added on top by observing `posts` collection.
    */
   onSubmit(event: Event) {
-    if (this.post.id) {
+    if (this.post.created) {
       this.loader.editing = true;
       this.fire.post.edit(this.post).then(re => {
         console.log('post edit', re);
         this.loader.editing = false;
-        this.post = { data: [] };
+        this.initPost();
       })
         .catch(e => {
           this.loader.editing = false;
@@ -107,7 +117,7 @@ export class PostComponent implements OnInit, OnDestroy {
         console.log('postId:', re.data.id);
         // this.post.id = re.data.id;
         // this.fire.post.addPostOnTop( this.post );
-        this.post = { data: [] };
+        this.initPost();
         this.loader.creating = false;
       }).catch(e => {
         this.loader.creating = false;
@@ -131,12 +141,25 @@ export class PostComponent implements OnInit, OnDestroy {
     }
   }
 
+  myPost(post: POST) {
+    return post.uid === this.fire.user.uid;
+  }
 
   /**
    * Updates the post edit form with the post to edit.
    */
   onClickEdit(post: POST) {
+    if (post.deleted) {
+      return alert('Post is already deleted.');
+    }
     console.log('Update edit form: ', post);
+    if (this.fire.user.isLogout) {
+      alert('Please login first');
+      return;
+    } else if (!this.myPost(post)) {
+      alert('You are not the owner of the post');
+      return;
+    }
     this.post = post;
   }
 
