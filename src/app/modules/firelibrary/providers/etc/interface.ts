@@ -179,6 +179,7 @@ export interface POST_PAGE_OPTIONS {
 export interface DATA_UPLOAD {
     name?: string;
     url?: string;
+    thumbnailUrl?: string;
     fullPath?: string;
 }
 

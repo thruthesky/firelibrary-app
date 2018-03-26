@@ -19,7 +19,7 @@ Firebase CMS Library for Frontend
  * Functions does not need to get all the documents since it is safe.
    For functions, security rule for like/dislike must be changed.
 * push notifications.
-
+* add `/posts` in the middle of storage path.
 * @bug realtime update is not working when there is no post. it works only after there is a post.
 * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
 * photo thumbnail on functions.
@@ -583,13 +583,27 @@ And with that admin account, you can do admin things.
 
 If you want a better performance, you can use `firelibrary-functions`.
 
-If you are going to use `firelibrary-functions`, you will need to change `like/dislikes` security rules.
+When `firelibrary-functions` is installed,
+
+ * counting likes/dislikes
+ * photo thumbnails
+
+  are authmatically running.
+
+
+
+If you are going to use `firelibrary-functions`, you will need to change `like/dislikes` security rules. You need to remove the rules for it or block it. since it is done in the functions with admin previlegdes.
 
 
 ````
 $ git clone https://github.com/thruthesky/firelibrary-functions
 $ cd firelibrary-functions/
+$ firebase add ...
+// change security key file.
+$ firebase deploy
 ````
+
+
 
 
 ## counting likes/dislikes
@@ -602,9 +616,12 @@ $ cd firelibrary-functions/
 * File is uploaded on
  * for files - `firelibrary/{domain}/{user-uid}/{post-document-id}/{files}`.
  * for comments - `firelibrary/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
- * Remember, there is no `/posts/` in the path. It is ommited.
+ * @warning. there is no `/posts/` in the path. It is ommited. it's a mistake. it should be fixed.
 * thumbnail will be definitely needed if you are going to show images on front page or post list.
 * thumbnail is generated when a post/comment is created.
+
+* Reminder. When a post/comment is created, it fires `onSnapshot()` event immediately or **even** the post/comment is not created(saved) in Database, the event is fired due to `local write`.
+Either way, it may not contain the `thumbnailUrl` since `thumbnailUrl` updates is done by `Cloud Functions` and it is not as faster as the post/comment create(`onSnapshot()`) event. But after a few seconds later `thumbnailUrl` will be available. Probably on next page refresh.
 
 ## push notificatoin
 
