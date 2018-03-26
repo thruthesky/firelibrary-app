@@ -112,15 +112,22 @@ export class Post extends Base {
     }
 
     /**
-    * Creates a post.
-    *
-    * if `post.id` exists, then it rejects.
-    *
-    * @param {POST} post - `post` data to be pushed in database.
-    * @returns {Promise<POST_CREATE>} - Pushed `data` with Document ID if success.
-    *
-    * @since 2018-03-16 Category.numberOfPosts were removed. @see README## Client Side Coding Limitation and PUBLIC META DATA
-    */
+     * Creates a post.
+     *
+     * It does not validate if `post.id` or `post.category` is exist or not.
+     * This is the consequence of NOT using backend. It takes too much time to check 'post.id' and 'post.category' exitstence in advance.
+     * But firestore will throw permission denied error due to its security rules.
+     *
+     *
+     * @param {POST} post - `post` data to be pushed in database.
+     *       - post['id'] must be filled to create a post. You will need to get one.
+     *           Be careful not to use the same post id which already exists.
+     *
+     *
+     * @returns {Promise<POST_CREATE>} - Pushed `data` with Document ID if success.
+     *
+     * @since 2018-03-16 Category.numberOfPosts were removed. @see README## Client Side Coding Limitation and PUBLIC META DATA
+     */
     create(post: POST): Promise<POST_CREATE> {
         const id = post.id;
         console.log('POST::CREATE', id);
