@@ -13,9 +13,21 @@ Firebase CMS Library for Frontend
 
 
 ## TODO
+* counting likes/dislikes
+ * Client does not need to get all the documents since it has backend option.
+   so, simple add/deduct 1.
+ * Functions does not need to get all the documents since it is safe.
+   For functions, security rule for like/dislike must be changed.
+* push notifications.
+
 * @bug realtime update is not working when there is no post. it works only after there is a post.
 * @bug small. when edit, it appears as edited at first and disappears quickly when it is not the user's post. It may be the problem of `local write` in firestore.
 * photo thumbnail on functions.
+ * @see `# File Upload & Thumbnail.`
+ * photos are thumbnailed.
+ * if backend updates the post/comment document onCreate, there maybe a chance that on the time of `onCreate` event of post/commnet, the thumbnails may not be generated.
+ * do it on client end after post/comment create.
+
 * delete uploaded files when post/comment is deleted.
 * Admin dashboard.
  * installation page.
@@ -82,10 +94,16 @@ Firebase CMS Library for Frontend
 * Webiste - www.firelibrary.net
 
 
-## What you can do with FireLibrary
+# What you can do with FireLibrary
 
 * @see ### Realtime update
 
+
+# Programming Tips.
+
+* Use site domain as firelibrary domain.
+ * If your domain is 'abc.com', use `/firelibrary/abc.com/...` as your database.
+* To upload image, show images locally on the form. in that way, you do not need to download the uploaded images to show it on form.
 
 
 ## How to install firelibrary into another project
@@ -352,6 +370,10 @@ service cloud.firestore {
         allow create: if !exists(/databases/$(database)/documents/fire-library/$(domain)/settings/admin);
         allow update: if isDomainAdmin( domain );
       }
+      match /installed {
+      	allow read: if true;
+        allow create: if !exists(/databases/$(database)/documents/fire-library/$(domain)/settings/installed);
+      }
       match /{document=**} {
       	allow read: if true;
         allow write: if isDomainAdmin( domain );
@@ -438,9 +460,22 @@ service cloud.firestore {
 }
 ````
 
+# Firebase Storage Rules
+````
+service firebase.storage {
+  match /b/{bucket}/o {
+		// Only an individual user can write to "their" images
+    match /firelibrary/{domain}/{userId}/{allImages=**} {
+      allow read: if true;
+      allow write: if request.auth.uid == userId;
+    }
+  }
+}
+````
 
 
-## Ideas
+
+# Ideas
 
 * Increasing/Decreasing by number 1 on `numberOfLikes` when the post was liked or disliked can be a problematic.
  * When a user `like`,
@@ -508,16 +543,6 @@ With the condition below, you can do installation.
 And with that admin account, you can do admin things.
 
 
-### FireLibrary Functions Installation
-
-If you want a better performance, you can use `firelibrary-functions`.
-
-````
-$ git clone https://github.com/thruthesky/firelibrary-functions
-$ cd firelibrary-functions/
-````
-
-
 
 ### Example
 
@@ -530,18 +555,56 @@ $ cd firelibrary-functions/
   then you may need to install.
   You will only need to set `/settings/installed`. If you are going to set admin email when it is already exists, you get permission error on installation.
 
-## File Upload
+# File Upload & Thumbnail.
+
+
+* Uploaded files are saved on storage.
+ * for files - `fire-library/{domain}/{user-uid}/{post-document-id}/{files}`.
+ * for comments - `fire-library/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
+
+* When uploaded files are saved, thumbnails are generated and their paths are saved on
+ * for files - `temp/storage/thumbnails/fire-library/{domain}/{user-uid}/{post-document-id}/{file}/{created: time}`
+ * for comments - `temp/storage/thumbnails/fire-library/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{file}/{created: time}`.
+
+
+
+
+
+# Firebase Cloud Functions
+
+* There are some cases that `Firebase Functions` is needed
+ * Counting likes/dislikes
+ * Photo thumbnail
+ * Push notification
+ * etc.
+
+
+## FireLibrary Functions Installation
+
+If you want a better performance, you can use `firelibrary-functions`.
+
+If you are going to use `firelibrary-functions`, you will need to change `like/dislikes` security rules.
+
+
+````
+$ git clone https://github.com/thruthesky/firelibrary-functions
+$ cd firelibrary-functions/
+````
+
+
+## counting likes/dislikes
+
+* number of likes and dislikes may not updated immediately after voting.
+ * You may handle time delay.
+
+## thumbnail
 
 * File is uploaded on
  * for files - `firelibrary/{domain}/{user-uid}/{post-document-id}/{files}`.
  * for comments - `firelibrary/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
  * Remember, there is no `/posts/` in the path. It is ommited.
+* thumbnail will be definitely needed if you are going to show images on front page or post list.
+* thumbnail is generated when a post/comment is created.
 
-* We don't generate thumbnails because
- * It's not easy to do it.
-  * There is no way to use thumbnail right after upload. You have to wait until `functions` generates.
-  * Image files will be uploaded and thumbnails generated before post/comment created.
-    This makes difficult to update thumbnails onto post/comment.
-    There are many possible senario but it isn't worthy because Images without thumbnails are just fine.
+## push notificatoin
 
-* @see `todo file upload` to see more to do.

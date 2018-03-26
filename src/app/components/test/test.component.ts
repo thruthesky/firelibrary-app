@@ -43,9 +43,12 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     Base.collectionDomain = this.oldDomain;
+    this.fire.post.stopLoadPage();
   }
 
-
+  /**
+   * Logs in as admin and create `Testing` category.
+   */
   async prepareTest(): Promise<any> {
     const isAdmin = await this.loginAsAdmin();
     if (isAdmin) {
@@ -67,16 +70,16 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
       })
       .catch(e => this.bad('Error preparing test...', e));
 
-    this.version();
-    this.library();
-    this.translate();
+    // this.version();
+    // this.library();
+    // this.translate();
 
 
-    await (new TestError()).run();
-    await (new TestCategory()).run();
+    // await (new TestError()).run();
+    // await (new TestCategory()).run();
     await (new TestPost()).run();
-    await (new TestUser()).run();
-    await (new TestRules()).run();
+    // await (new TestUser()).run();
+    // await (new TestRules()).run();
 
   }
 

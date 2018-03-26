@@ -1,6 +1,10 @@
 
 export interface FIRESERVICE_SETTINGS {
     /**
+     * If it is set to true, then the firelibrary will use cloud functions.
+     */
+    functions?: boolean;
+    /**
      * When the post has `added`, `edited`, `deleted`, the change will be updated in realtime.
      * It does not listen the change by default.
      */
