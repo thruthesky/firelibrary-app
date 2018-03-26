@@ -81,15 +81,24 @@ export class TestPost extends TestTools {
                 this.bad('post.create(): Create post with different UID', e.code );
             });
 
+            /**Create with the same Post ID with wrong category.*/
+            post.id = id;
+            post.category = 'xx-category-xx';
+            await this.fire.post.create(post)
+            .then(re => { this.bad('Wrong category, Post is overwritten with wrong category', re); })
+            .catch(e => {
+                this.test(e.code === PERMISSION_DENIED, 'Create post with wrong Category. Permission will be denied by rules.');
+            });
+
             // Falsy - Able to create post even if category is not existing.
             /**Failed with wrong category id */
-            // post.id = id;
-            // post.category = 'xx-category-xx';
-            // console.log(post.id);
-            // console.log(post);
-            // await this.fire.post.create(post)
-            // .then(re => { this.bad('Wrong category, Expect error.', re); })
-            // .catch(e => { this.good('Create post with wrong Category. Permission will be denied by rules.'); });
+            post.id = id + 'x-category';
+            post.category = 'xx-category-xx';
+            await this.fire.post.create(post)
+            .then(re => { this.bad('Wrong category, Expect error.', re); })
+            .catch(e => {
+                this.test(e.code === PERMISSION_DENIED, 'Create post with wrong Category. Permission will be denied by rules.');
+            });
 
         } else {
             this.bad('PostCreate: Login failed');
