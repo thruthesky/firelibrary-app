@@ -559,12 +559,12 @@ And with that admin account, you can do admin things.
 
 
 * Uploaded files are saved on storage.
- * for files - `firelibrary/{domain}/{user-uid}/{post-document-id}/{files}`.
- * for comments - `firelibrary/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
+ * for files - `fire-library/{domain}/{user-uid}/{post-document-id}/{files}`.
+ * for comments - `fire-library/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
 
 * When uploaded files are saved, thumbnails are generated and their paths are saved on
- * for files - `temp/storage/thumbnails/firelibrary/{domain}/{user-uid}/{post-document-id}/{file}/{created: time}`
- * for comments - `temp/storage/thumbnails/firelibrary/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{file}/{created: time}`.
+ * for files - `temp/storage/thumbnails/fire-library/{domain}/{user-uid}/{post-document-id}/{file}/{created: time}`
+ * for comments - `temp/storage/thumbnails/fire-library/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{file}/{created: time}`.
 
 
 
