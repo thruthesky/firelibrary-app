@@ -35,7 +35,6 @@ export class Base {
      */
     static collectionDomain: string = SystemSettings.COLLECTION_DOMAIN;
     static firebase: firebase.app.App = null;
-    static functions = false;
     /**
      * HttpClient object initiated from FireService
      * It is needed to load JSON language files.
@@ -74,7 +73,7 @@ export class Base {
     }
     static configure(config: SYSTEM_CONFIG) {
         Base.firebase = config.firebaseApp;
-        Base.functions = config.functions;
+        Base.settings.functions = config.functions;
     }
 
     version() {
@@ -87,6 +86,7 @@ export class Base {
     get collectionRoot() {
         return Base.collectionRoot;
     }
+
     get collectionDomain() {
         return Base.collectionDomain;
     }
@@ -305,16 +305,16 @@ export class Base {
 
 
     /**
-    *
-    * Checks if the Document ID is in right format.
-    *
-    *
-    * @param documentID Document ID
-    * @returns null if there is no problem. Otherwise `ERROR CODE` will be returned.
-    *
-    *
-    *
-    */
+     *
+     * Checks if the Document ID is in right format.
+     *
+     *
+     * @param documentID Document ID
+     * @returns null if there is no problem. Otherwise `ERROR CODE` will be returned.
+     *
+     *
+     *
+     */
     checkDocumentIDFormat(documentID) {
         if (_.isEmpty(documentID)) {
             return E.NO_DOCUMENT_ID;
@@ -447,7 +447,13 @@ export class Base {
      * Counts the number of Likes and saves it into `count` document.
      * @desc This cont number of `like/dislike` and used by post/comment.
      */
-    private countLikes(collectionRef: firebase.firestore.CollectionReference) {
+    private countLikes(collectionRef: firebase.firestore.CollectionReference): Promise<any> {
+        /**
+         * If `functions` options is set to true, then counting will be done in cloud functions.
+         */
+        if ( this.settings.functions ) {
+            return Promise.resolve();
+        }
         console.log(`countLikes() on ${collectionRef.path}`);
         return collectionRef.get()
             .then(snapshot => {
@@ -502,7 +508,7 @@ export class Base {
             const installRef = this.settingsReference.doc('installed');
             console.log(`Admin email is set. Going to set installed.time at ${installRef.path}`);
             return installRef
-                    .set({time: firebase.firestore.FieldValue.serverTimestamp()});
+                .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
         })
             .then(re => this.success(true))
             .catch(e => this.failure(e));

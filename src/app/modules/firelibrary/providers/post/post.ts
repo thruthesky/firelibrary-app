@@ -93,7 +93,7 @@ export class Post extends Base {
     private createSanitizer(post: POST) {
         _.sanitize(post);
         post.uid = this.user.uid;
-        post.date = this.user.displayName;
+        post.displayName = this.user.displayName;
         post.created = firebase.firestore.FieldValue.serverTimestamp();
 
         delete post.id; // documnet id must not saved.

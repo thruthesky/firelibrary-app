@@ -293,6 +293,10 @@ export class Comment extends Base {
     }
 
 
+    /**
+     * Updates number of likes/dislikes.
+     * @desc It may need to be rerendered after event handling.
+     */
     private subscribeLikes(comment: COMMENT) {
         if (!this.settings.listenOnCommentLikes) {
             return;
@@ -303,6 +307,7 @@ export class Comment extends Base {
             if (doc.exists) {
                 const data = doc.data();
                 comment.numberOfLikes = data.count;
+                // console.log('like: ', comment.numberOfLikes);
             }
         });
         // this._unsubscribeLikes.push(subscribeLik);
@@ -315,6 +320,7 @@ export class Comment extends Base {
             if (doc.exists) {
                 const data = doc.data();
                 comment.numberOfDislikes = data.count;
+                // console.log('dislike: ', comment.numberOfDislikes);
             }
         });
         // this._unsubscribeLikes.push(subscribeDislike);
