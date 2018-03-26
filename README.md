@@ -535,6 +535,7 @@ $ cd firelibrary-functions/
 * File is uploaded on
  * for files - `firelibrary/{domain}/{user-uid}/{post-document-id}/{files}`.
  * for comments - `firelibrary/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
+ * Remember, there is no `/posts/` in the path. It is ommited.
 
 * We don't generate thumbnails because
  * It's not easy to do it.

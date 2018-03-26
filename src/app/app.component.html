@@ -11,7 +11,10 @@
       <button type="button" [routerLink]="'test'">Unit Test</button>
       <button type="button" [routerLink]="'install'" *ngIf="!installed">INSTALL</button>
     </nav>
-    <div *ngIf=" fire.user.isLogin ">Welcome, {{ fire.user.displayName ? fire.user.displayName : fire.user.email }}</div>
+    <div *ngIf=" fire.user.isLogin ">
+      Welcome, {{ fire.user.displayName ? fire.user.displayName : fire.user.email }}
+      {{ fire.user.uid }}
+    </div>
   </header>
 
   <div class="outer-outlet">
