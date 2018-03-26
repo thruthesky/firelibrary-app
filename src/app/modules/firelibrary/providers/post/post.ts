@@ -75,20 +75,22 @@ export class Post extends Base {
 
     /**
     * Validates the input data for creating a post.
-    * 
+    *
     * @desc validate the input for creating a post.
-    * 
+    *
     * @desc Don't check if the category id is really exists. Normally this won't make a trouble.
-    * 
+    *
     * @since 2018-03-24. When creating a post, post document id must exist.
     */
     private createValidator(post: POST): Promise<any> {
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
         }
+
         if (!post.id) {
             return Promise.reject(new Error(POST_ID_EMPTY));
         }
+
         if (_.isEmpty(post.category)) {
             return Promise.reject(new Error(CATEGORY_ID_EMPTY));
         }
@@ -121,6 +123,7 @@ export class Post extends Base {
     */
     create(post: POST): Promise<POST_CREATE> {
         const id = post.id;
+        console.log('POST::CREATE', id);
         return this.createValidator(post)
             .then(() => {
                 return this.collection.doc(id).set(this.createSanitizer(post));
