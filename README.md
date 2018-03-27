@@ -29,6 +29,7 @@ Firebase CMS Library for Frontend
  * do it on client end after post/comment create.
 
 * delete uploaded files when post/comment is deleted.
+* delete thumbnails.
 * Admin dashboard.
  * installation page.
   * If /settings/admin does not exist, you can install(put your email as admin).
@@ -113,7 +114,8 @@ Firebase CMS Library for Frontend
 
 * initialize `firebase` app.
 
-* set the `firebase` app onto `firelibrary` like below
+* set the `firebase` app onto `firelibrary` like below.
+
 ````
 import * as firebase from 'firebase';
 import "firebase/firestore";
@@ -614,9 +616,8 @@ $ firebase deploy
 ## thumbnail
 
 * File is uploaded on
- * for files - `firelibrary/{domain}/{user-uid}/{post-document-id}/{files}`.
- * for comments - `firelibrary/{domain}/{user-uid}/{post-document-id}/comments/{comment-document-id}/{files}`.
- * @warning. there is no `/posts/` in the path. It is ommited. it's a mistake. it should be fixed.
+ * for files - `firelibrary/{domain}/{user-uid}/posts/{post-document-id}/{files}`.
+ * for comments - `firelibrary/{domain}/{user-uid}/posts/{post-document-id}/comments/{comment-document-id}/{files}`.
 * thumbnail will be definitely needed if you are going to show images on front page or post list.
 * thumbnail is generated when a post/comment is created.
 
@@ -625,3 +626,16 @@ Either way, it may not contain the `thumbnailUrl` since `thumbnailUrl` updates i
 
 ## push notificatoin
 
+
+
+
+# Known Issues
+
+## File upload
+
+* If you upload photos with same file name and you are using `Firelibrary Functions`,
+ Thumbnail will only generate the first file.
+ It does not thumbnail correctly if photos with same name uploaded.
+ Since it's a small bug, we simple ignore this.
+ * Cause: when thumbnails are generated, it saves a temp data with the uploaded file name.
+  If there is same file name, then the problem begins.

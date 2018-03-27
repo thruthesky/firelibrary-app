@@ -21,7 +21,7 @@ export class Data extends Base {
         if (typeof path !== 'string' || !path) {
             alert('Error. path must give in string.');
         }
-        path = 'fire-library/' + Base.collectionDomain + '/' + this.user.uid + '/' + path;
+        path = 'fire-library/' + Base.collectionDomain + '/' + this.user.uid + '/posts/' + path;
         return firebase.storage().ref().child(path).child(`${file.name}`);
     }
 
