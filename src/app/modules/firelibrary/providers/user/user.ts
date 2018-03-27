@@ -194,13 +194,31 @@ export class User extends Base {
             .catch(e => this.failure(e));
     }
 
-    update(data: USER): Promise<USER_CREATE> {
-        data.uid = this.uid;
-        console.log('update: ', data);
-        return this.collection.doc(data.uid).set(data)
-            .then(() => this.success({ id: data.uid }))
+    /**
+     * Updates user informaton.
+     * @param user User data to update
+     *      user['displayName'] is required.
+     *      user['photoURL'] is optional.
+     */
+    update(user: USER): Promise<USER_CREATE> {
+        user.uid = this.uid;
+        console.log('user.update(): ', user);
+        const up = { displayName: user.displayName };
+        if (user.photoURL) {
+            up['photoURL'] = user.photoURL;
+        }
+        return this.auth.currentUser.updateProfile(_.sanitize(up))
+            .then(() => {
+                return this.collection.doc(this.uid).set(user);
+            })
+            .then(() => this.success({ id: user.uid }))
             .catch(e => this.failure(e));
     }
+
+
+    /**
+     * Delete user.
+     */
     delete(): Promise<any> {
         console.log('delete: ', this.uid);
         return this.collection.doc(this.uid).delete()

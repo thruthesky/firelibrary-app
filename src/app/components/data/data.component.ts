@@ -41,6 +41,9 @@ export class DataComponent implements OnInit {
   }
 
   onChangeFile(event) {
+    if ( this.fire.user.isLogout ) {
+      return alert('Please login to upload a file');
+    }
     const files: FileList = event.target.files;
     if ( files.length === 0 ) {
       return;

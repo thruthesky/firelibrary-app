@@ -9,11 +9,12 @@ import { FireService, USER } from '../../../../public_api';
 export class ProfileComponent implements OnInit {
 
   user: USER = <USER>{};
+  loader = false;
   constructor(
     public fire: FireService
   ) {
-    fire.auth.onAuthStateChanged( user => {
-      if ( user ) {
+    fire.auth.onAuthStateChanged(user => {
+      if (user) {
         fire.user.data().then(re => this.user = re.data.user).catch(e => alert(e.message));
       }
     });
@@ -23,7 +24,15 @@ export class ProfileComponent implements OnInit {
   }
   onSubmitForm(event: Event) {
     event.preventDefault();
-
+    this.loader = true;
+    this.fire.user.update(this.user).then(re => {
+      this.loader = false;
+      console.log('user updated: ', re);
+    })
+      .catch(e => {
+        this.loader = false;
+        alert(e.message);
+      });
     return false;
   }
 

@@ -627,6 +627,17 @@ Either way, it may not contain the `thumbnailUrl` since `thumbnailUrl` updates i
 ## push notificatoin
 
 
+# User Profile and User Profile Photo.
+
+* Profile photo is a photo of the user which will be shown everywhere.
+
+* User must register first before uploading profile photo.
+ * If you plan to let user to upload primary photo while registering,
+  * get user email and password first and register the user
+  * And then, let user upload his profile photo.
+  * it looks like there are steps to register.
+   1st. email/password
+   2nd. other informations with photo.
 
 
 # Known Issues
