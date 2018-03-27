@@ -233,6 +233,7 @@ export class Base {
             case E.EXPIRED_ID_TOKEN:
             case E.PASSWORD_TOO_LONG:
             case E.USER_IS_NOT_LOGGED_IN:
+            case E.POST_ALREADY_DELETED:
                 info['info'] = e.message;
                 return true;
 
@@ -402,7 +403,8 @@ export class Base {
     }
     /**
      * This is a general method for `like`, `unlike`, `dislike`, `disunlike`.
-     * @desc The logic is the same for `like` and `dislike` and used by post/comment.
+     *
+     * The logic is the same for `like` and `dislike` and used by post/comment.
      */
     protected doLike(collectionRef: firebase.firestore.CollectionReference): Promise<any> {
 

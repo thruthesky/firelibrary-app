@@ -1,7 +1,7 @@
 import {
     FireService, _, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY,
     PERMISSION_DENIED, USER_IS_NOT_LOGGED_IN, POST_ID_NOT_EMPTY,
-    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS
+    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS, POST_ALREADY_DELETED, COLLECTIONS
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -16,11 +16,12 @@ export class TestPost extends TestTools {
     * Runs all post tests.
     */
     async run() {
-        // await this.createValidatorTest();
+        await this.createValidatorTest();
         await this.postCreate();
-        // await this.postEdit();
-        // await this.postDelete();
-        // await this.postPage();
+        await this.postEdit();
+        await this.postDelete();
+        await this.postPage();
+        await this.postLike();
     }
 
     async createValidatorTest() {
@@ -111,15 +112,16 @@ export class TestPost extends TestTools {
     async postEdit() {
         const post: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
         const editData: POST = { title: 'Updated!' };
-        let id = '';
-
-        const isLogin = await this.loginAs('testing123@testing.com', '123456s');
+        const id = 'post' + (new Date).getTime();
+        let isLogin = await this.loginAs('testing123@testing.com', '123456s');
         if ( isLogin ) {
             /**Create post */
+            post.id = id;
             await this.fire.post.create(post)
-            .then(p => { id = p.data.id; });
+            .then(p => {  });
 
             /**Edit post without post id.*/
+            delete post.id;
             await this.fire.post.edit(editData)
             .then(() => { this.bad('Should be error. no post id on post.edit() test.'); })
             .catch(e => { this.test(e.code === POST_ID_EMPTY, 'Expect error. no post id on post.edit'); });
@@ -129,12 +131,12 @@ export class TestPost extends TestTools {
             post.id = id;
             await this.fire.post.edit(post)
             .then(a => {
-                // console.log('Updated==================>', a);
                 if ( a.data.post.updated instanceof firebase.firestore.FieldValue && a.data.post === post ) {
                     this.good('success post edited.');
                 } else {
                     this.bad('Updating post is falsy. Fields that are missing are deleted.');
                 }
+                return a;
             })
             .catch(e => { this.bad('Shoud be success post.edit', e); });
         } else {
@@ -152,6 +154,20 @@ export class TestPost extends TestTools {
             this.bad('A user is still logged in on `User not logged in test.`');
         }
 
+        /**Edit post again with different user */
+        isLogin = await this.loginAs('otheruser@test.com', 'other123');
+        if (isLogin) {
+            post.title = 'Edited by other USER';
+            post.id = id;
+            await this.fire.post.edit( post )
+            .then(() => {
+                this.bad('This should be error Permission denied. Other Users can\'t update others data');
+            })
+            .catch(e => {
+                this.test(e.code === PERMISSION_DENIED, 'Other users can\'t modify others data.');
+            });
+        }
+
     }
     /**
     * Tests post.delete().
@@ -159,16 +175,18 @@ export class TestPost extends TestTools {
     async postDelete() {
         const data: POST = { category: settings.TEST_CATEGORY, title: 'Delete post Test', content: 'Successful posted in the dateabase.' };
         const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
+        const id = 'post' + (new Date).getTime();
         if (isLogin) {
             /**Delete on wrong post ID */
             await this.fire.post.delete('wrong-post-id')
             .then(a => { this.bad('Should be error, post ID is incorrect or not existing.', a); })
-            .catch(e => { this.test(e.code === PERMISSION_DENIED, 'Wrong post ID to delete.'); });
+            .catch(e => { this.test(e.code === PERMISSION_DENIED, 'Wrong post ID to delete.', e.code); });
             /** Will create a post */
+            data.id = id;
             await this.fire.post.create(data)
             .then(post => {
                 // Will delete post
-                return this.fire.post.delete(post.data.id);
+                return this.fire.post.delete(id);
             })
             .then(del => {
                 // check if deleted
@@ -177,11 +195,11 @@ export class TestPost extends TestTools {
                 }
             })
             .catch(e => {
-                this.bad('post.delete() error: ', e);
+                this.bad('post.delete() error: ', e.code);
             });
             /** Test delete using different user account and as Anonymous. */
+            data.id = id + 'a';
             await this.fire.post.create(data)
-
             /**Delete as anonymous */
             .then(async post => {
                 const logout = await this.logout();
@@ -223,34 +241,31 @@ export class TestPost extends TestTools {
         const category_list = [];
         for ( cat = 0; cat <= 2; cat++ ) {
             // Category creation
-            let exist;
             const isLogin = await this.loginAsAdmin();
             if (isLogin) {
                 category.id = 'category_' + cat;
                 category.name = 'Category' + cat;
                 category_list.push(category.id);
-                exist = await this.fire.category.create(category)
-                .catch(e => { this.test(e.code === CATEGORY_EXISTS, 'Posts are good for Post::page() testing'); return e.code; });
-            } else {
-                this.bad('Failed to login as admin failed. on postPage category creation');
-            }
-
-            if (exist === CATEGORY_EXISTS) {
-                // console.log('Exists==>', exist);
-                this.good('Test post are existing. post.page() test will start....');
-            } else {
+                await this.fire.category.create(category)
+                .then(async re => {
                 const isMember = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
                 if (isMember ) {
                     let post;
+                    const data: POST = { category: category.id,  };
                     for ( post = 0; post <= 10; post++ ) { // will post 11 times in a category;
-                        await this.fire.post.create({ category: category.id, title: 'Post_' + post, content: 'This is Post_' + post })
-                        .catch(e => { this.bad('Post creation failed.'); });
+                        data.id = 'post_' + post + '_' + category.id;
+                        data.title = 'Post_' + post;
+                        data.content = 'This is Post_' + post;
+                        await this.fire.post.create(data);
                     }
                 } else {
                     this.bad('Failed to login as member on postPage post creation');
                 }
+                })
+                .catch(e => { this.test(e.code === CATEGORY_EXISTS, 'Posts are good for Post::page() testing'); return e.code; });
+            } else {
+                this.bad('Failed to login as admin failed. on postPage category creation');
             }
-
 
         }
         this.good('Test post are existing. post.page() test will start....');
@@ -262,7 +277,7 @@ export class TestPost extends TestTools {
         const limit = 5;
         await this.fire.post.page({ category: category_list[1], limit: limit })
         .then( list => {
-            this.test(Object.keys(list).length === limit, 'Post page should be okay. equal to 5');
+            this.test(Object.keys(list).length === limit, 'Post page should be okay. equal to 5', Object.keys(list).length, limit );
             return list;
         })
         .then( list => {
@@ -279,22 +294,26 @@ export class TestPost extends TestTools {
                     return null;
                 }
             }
+            // console.log(last);
             return <POST>last;
         })
         // .then( a => console.log(a) );
         .then(last => {
             if (last) {
+                // console.log(last);
                 end = last.title.split('_')[1];
                 // console.log('END=>', end);
                 return this.fire.post.page({ category: category_list[1], limit: limit }).then(a => a);
             }
         })
         .then(list => { // 2nd post page will be pushed into 1st page.
+            // console.log(list);
             start = Object.keys(list)[end - 1];
             prevPageLen = Object.keys(list).length;
             return <POST>list[start];
         })
         .then(first => {
+            // console.log(first);
             if (first) {
                 start = first.title.split('_')[1];
                 this.test( start === (end - 1).toString(), 'Test if post are different from the first get.' );
@@ -317,5 +336,45 @@ export class TestPost extends TestTools {
         // emulate next page.
     }
 
-}
+    async postLike() {
+        const post: POST = {
+            title: 'Post for like testing',
+            content: 'this post is for testing post::like functionality.',
+            category: settings.TEST_CATEGORY
+        };
+        let id = 'post' + (new Date).getTime();
+        let likeCountRef: firebase.firestore.DocumentReference;
 
+        const isLogin = await this.loginAs('like_tester@test.com', 'testerlike123');
+        if (isLogin) {
+            post.id = id;
+            /**Create a post */
+            await this.fire.post.create(post)
+            .then(re => {
+                id = re.data.id;
+                return this.fire.post.like(re.data.id); // like post
+            })
+            .then(() => this.sleep(200))
+            .then(() => {
+                likeCountRef = this.likeColllection(id, COLLECTIONS.POSTS).doc('count');
+            })
+            .catch(e => this.bad('Error creating post for TestPost::postLike()', e));
+
+            /**Get like Post Count */
+            await likeCountRef.get()
+            .then(doc => {
+                if ( doc.exists ) {
+                    // console.log('DOC Data!', doc.data());
+                    this.test(doc.data().count === 1, 'Like count should be equal to 1, success!');
+                } else {
+                    this.bad('No like document found in ' + likeCountRef.path);
+                }
+            })
+            .catch();
+
+        } else {
+            this.bad('Error loggin on for TestPost::postLike()');
+        }
+    }
+
+}

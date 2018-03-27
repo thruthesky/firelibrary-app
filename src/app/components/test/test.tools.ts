@@ -1,3 +1,4 @@
+import { Base } from './../../modules/firelibrary/providers/etc/base';
 import {
     FireService, RESPONSE, EMAIL_ALREADY_IN_USE
 } from '../../modules/firelibrary/core';
@@ -176,6 +177,30 @@ export class TestTools {
 
     }
 
+    /**
+    * Returns collection of like/dislike.
+    *
+    * @param postId Post Document ID
+    * @param collectionName Subcollection name
+    */
+    likeColllection(postId: string, collectionName: string) {
+        return this.collection(collectionName).doc(postId)
+        .collection(COLLECTIONS.LIKES);
+    }
+
+    /**
+    * Returns the collection of the selected collection in this.collectionName
+    */
+    collection(collectionName): firebase.firestore.CollectionReference {
+        if (collectionName) {
+            // console.log('col name: ', this.collectionName);
+            return this.fire.db.collection(Base.collectionRoot)
+            .doc(Base.collectionDomain)
+            .collection(collectionName);
+        } else {
+            return null;
+        }
+    }
 
 }
 

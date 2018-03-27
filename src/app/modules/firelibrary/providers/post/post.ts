@@ -130,7 +130,7 @@ export class Post extends Base {
      */
     create(post: POST): Promise<POST_CREATE> {
         const id = post.id;
-        console.log('POST::CREATE', id);
+        // console.log('POST::CREATE', id);
         return this.createValidator(post)
             .then(() => {
                 return this.collection.doc(id).set(this.createSanitizer(post));
@@ -147,12 +147,14 @@ export class Post extends Base {
     * On edit, category can be empty.
     */
     private editValidator(post: POST): Promise<any> {
+        // console.log('VALIDATOR: ', post);
         if (post.deleted) {
             return this.failure('Post is already deleted.');
         }
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
         }
+
         if (_.isEmpty(post.id)) {
             return Promise.reject(new Error(POST_ID_EMPTY));
         }
@@ -173,16 +175,22 @@ export class Post extends Base {
      * NOTE! Whenever you use this method, beware that `post` fields are complete. Missing fields will be deleted.
      *
      * @param {POST} post - The new data to be pushed.
+     * @param { {delete?: boolean} } option - { delete: true } `true` if you want to mark post as deleted.
+     *                                      - { delete: false } `false` or leave option empty for editing.
      * @returns {Promise<POST_EDIT>} - Updated data encapsulated inside RESPONSE object.
      * @todo - retain old fields.
      */
-    edit(post: POST): Promise<POST_EDIT> {
+    edit(post: POST, option?: { delete: boolean } ): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
             .then(() => {
                 _.sanitize(post);
+                if ( ! _.isEmpty(option) ) {
+                    post.deleted = option.delete; // assign deleted property here.
+                }
                 post.updated = firebase.firestore.FieldValue.serverTimestamp();
-                const ref = this.collection.doc(post.id);
+                const ref = this.collection.    doc(post.id);
                 console.log('update at: ', ref.path);
+                console.log('update post: ', post.id);
                 return ref.update(post);
             })
             .then(() => {
@@ -207,10 +215,10 @@ export class Post extends Base {
         const post: POST = {
             id: id,
             title: POST_DELETED,
-            content: POST_DELETED,
-            deleted: true
+            content: POST_DELETED
+            // deleted: true // Cannot put deleted property here it will be blocked by the editValidator.
         };
-        return this.edit(post);
+        return this.edit(post, {delete: true});
         // @deprecated ------------------------
         // return this.collection.doc(id).delete()
         //     .then(() => {

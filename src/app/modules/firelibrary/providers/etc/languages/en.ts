@@ -3,7 +3,7 @@ import {
     EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, INVALID_EMAIL, WEAK_PASSWORD, PASSWORD_TOO_LONG,
     USER_IS_NOT_LOGGED_IN,
     PERMISSION_DENIED,
-    POST_ID_EMPTY,
+    POST_ID_EMPTY, POST_ALREADY_DELETED,
     POST_ID_NOT_EMPTY,
     EXPIRED_ID_TOKEN, FIREBASE_API_ERROR, WRONG_PASSWORD
 
@@ -27,6 +27,7 @@ en[ PERMISSION_DENIED ] = 'Permission denied or insufficient permission. #info';
 
 en[POST_ID_EMPTY] = 'Post ID is empty.';
 en[POST_ID_NOT_EMPTY] = 'Post ID is not empty.';
+en[POST_ALREADY_DELETED] = 'Post does not exist or already deleted.';
 
 
 // USER
