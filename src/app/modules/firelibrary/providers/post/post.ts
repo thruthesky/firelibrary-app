@@ -149,7 +149,7 @@ export class Post extends Base {
     private editValidator(post: POST): Promise<any> {
         // console.log('VALIDATOR: ', post);
         if (post.deleted) {
-            return this.failure('Post is already deleted.');
+            return this.failure(POST_DELETED);
         }
         if (this.user.isLogout) {
             return Promise.reject(new Error(USER_IS_NOT_LOGGED_IN));
@@ -158,9 +158,14 @@ export class Post extends Base {
         if (_.isEmpty(post.id)) {
             return Promise.reject(new Error(POST_ID_EMPTY));
         }
+
+        /**
+         * category is not madatory for `editing`.
+         */
         // if (_.isEmpty(post.category)) {
         //     return Promise.reject(new Error(CATEGORY_ID_EMPTY));
         // }
+
         return Promise.resolve(null);
     }
     /**
@@ -178,17 +183,14 @@ export class Post extends Base {
      * @param { {delete?: boolean} } option - { delete: true } `true` if you want to mark post as deleted.
      *                                      - { delete: false } `false` or leave option empty for editing.
      * @returns {Promise<POST_EDIT>} - Updated data encapsulated inside RESPONSE object.
-     * @todo - retain old fields.
+     *
      */
-    edit(post: POST, option?: { delete: boolean } ): Promise<POST_EDIT> {
+    edit(post: POST): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
             .then(() => {
                 _.sanitize(post);
-                if ( ! _.isEmpty(option) ) {
-                    post.deleted = option.delete; // assign deleted property here.
-                }
                 post.updated = firebase.firestore.FieldValue.serverTimestamp();
-                const ref = this.collection.    doc(post.id);
+                const ref = this.collection.doc(post.id);
                 console.log('update at: ', ref.path);
                 console.log('update post: ', post.id);
                 return ref.update(post);
@@ -213,20 +215,13 @@ export class Post extends Base {
     */
     delete(id: string): Promise<POST_DELETE> {
         const post: POST = {
-            id: id,
             title: POST_DELETED,
-            content: POST_DELETED
-            // deleted: true // Cannot put deleted property here it will be blocked by the editValidator.
+            content: POST_DELETED,
+            deleted: true
         };
-        return this.edit(post, {delete: true});
-        // @deprecated ------------------------
-        // return this.collection.doc(id).delete()
-        //     .then(() => {
-        //         return this.db.collection(COLLECTIONS.POSTS_DELETED).doc(id)
-        //             .set({ time: firebase.firestore.FieldValue.serverTimestamp() });
-        //     })
-        //     .then(() => this.success({ id: id }))
-        //     .catch(e => this.failure(e));
+        return this.collection.doc(id).update(post)
+            .then(() => this.success({id: id}))
+            .catch( e => this.failure(e));
     }
 
 
