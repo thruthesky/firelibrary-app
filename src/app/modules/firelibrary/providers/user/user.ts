@@ -115,11 +115,14 @@ export class User extends Base {
                 return this.updateAuthentication(user, data); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
             })
             .then((user: firebase.User) => {
-                console.log(`Going to set user data under users collection: `);
+                // console.log(`Going to set user data under users collection: `);
                 return this.set(user, data); // 3. update other information like birthday, gender on `users` collection.
             })
             .then(a => this.success(a))
-            .catch(e => this.failure(e));
+            .catch(e => {
+                // console.log('Got error on.', data, e);
+                return this.failure(e);
+            });
     }
     /**
     * Validator for User.login()
