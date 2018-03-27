@@ -176,19 +176,19 @@ export class Post extends Base {
      *
      * @param {POST} post - The new data to be pushed.
      * @param { {delete?: boolean} } option - { delete: true } `true` if you want to mark post as deleted.
-     *                                      - { delete: false } `false` or leave it empty for editing.
+     *                                      - { delete: false } `false` or leave option empty for editing.
      * @returns {Promise<POST_EDIT>} - Updated data encapsulated inside RESPONSE object.
      * @todo - retain old fields.
      */
-    edit(post: POST, option?: { delete?: boolean }): Promise<POST_EDIT> {
+    edit(post: POST, option?: { delete: boolean } ): Promise<POST_EDIT> {
         return <any>this.editValidator(post)
             .then(() => {
                 _.sanitize(post);
-                if ( option.delete ) {
+                if ( ! _.isEmpty(option) ) {
                     post.deleted = option.delete; // assign deleted property here.
                 }
                 post.updated = firebase.firestore.FieldValue.serverTimestamp();
-                const ref = this.collection.doc(post.id);
+                const ref = this.collection.    doc(post.id);
                 console.log('update at: ', ref.path);
                 console.log('update post: ', post.id);
                 return ref.update(post);
@@ -216,7 +216,7 @@ export class Post extends Base {
             id: id,
             title: POST_DELETED,
             content: POST_DELETED
-            // deleted: true // Cannot put deleted property here it will be blocked by the edit post.
+            // deleted: true // Cannot put deleted property here it will be blocked by the editValidator.
         };
         return this.edit(post, {delete: true});
         // @deprecated ------------------------

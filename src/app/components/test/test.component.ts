@@ -20,6 +20,7 @@ import { TestRules } from './test.rules';
 import * as firebase from 'firebase';
 import * as settings from './test.settings';
 import { TestInstall } from './test.install';
+import { TestComment } from './test.comment';
 
 
 @Component({
@@ -70,16 +71,16 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
       })
       .catch(e => this.bad('Error preparing test...', e));
 
-    // this.version();
-    // this.library();
-    // this.translate();
+    this.version();
+    this.library();
+    this.translate();
 
-
-    // await (new TestError()).run();
-    // await (new TestCategory()).run();
+    await (new TestRules()).run();
+    await (new TestError()).run();
+    await (new TestUser()).run();
+    await (new TestCategory()).run();
     await (new TestPost()).run();
-    // await (new TestUser()).run();
-    // await (new TestRules()).run();
+    await (new TestComment()).run();
 
   }
 

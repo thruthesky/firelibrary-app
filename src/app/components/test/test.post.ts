@@ -16,11 +16,11 @@ export class TestPost extends TestTools {
     * Runs all post tests.
     */
     async run() {
-        // await this.createValidatorTest();
-        // await this.postCreate();
-        // await this.postEdit();
+        await this.createValidatorTest();
+        await this.postCreate();
+        await this.postEdit();
         await this.postDelete();
-        // await this.postPage();
+        await this.postPage();
     }
 
     async createValidatorTest() {
@@ -112,7 +112,7 @@ export class TestPost extends TestTools {
         const post: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
         const editData: POST = { title: 'Updated!' };
         const id = 'post' + (new Date).getTime();
-        const isLogin = await this.loginAs('testing123@testing.com', '123456s');
+        let isLogin = await this.loginAs('testing123@testing.com', '123456s');
         if ( isLogin ) {
             /**Create post */
             post.id = id;
@@ -135,6 +135,7 @@ export class TestPost extends TestTools {
                 } else {
                     this.bad('Updating post is falsy. Fields that are missing are deleted.');
                 }
+                return a;
             })
             .catch(e => { this.bad('Shoud be success post.edit', e); });
         } else {
@@ -150,6 +151,20 @@ export class TestPost extends TestTools {
             .catch(e => { this.test(e.code === USER_IS_NOT_LOGGED_IN, 'Expect error. user not login on post.edit'); });
         } else {
             this.bad('A user is still logged in on `User not logged in test.`');
+        }
+
+        /**Edit post again with different user */
+        isLogin = await this.loginAs('otheruser@test.com', 'other123');
+        if (isLogin) {
+            post.title = 'Edited by other USER';
+            post.id = id;
+            await this.fire.post.edit( post )
+            .then(() => {
+                this.bad('This should be error Permission denied. Other Users can\'t update others data');
+            })
+            .catch(e => {
+                this.test(e.code === PERMISSION_DENIED, 'Other users can\'t modify others data.');
+            });
         }
 
     }
