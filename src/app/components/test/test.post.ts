@@ -16,10 +16,10 @@ export class TestPost extends TestTools {
     * Runs all post tests.
     */
     async run() {
-        // await this.createValidatorTest();
-        // await this.postCreate();
-        // await this.postEdit();
-        // await this.postDelete();
+        await this.createValidatorTest();
+        await this.postCreate();
+        await this.postEdit();
+        await this.postDelete();
         await this.postPage();
         await this.postLike();
     }
