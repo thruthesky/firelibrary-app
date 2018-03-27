@@ -1,7 +1,7 @@
 import {
     FireService, _, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY,
     PERMISSION_DENIED, USER_IS_NOT_LOGGED_IN, POST_ID_NOT_EMPTY,
-    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS
+    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS, POST_ALREADY_DELETED
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -17,9 +17,9 @@ export class TestPost extends TestTools {
     */
     async run() {
         // await this.createValidatorTest();
-        await this.postCreate();
+        // await this.postCreate();
         // await this.postEdit();
-        // await this.postDelete();
+        await this.postDelete();
         // await this.postPage();
     }
 
@@ -111,15 +111,16 @@ export class TestPost extends TestTools {
     async postEdit() {
         const post: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
         const editData: POST = { title: 'Updated!' };
-        let id = '';
-
+        const id = 'post' + (new Date).getTime();
         const isLogin = await this.loginAs('testing123@testing.com', '123456s');
         if ( isLogin ) {
             /**Create post */
+            post.id = id;
             await this.fire.post.create(post)
-            .then(p => { id = p.data.id; });
+            .then(p => {  });
 
             /**Edit post without post id.*/
+            delete post.id;
             await this.fire.post.edit(editData)
             .then(() => { this.bad('Should be error. no post id on post.edit() test.'); })
             .catch(e => { this.test(e.code === POST_ID_EMPTY, 'Expect error. no post id on post.edit'); });
@@ -129,7 +130,6 @@ export class TestPost extends TestTools {
             post.id = id;
             await this.fire.post.edit(post)
             .then(a => {
-                // console.log('Updated==================>', a);
                 if ( a.data.post.updated instanceof firebase.firestore.FieldValue && a.data.post === post ) {
                     this.good('success post edited.');
                 } else {
@@ -159,16 +159,18 @@ export class TestPost extends TestTools {
     async postDelete() {
         const data: POST = { category: settings.TEST_CATEGORY, title: 'Delete post Test', content: 'Successful posted in the dateabase.' };
         const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
+        const id = 'post' + (new Date).getTime();
         if (isLogin) {
             /**Delete on wrong post ID */
             await this.fire.post.delete('wrong-post-id')
             .then(a => { this.bad('Should be error, post ID is incorrect or not existing.', a); })
-            .catch(e => { this.test(e.code === PERMISSION_DENIED, 'Wrong post ID to delete.'); });
+            .catch(e => { this.test(e.code === PERMISSION_DENIED, 'Wrong post ID to delete.', e.code); });
             /** Will create a post */
+            data.id = id;
             await this.fire.post.create(data)
             .then(post => {
                 // Will delete post
-                return this.fire.post.delete(post.data.id);
+                return this.fire.post.delete(id);
             })
             .then(del => {
                 // check if deleted
@@ -177,11 +179,11 @@ export class TestPost extends TestTools {
                 }
             })
             .catch(e => {
-                this.bad('post.delete() error: ', e);
+                this.bad('post.delete() error: ', e.code);
             });
             /** Test delete using different user account and as Anonymous. */
+            data.id = id + 'a';
             await this.fire.post.create(data)
-
             /**Delete as anonymous */
             .then(async post => {
                 const logout = await this.logout();
@@ -318,4 +320,3 @@ export class TestPost extends TestTools {
     }
 
 }
-

@@ -16,6 +16,7 @@ export const ALREADY_EXISTS = 'already-exists';
 export const PERMISSION_DENIED = 'permission-denied';
 export const RESOURCE_EXHAUSTED = 'resource-exhausted';
 
+
 export const USER_IS_NOT_LOGGED_IN = 'You are not logged in';
 
 export const NO_DOCUMENT_ID = 'no-document-id';
@@ -34,7 +35,7 @@ export const CATEGORY_DOES_NOT_EXIST = NOT_FOUND;
 
 /// Posts
 export const POST_ID_EMPTY = 'post-id-empty';
-
+export const POST_ALREADY_DELETED = 'Post is already deleted.';
 export const POST_ID_NOT_EMPTY = 'post-id-not-empty';
 export const COMMENT_ID_EMPTY = 'comment-id-empty';
 
