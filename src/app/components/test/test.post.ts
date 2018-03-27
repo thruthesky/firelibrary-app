@@ -1,7 +1,7 @@
 import {
     FireService, _, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY,
     PERMISSION_DENIED, USER_IS_NOT_LOGGED_IN, POST_ID_NOT_EMPTY,
-    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS, POST_ALREADY_DELETED
+    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS, POST_ALREADY_DELETED, COLLECTIONS
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -16,11 +16,12 @@ export class TestPost extends TestTools {
     * Runs all post tests.
     */
     async run() {
-        await this.createValidatorTest();
-        await this.postCreate();
-        await this.postEdit();
-        await this.postDelete();
+        // await this.createValidatorTest();
+        // await this.postCreate();
+        // await this.postEdit();
+        // await this.postDelete();
         await this.postPage();
+        await this.postLike();
     }
 
     async createValidatorTest() {
@@ -240,34 +241,31 @@ export class TestPost extends TestTools {
         const category_list = [];
         for ( cat = 0; cat <= 2; cat++ ) {
             // Category creation
-            let exist;
             const isLogin = await this.loginAsAdmin();
             if (isLogin) {
                 category.id = 'category_' + cat;
                 category.name = 'Category' + cat;
                 category_list.push(category.id);
-                exist = await this.fire.category.create(category)
-                .catch(e => { this.test(e.code === CATEGORY_EXISTS, 'Posts are good for Post::page() testing'); return e.code; });
-            } else {
-                this.bad('Failed to login as admin failed. on postPage category creation');
-            }
-
-            if (exist === CATEGORY_EXISTS) {
-                // console.log('Exists==>', exist);
-                this.good('Test post are existing. post.page() test will start....');
-            } else {
+                await this.fire.category.create(category)
+                .then(async re => {
                 const isMember = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
                 if (isMember ) {
                     let post;
+                    const data: POST = { category: category.id,  };
                     for ( post = 0; post <= 10; post++ ) { // will post 11 times in a category;
-                        await this.fire.post.create({ category: category.id, title: 'Post_' + post, content: 'This is Post_' + post })
-                        .catch(e => { this.bad('Post creation failed.'); });
+                        data.id = 'post_' + post + '_' + category.id;
+                        data.title = 'Post_' + post;
+                        data.content = 'This is Post_' + post;
+                        await this.fire.post.create(data);
                     }
                 } else {
                     this.bad('Failed to login as member on postPage post creation');
                 }
+                })
+                .catch(e => { this.test(e.code === CATEGORY_EXISTS, 'Posts are good for Post::page() testing'); return e.code; });
+            } else {
+                this.bad('Failed to login as admin failed. on postPage category creation');
             }
-
 
         }
         this.good('Test post are existing. post.page() test will start....');
@@ -279,7 +277,7 @@ export class TestPost extends TestTools {
         const limit = 5;
         await this.fire.post.page({ category: category_list[1], limit: limit })
         .then( list => {
-            this.test(Object.keys(list).length === limit, 'Post page should be okay. equal to 5');
+            this.test(Object.keys(list).length === limit, 'Post page should be okay. equal to 5', Object.keys(list).length, limit );
             return list;
         })
         .then( list => {
@@ -296,22 +294,26 @@ export class TestPost extends TestTools {
                     return null;
                 }
             }
+            // console.log(last);
             return <POST>last;
         })
         // .then( a => console.log(a) );
         .then(last => {
             if (last) {
+                // console.log(last);
                 end = last.title.split('_')[1];
                 // console.log('END=>', end);
                 return this.fire.post.page({ category: category_list[1], limit: limit }).then(a => a);
             }
         })
         .then(list => { // 2nd post page will be pushed into 1st page.
+            // console.log(list);
             start = Object.keys(list)[end - 1];
             prevPageLen = Object.keys(list).length;
             return <POST>list[start];
         })
         .then(first => {
+            // console.log(first);
             if (first) {
                 start = first.title.split('_')[1];
                 this.test( start === (end - 1).toString(), 'Test if post are different from the first get.' );
@@ -332,6 +334,47 @@ export class TestPost extends TestTools {
         });
 
         // emulate next page.
+    }
+
+    async postLike() {
+        const post: POST = {
+            title: 'Post for like testing',
+            content: 'this post is for testing post::like functionality.',
+            category: settings.TEST_CATEGORY
+        };
+        let id = 'post' + (new Date).getTime();
+        let likeCountRef: firebase.firestore.DocumentReference;
+
+        const isLogin = await this.loginAs('like_tester@test.com', 'testerlike123');
+        if (isLogin) {
+            post.id = id;
+            /**Create a post */
+            await this.fire.post.create(post)
+            .then(re => {
+                id = re.data.id;
+                return this.fire.post.like(re.data.id); // like post
+            })
+            .then(() => this.sleep(200))
+            .then(() => {
+                likeCountRef = this.likeColllection(id, COLLECTIONS.POSTS).doc('count');
+            })
+            .catch(e => this.bad('Error creating post for TestPost::postLike()', e));
+
+            /**Get like Post Count */
+            await likeCountRef.get()
+            .then(doc => {
+                if ( doc.exists ) {
+                    // console.log('DOC Data!', doc.data());
+                    this.test(doc.data().count === 1, 'Like count should be equal to 1, success!');
+                } else {
+                    this.bad('No like document found in ' + likeCountRef.path);
+                }
+            })
+            .catch();
+
+        } else {
+            this.bad('Error loggin on for TestPost::postLike()');
+        }
     }
 
 }

@@ -403,7 +403,8 @@ export class Base {
     }
     /**
      * This is a general method for `like`, `unlike`, `dislike`, `disunlike`.
-     * @desc The logic is the same for `like` and `dislike` and used by post/comment.
+     *
+     * The logic is the same for `like` and `dislike` and used by post/comment.
      */
     protected doLike(collectionRef: firebase.firestore.CollectionReference): Promise<any> {
 
