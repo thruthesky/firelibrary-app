@@ -175,7 +175,8 @@ export class Post extends Base {
      * NOTE! Whenever you use this method, beware that `post` fields are complete. Missing fields will be deleted.
      *
      * @param {POST} post - The new data to be pushed.
-     * @param {delete?: boolean} - Determines if the post will be marked as deleted.
+     * @param { {delete?: boolean} } option - { delete: true } `true` if you want to mark post as deleted.
+     *                                      - { delete: false } `false` or leave it empty for editing.
      * @returns {Promise<POST_EDIT>} - Updated data encapsulated inside RESPONSE object.
      * @todo - retain old fields.
      */
@@ -183,7 +184,7 @@ export class Post extends Base {
         return <any>this.editValidator(post)
             .then(() => {
                 _.sanitize(post);
-                if ( option ) {
+                if ( option.delete ) {
                     post.deleted = option.delete; // assign deleted property here.
                 }
                 post.updated = firebase.firestore.FieldValue.serverTimestamp();

@@ -11,7 +11,7 @@
     "e2e": "ng e2e",
     "pack": "ng-packagr -p package.json",
     "doc": "compodoc -p src/tsconfig.app.json --output ~/www/tmp/firelibrary-doc",
-    "doc-gem" : "compodoc -p src/tsconfig.app.json --output D:\\work\\localhost\\firelibrary-doc"
+    "doc-gem" : "compodoc -p src/tsconfig.app.json --output C:\\www\\firelibrary-doc"
   },
   "private": false,
   "dependencies": {
