@@ -21,7 +21,7 @@ export class TestPost extends TestTools {
         await this.postEdit();
         await this.postDelete();
         await this.postPage();
-        await this.postLike();
+        // await this.postLike();
     }
 
     async createValidatorTest() {
@@ -197,7 +197,9 @@ export class TestPost extends TestTools {
             .catch(e => {
                 this.bad('post.delete() error: ', e.code);
             });
+
             /** Test delete using different user account and as Anonymous. */
+
             data.id = id + 'a';
             await this.fire.post.create(data)
             /**Delete as anonymous */
@@ -206,13 +208,12 @@ export class TestPost extends TestTools {
                 if (logout) {
                     await this.fire.post.delete(post.data.id)
                     .then( del => { this.bad('Should be error: Anonymous cannot delete post.'); })
-                    .catch(e => { this.test(e.code === USER_IS_NOT_LOGGED_IN, 'Anonymous are not allowed to delete a post.'); });
+                    .catch(e => { this.test(e.code === PERMISSION_DENIED, 'Anonymous are not allowed to delete a post.'); });
                 } else {
                     this.bad('Error logout on deleting post as anonymous.');
                 }
                 return post;
             })
-
             /**Delete post as other user. */
             .then( async post => {
                 const loginAgain = await this.loginAs('UserDeleteTest@test.com', 'userDelete123');
