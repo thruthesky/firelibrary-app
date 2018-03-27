@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FireService, USER } from '../../../../public_api';
+import { FireService, USER, DATA_UPLOAD } from '../../../../public_api';
 
 @Component({
   selector: 'app-profile',
@@ -9,6 +9,7 @@ import { FireService, USER } from '../../../../public_api';
 export class ProfileComponent implements OnInit {
 
   user: USER = <USER>{};
+  data: Array<DATA_UPLOAD> = [];
   loader = false;
   constructor(
     public fire: FireService

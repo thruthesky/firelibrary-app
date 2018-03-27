@@ -7,6 +7,17 @@
     </span>
   </div>
   
+  <div>
+    <label>Profile Photo:</label>
+    <span>
+      <app-data
+        [path]="'profile-photo'"
+        [data]=" data "
+        [deleteOldFiles]="true"
+        [displayFiles]="true"
+        [displayProgress]="true"></app-data>
+    </span>
+  </div>
 
   <div>
     <label>Display Name:</label>

@@ -1,6 +1,6 @@
 <form (ngSubmit)=" onSubmit( $event ) ">
   <input type="text" name="content" [(ngModel)]="comment.content" [disabled]="loader.creating">
-  <app-data [path]=" post.id + '/comments/' + comment.id " [data]=" comment.data "></app-data>
+  <app-data [path]=" 'posts/' + post.id + '/comments/' + comment.id " [data]=" comment.data "></app-data>
   <button type="submit" *ngIf=" ! loader.creating ">Create Comment</button>
   <span class="loader" *ngIf="loader.creating">Creating a post. Please wait.</span>
 </form>

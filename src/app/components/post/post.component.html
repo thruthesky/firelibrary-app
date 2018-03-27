@@ -25,7 +25,7 @@
       <input name="description" [(ngModel)]="post.content">
     </div>
     
-    <app-data [path]=" post.id " [data]=" post.data "></app-data>
+    <app-data [path]=" 'posts/' + post.id " [data]=" post.data "></app-data>
 
     <button type="submit" *ngIf=" ! loader.creating ">{{ post.created ? 'EDIT' : 'CREATE' }} POST</button>
     <button type="button" (click)="initPost()">Cancel</button>
