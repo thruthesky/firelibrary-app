@@ -14,7 +14,7 @@
   </div>
 
   <div>
-    <label>Name:</label>
+    <label>Display Name:</label>
     <span>
       <input type="text" name="displayName" [(ngModel)]="user.displayName">
     </span>
@@ -31,7 +31,8 @@
       <input type="text" name="city" [(ngModel)]="user.city">
     </span>
   </div>
-  <button type="submit">Register</button>
+  <button type="submit" *ngIf="!loader">Register</button>
+  <span class="loader" *ngIf="loader">Registering... Please, wait.</span>
   <button type="button" [routerLink]="'/'">Cancel</button>
 
 </form>

@@ -1,11 +1,12 @@
-<div>
-  <input type="file" name="fileToUpload" (change)="onChangeFile($event)">
-</div>
-<div *ngIf="progress">Uploaded: {{ progress }}%</div>
-<div class="files" *ngIf="data?.length">
-  <div *ngFor="let file of data" style="position: relative; display: inline-block; margin: 2px; border: 1px solid grey; padding: 2px; width: 120px; height: 68px; overflow: hidden;">
-    <img width="100%" src="{{ file.url }}">
-    <div (click)="onClickDelete(file)" style="position: absolute; z-index: 100; bottom: 0; padding: .25em; background-color: white; cursor: pointer;">Delete</div>
+<div class="file-upload">
+  <div class="input">
+    <input type="file" name="fileToUpload" (change)="onChangeFile($event)">
+  </div>
+  <div class="progress" *ngIf="percentage && displayProgress ">Uploaded: {{ percentage }}%</div>
+  <div class="files" *ngIf="data?.length && displayFiles ">
+    <div *ngFor="let file of data" style="position: relative; display: inline-block; margin: 2px; border: 1px solid grey; padding: 2px; width: 120px; height: 68px; overflow: hidden;">
+      <img width="100%" src="{{ file.url }}">
+      <div (click)="onClickDelete(file)" style="position: absolute; z-index: 100; bottom: 0; padding: .25em; background-color: white; cursor: pointer;">Delete</div>
+    </div>
   </div>
 </div>
-

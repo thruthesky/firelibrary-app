@@ -31,7 +31,7 @@
   <div class="form">
     <form (ngSubmit)=" onSubmit( $event ) ">
       <input type="text" name="content" [(ngModel)]="form.content" [disabled]="loader.progress">
-      <app-data [path]=" post.id + '/comments/' + form.id " [data]=" form.data "></app-data>
+      <app-data [path]=" 'posts/' + post.id + '/comments/' + form.id " [data]=" form.data "></app-data>
       <button type="submit" *ngIf=" ! loader.progress ">{{ form.created ? 'Edit' : 'Create' }} Comment</button>
       <button type="button" (click)="onClickEditCancel()" *ngIf=" form.created && ! loader.progress">Cancel</button>
       <span class="loader" *ngIf="loader.progress">Requesting. Please wait.</span>

@@ -6,10 +6,25 @@
       {{ fire.user.email }}
     </span>
   </div>
-  
+
+
 
   <div>
-    <label>Name:</label>
+    <label>Profile Photo:</label>
+    <div>
+      <div *ngIf="data.length && data[0].url">
+        <img src="{{ data[0]?.thumbnailUrl ? data[0]?.thumbnailUrl : data[0]?.url }}">
+        <button (click)="onClickDelete()">Delete</button>
+      </div>
+      <div>Percentage: {{ percentage }}%</div>
+      <app-data [path]="'profile-photo'" [data]=" data " [deleteOldFiles]="true" [displayFiles]="false" [displayProgress]="false"
+        (upload)="onUpload()" (progress)="onProgress( $event )"></app-data>
+    </div>
+  </div>
+
+
+  <div>
+    <label>Display Name:</label>
     <span>
       <input type="text" name="displayName" [(ngModel)]="user.displayName">
     </span>
@@ -29,8 +44,8 @@
     </span>
   </div>
 
-  <button type="submit">Update Profile</button>
+  <button type="submit" *ngIf="!loader">Update Profile</button>
+  <span class="loader" *ngIf="loader">Updating Profile... Please wait.</span>
   <button type="button" [routerLink]="'/'">Cancel</button>
 
 </form>
-

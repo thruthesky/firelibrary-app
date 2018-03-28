@@ -115,11 +115,14 @@ export class User extends Base {
                 return this.updateAuthentication(user, data); // 2. update Authentication(profile) with `dispalyName` and `photoURL`
             })
             .then((user: firebase.User) => {
-                console.log(`Going to set user data under users collection: `);
+                // console.log(`Going to set user data under users collection: `);
                 return this.set(user, data); // 3. update other information like birthday, gender on `users` collection.
             })
             .then(a => this.success(a))
-            .catch(e => this.failure(e));
+            .catch(e => {
+                // console.log('Got error on.', data, e);
+                return this.failure(e);
+            });
     }
     /**
     * Validator for User.login()
@@ -191,13 +194,32 @@ export class User extends Base {
             .catch(e => this.failure(e));
     }
 
-    update(data: USER): Promise<USER_CREATE> {
-        data.uid = this.uid;
-        console.log('update: ', data);
-        return this.collection.doc(data.uid).set(data)
-            .then(() => this.success({ id: data.uid }))
+    /**
+     * Updates user informaton.
+     * @param user User data to update
+     *      user['displayName'] is required.
+     *      user['photoURL'] is optional.
+     */
+    update(user: USER): Promise<USER_CREATE> {
+        user.uid = this.uid;
+        console.log('user.update(): ', user);
+        const up = { displayName: user.displayName };
+        if (user.photoURL) {
+            up['photoURL'] = user.photoURL;
+        }
+        return this.auth.currentUser.updateProfile(_.sanitize(up))
+            .then(() => {
+                console.log('user data: ', user);
+                return this.collection.doc(this.uid).update(user);
+            })
+            .then(() => this.success({ id: user.uid }))
             .catch(e => this.failure(e));
     }
+
+
+    /**
+     * Delete user.
+     */
     delete(): Promise<any> {
         console.log('delete: ', this.uid);
         return this.collection.doc(this.uid).delete()

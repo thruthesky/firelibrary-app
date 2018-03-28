@@ -119,12 +119,12 @@ export class Post extends Base {
      * But firestore will throw permission denied error due to its security rules.
      *
      *
-     * @param {POST} post - `post` data to be pushed in database.
+     * @param post - `post` data to be pushed in database.
      *       - post['id'] must be filled to create a post. You will need to get one.
      *           Be careful not to use the same post id which already exists.
      *
      *
-     * @returns {Promise<POST_CREATE>} - Pushed `data` with Document ID if success.
+     * @returns Pushed `data` with Document ID if success.
      *
      * @since 2018-03-16 Category.numberOfPosts were removed. @see README## Client Side Coding Limitation and PUBLIC META DATA
      */
@@ -179,10 +179,10 @@ export class Post extends Base {
      *
      * NOTE! Whenever you use this method, beware that `post` fields are complete. Missing fields will be deleted.
      *
-     * @param {POST} post - The new data to be pushed.
-     * @param { {delete?: boolean} } option - { delete: true } `true` if you want to mark post as deleted.
+     * @param post - The new data to be pushed.
+     * @param option - { delete: true } `true` if you want to mark post as deleted.
      *                                      - { delete: false } `false` or leave option empty for editing.
-     * @returns {Promise<POST_EDIT>} - Updated data encapsulated inside RESPONSE object.
+     * @returns Updated data encapsulated inside RESPONSE object.
      *
      */
     edit(post: POST): Promise<POST_EDIT> {
@@ -210,8 +210,8 @@ export class Post extends Base {
     *
     * @todo test on deleting and marking.
     *
-    * @param {string} id - `id` of post to be deleted.
-    * @returns {Promise<POST_DELETE>} - `Id` Post id that was deleted inside REPONSE.
+    * @param id - `id` of post to be deleted.
+    * @returns - `Id` Post id that was deleted inside REPONSE.
     */
     delete(id: string): Promise<POST_DELETE> {
         const post: POST = {
@@ -230,9 +230,9 @@ export class Post extends Base {
     *
     * If category changes, it will clear the cursor.
     *
-    * @param {string} category Category ID to compare.
+    * @param category Category ID to compare.
     *
-    * @returns {boolean} - `true` if category has changed otherwise `false`.
+    * @returns `true` if category has changed otherwise `false`.
     */
     private categoryChanged(category: string): boolean {
         return this.categoryId !== category;
@@ -242,7 +242,7 @@ export class Post extends Base {
     *
     * Reset the cursor to when category changes.
     *
-    * @param {string} category New category to display.
+    * @param category New category to display.
     *
     */
     private resetCursor(category: string): void {
@@ -257,7 +257,7 @@ export class Post extends Base {
     *
     * Otherwise it gets posts for next page.
     *
-    * @returns {boolean} - `true` if the category has been chagned and reset. otherwise `false`.
+    * @returns `true` if the category has been chagned and reset. otherwise `false`.
     */
     private resetLoadPage(category: string) {
         let reset = false;
@@ -363,10 +363,10 @@ export class Post extends Base {
      *
      * 3. if category changes `Post.page()` will start again and unsubscribe to posts from previous category.
      *
-     * @param {POST_PAGE_OPTIONS} options - `category` to load.
+     * @param options - `category` to load.
      *                                    - `limit` number of post to get.
      *
-     * @returns {Promise<Array<POST>>} - `posts` that are loaded.
+     * @returns `posts` that are loaded.
      *
      */
     page(options: POST_PAGE_OPTIONS): Promise<Array<POST>> {
