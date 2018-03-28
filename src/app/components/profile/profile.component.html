@@ -14,7 +14,8 @@
     <div>
       <div *ngIf="data.length && data[0].url">
         <img src="{{ data[0]?.thumbnailUrl ? data[0]?.thumbnailUrl : data[0]?.url }}">
-        <button (click)="onClickDelete()">Delete</button>
+        <button (click)="onClickDelete()" *ngIf="!loader.delete">Delete</button>
+        <span class="loader" *ngIf="loader.delete">Deleting...</span>
       </div>
       <div>Percentage: {{ percentage }}%</div>
       <app-data [path]="'profile-photo'" [data]=" data " [deleteOldFiles]="true" [displayFiles]="false" [displayProgress]="false"
@@ -44,8 +45,8 @@
     </span>
   </div>
 
-  <button type="submit" *ngIf="!loader">Update Profile</button>
-  <span class="loader" *ngIf="loader">Updating Profile... Please wait.</span>
+  <button type="submit" *ngIf="!loader.update">Update Profile</button>
+  <span class="loader" *ngIf="loader.update">Updating Profile... Please wait.</span>
   <button type="button" [routerLink]="'/'">Cancel</button>
 
 </form>

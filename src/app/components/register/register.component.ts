@@ -26,9 +26,19 @@ export class RegisterComponent implements OnInit {
     }
     console.log('user data: ', this.user);
     this.loader = true;
-    this.fire.user.register(this.user).then(user => {
-      this.loader = false;
-      console.log('user register: ', user);
+    this.fire.user.register(this.user).then(() => {
+      console.log('user register: ');
+      this.fire.auth.onAuthStateChanged(user => {
+        if (user) {
+          this.fire.user.create(this.user).then(re => {
+            console.log('User registration comeplete!', re);
+            this.loader = false;
+          }).catch(e => {
+            this.loader = false;
+            alert(e.message);
+          });
+        }
+      });
     })
       .catch(e => {
         this.loader = false;

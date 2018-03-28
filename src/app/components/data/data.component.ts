@@ -11,14 +11,16 @@ import { DATA_UPLOAD, FireService, POST } from './../../modules/firelibrary/core
 
 export class DataComponent implements OnInit {
 
+
   /**
    * @warning This `Input` property binding must be created and exists on parent.
    * @warnign This is important and often over looked.
    *
    * @code
-   *    data: Array<DATA_UPLOAD> = []; // on the parent, it should be declared something like this. Array!
+   *    dataArray: Array<DATA_UPLOAD> = []; // on the parent, it should be declared something like this. Array!
    */
   @Input() data: Array<DATA_UPLOAD>;
+
 
   /**
    * `path` is the path where the file/photo should be saved on `firestore`.
@@ -47,6 +49,7 @@ export class DataComponent implements OnInit {
   @Output() progress = new EventEmitter<number>();
 
   percentage = 0;
+  loader = false;
   constructor(
     public fire: FireService
   ) { }
@@ -82,9 +85,10 @@ export class DataComponent implements OnInit {
       name: ''
     };
 
+    this.loader = true;
     if (this.deleteOldFiles && this.data.length) {
       for (const data of this.data) {
-        if ( data.url ) {
+        if (data.url) {
           await this.fire.data.delete(data).catch(e => alert(e.message));
         }
       }
@@ -101,25 +105,32 @@ export class DataComponent implements OnInit {
     uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
       (snapshot) => { // upload in progress
         this.percentage = Math.round((snapshot['bytesTransferred'] / snapshot['totalBytes']) * 100);
-        this.progress.emit( this.percentage );
+        this.progress.emit(this.percentage);
       },
       (e) => { // upload failed
+        this.loader = false;
         alert(e.message);
       },
       () => { // upload success
         this.percentage = 0;
         upload.url = uploadTask.snapshot['downloadURL'];
         upload.fullPath = dataRef.fullPath;
+        this.loader = false;
         this.addFile(upload);
         this.upload.emit();
       }
     );
   }
   onClickDelete(data: DATA_UPLOAD) {
+    this.loader = true;
     console.log(`DataComponent::onClickDelete()`);
     this.fire.data.delete(data).then(re => {
+      this.loader = false;
       this.removeFile(data);
     })
-      .catch(e => alert(e.message));
+      .catch(e => {
+        this.loader = false;
+        alert(e.message);
+      });
   }
 }
