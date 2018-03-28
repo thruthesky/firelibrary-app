@@ -5,7 +5,7 @@ import {
     PERMISSION_DENIED,
     POST_ID_EMPTY, POST_ALREADY_DELETED,
     POST_ID_NOT_EMPTY,
-    EXPIRED_ID_TOKEN, FIREBASE_API_ERROR, WRONG_PASSWORD
+    EXPIRED_ID_TOKEN, FIREBASE_API_ERROR, WRONG_PASSWORD, COMMENT_ID_EMPTY
 
 } from './../error';
 
@@ -25,9 +25,13 @@ en[ ALREADY_EXISTS ] = 'Category is already exists. Category ID: #categoryID';
 en[ DOCUMENT_ID_TOO_LONG ] = 'Document ID is too long. Document ID: #documentID';
 en[ PERMISSION_DENIED ] = 'Permission denied or insufficient permission. #info';
 
+// POST
 en[POST_ID_EMPTY] = 'Post ID is empty.';
 en[POST_ID_NOT_EMPTY] = 'Post ID is not empty.';
 en[POST_ALREADY_DELETED] = 'Post does not exist or already deleted.';
+
+// COMMENT
+en[COMMENT_ID_EMPTY] = 'Comment ID field is empty';
 
 
 // USER
