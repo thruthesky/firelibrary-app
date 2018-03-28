@@ -164,7 +164,7 @@ export class Comment extends Base {
             })
             .catch(e => {
                 console.log(`failed: `, e);
-                this.failure(e);
+                return this.failure(e);
             });
     }
 
