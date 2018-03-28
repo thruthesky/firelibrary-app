@@ -220,7 +220,7 @@ export interface COMMENT {
 
 export interface USER {
     uid?: string; // `uid` should not be saved in document. the document id is `uid`.
-    email: string;
+    email?: string;
     password?: string; // required on registeration, otherwise optional.
     displayName?: string; // optional. will be saved only on Authentication.
     photoURL?: string; // optional. will be saved only on Authentication.

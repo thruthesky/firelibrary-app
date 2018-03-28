@@ -639,6 +639,15 @@ Either way, it may not contain the `thumbnailUrl` since `thumbnailUrl` updates i
    1st. email/password
    2nd. other informations with photo.
 
+## User profile photo thumbnail
+
+* When profile photo is uploaded, `Functions` will generates the thumbnail on the backend.
+ * This means, when profile photo is uploaded the thumbnail is not available and we don't know when it is going to be available. Definitely it will not take a minute though. a few seconds will be enough.
+ * For `post files upload`, All the work is done on `Functions`
+ * For `profile photo`, we want it to be done on client end since the app should show thumbnailed picture to the user, so the user could see how the photo will be really look like.
+ The client(web browser or app) must check if thumbnail is available or not and do all the necessary things.
+ 
+
 
 # Known Issues
 

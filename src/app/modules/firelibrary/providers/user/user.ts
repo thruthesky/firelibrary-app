@@ -209,7 +209,8 @@ export class User extends Base {
         }
         return this.auth.currentUser.updateProfile(_.sanitize(up))
             .then(() => {
-                return this.collection.doc(this.uid).set(user);
+                console.log('user data: ', user);
+                return this.collection.doc(this.uid).update(user);
             })
             .then(() => this.success({ id: user.uid }))
             .catch(e => this.failure(e));

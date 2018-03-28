@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import * as firebase from 'firebase';
 import { DATA_UPLOAD, FireService, POST } from '../../../../public_api';
 
@@ -40,7 +40,13 @@ export class DataComponent implements OnInit {
    */
   @Input() deleteOldFiles = false;
 
-  progress = 0;
+  /**
+   * This event is fired when a file is uploaded successfully.
+   */
+  @Output() upload = new EventEmitter<void>();
+  @Output() progress = new EventEmitter<number>();
+
+  percentage = 0;
   constructor(
     public fire: FireService
   ) { }
@@ -78,28 +84,9 @@ export class DataComponent implements OnInit {
 
     if (this.deleteOldFiles && this.data.length) {
       for (const data of this.data) {
-        await this.fire.data.delete(data).catch(e => alert(e.message));
-        // delete original file.
-        // await firebase.storage().ref().child(data.fullPath).delete().then(() => {
-        //   console.log(`data: ${data.fullPath} has been deleted`);
-        // })
-        //   .catch(e => alert(e.message));
-        // /**
-        //  * Going to delete thumbnail.
-        //  *
-        //  * @desc what if thumbnail does not exists?
-        //  *      - it does not throw error on deleting thumbnail.
-        //  */
-        // const sp = data.fullPath.split('/');
-        // const pop = sp.pop();
-        // const thumbnailPath = sp.join('/') + '/thumb_' + pop;
-        // await firebase.storage().ref().child(thumbnailPath).delete().then(() => {
-        //   console.log(`data: ${thumbnailPath} has been deleted`);
-        // })
-        //   .catch(e => {
-        //     // alert(e.message);
-        //     return null; /// NOT error.
-        //   });
+        if ( data.url ) {
+          await this.fire.data.delete(data).catch(e => alert(e.message));
+        }
       }
 
       this.data.splice(0, this.data.length);
@@ -113,16 +100,18 @@ export class DataComponent implements OnInit {
     upload.name = file.name;
     uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
       (snapshot) => { // upload in progress
-        this.progress = Math.round((snapshot['bytesTransferred'] / snapshot['totalBytes']) * 100);
+        this.percentage = Math.round((snapshot['bytesTransferred'] / snapshot['totalBytes']) * 100);
+        this.progress.emit( this.percentage );
       },
       (e) => { // upload failed
         alert(e.message);
       },
       () => { // upload success
-        this.progress = 0;
+        this.percentage = 0;
         upload.url = uploadTask.snapshot['downloadURL'];
         upload.fullPath = dataRef.fullPath;
         this.addFile(upload);
+        this.upload.emit();
       }
     );
   }

@@ -48,12 +48,13 @@ export class Data extends Base {
                  * Going to delete thumbnail.
                  * It will not throw error event though it fails on deleting thumbnail.
                  */
-                const sp = data.fullPath.split('/');
-                const pop = sp.pop();
-                const thumbnailPath = sp.join('/') + '/thumb_' + pop;
+                // const sp = data.fullPath.split('/');
+                // const pop = sp.pop();
+                // const thumbnailPath = sp.join('/') + '/thumb_' + pop;
+                const thumbnailPath = this.getThumbnailPath( data.fullPath );
                 console.log(`going to delete thumbnail: ${thumbnailPath}`);
                 return firebase.storage().ref(thumbnailPath).delete()
-                    .catch( e => {
+                    .catch(e => {
                         return null;
                     });
                 // } else {
@@ -67,5 +68,14 @@ export class Data extends Base {
                 console.log('Error. data.delete()', e);
                 return this.failure(e);
             });
+    }
+
+    /**
+     * Returns `thumbnailPath` from `fullPath` of a file in storage.
+     */
+    getThumbnailPath(fullPath: string) {
+        const sp = fullPath.split('/');
+        const pop = sp.pop();
+        return sp.join('/') + '/thumb_' + pop;
     }
 }
