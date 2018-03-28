@@ -84,8 +84,11 @@ Firebase CMS Library for Frontend
  
 
 ## Change log
+* @since 2018-03-28 We changed it to github submodule since Ionic Pro is now supporting github submodule.
+
 * @since 2018-03-20 admin email must be saved under /fire-library/{domain}/settings/admin/{email: ... }
  * It can have only one email for admin now.
+
 
 ## Documents
 
@@ -643,11 +646,15 @@ Either way, it may not contain the `thumbnailUrl` since `thumbnailUrl` updates i
 
 * When profile photo is uploaded, `Functions` will generates the thumbnail on the backend.
  * This means, when profile photo is uploaded the thumbnail is not available and we don't know when it is going to be available. Definitely it will not take a minute though. a few seconds will be enough.
- * For `post files upload`, All the work is done on `Functions`
- * For `profile photo`, we want it to be done on client end since the app should show thumbnailed picture to the user, so the user could see how the photo will be really look like.
- The client(web browser or app) must check if thumbnail is available or not and do all the necessary things.
- 
 
+* It will update user's `profilePhoto` field on `Firestore`.
+* Client can listen on it and see if there is any changes on profile photo.
+
+* We need real time update on client end checking if thumbnail url is exist and do other necessary things. But then we quickly found out this is not the right way.
+ User's network may be slow, User's browser may be slow. There are too many circumstances to ignore just hoping everything will be okay on doing it in client end.
+ The right way. `Functions`.
+ 
+ 
 
 # Known Issues
 

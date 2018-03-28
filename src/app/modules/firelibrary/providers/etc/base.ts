@@ -485,7 +485,7 @@ export class Base {
      *
      * This is an Action Method.
      *
-     * @returns {boolean}
+     * @returns
      *      `true` if the system is already installed.
      *      `false` if it is not.
      */
