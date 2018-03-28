@@ -13,6 +13,8 @@ Firebase CMS Library for Frontend
 
 
 ## TODO
+* Move document and explanation into src/app/modules/firelibrary/README.md
+
 * counting likes/dislikes
  * Client does not need to get all the documents since it has backend option.
    so, simple add/deduct 1.

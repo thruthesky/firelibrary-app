@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import * as firebase from 'firebase';
-import { DATA_UPLOAD, FireService, POST } from '../../../../public_api';
+import { DATA_UPLOAD, FireService, POST } from './../../modules/firelibrary/core';
 
 
 @Component({

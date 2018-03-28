@@ -1,6 +1,6 @@
 import {
     FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED
-} from '../../../../public_api';
+} from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
 import * as firebase from 'firebase';

@@ -1,4 +1,4 @@
-import { FireService, UNKNOWN } from '../../../../public_api';
+import { FireService, UNKNOWN } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 
 export class TestError extends TestTools {

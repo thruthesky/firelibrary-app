@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FireService, USER, DATA_UPLOAD } from '../../../../public_api';
+import { FireService, USER, DATA_UPLOAD } from './../../modules/firelibrary/core';
 
 @Component({
   selector: 'app-profile',

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FireService } from '../../../../public_api';
+import { FireService } from './../../modules/firelibrary/core';
 
 @Component({
   selector: 'app-install',

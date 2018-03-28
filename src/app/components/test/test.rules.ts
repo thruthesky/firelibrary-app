@@ -1,4 +1,4 @@
-import { FireService, UNKNOWN, COLLECTIONS, POST, PERMISSION_DENIED, NOT_FOUND } from '../../../../public_api';
+import { FireService, UNKNOWN, COLLECTIONS, POST, PERMISSION_DENIED, NOT_FOUND } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
 

@@ -2,7 +2,7 @@ import {
     FireService,
     UNKNOWN, CATEGORY_ID_EMPTY, DOCUMENT_ID_CANNOT_CONTAIN_SLASH, DOCUMENT_ID_TOO_LONG,
     CATEGORY_DOES_NOT_EXIST, CATEGORY_EXISTS, NOT_FOUND, NO_DOCUMENT_ID, COLLECTION_NOT_EMPTY
-} from '../../../../public_api';
+} from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
 

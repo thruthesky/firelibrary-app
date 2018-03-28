@@ -23,7 +23,7 @@ import {
     NOT_FOUND,
     INVALID_EMAIL, WEAK_PASSWORD, EMAIL_ALREADY_IN_USE, USER_NOT_FOUND,
     PASSWORD_TOO_LONG, FIREBASE_API_ERROR, WRONG_PASSWORD
-} from '../../../../public_api';
+} from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 
 export class TestUser extends TestTools {

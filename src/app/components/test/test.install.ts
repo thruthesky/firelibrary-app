@@ -1,4 +1,4 @@
-import { FireService } from '../../../../public_api';
+import { FireService } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
 
