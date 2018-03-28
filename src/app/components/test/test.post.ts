@@ -17,10 +17,10 @@ export class TestPost extends TestTools {
     */
     async run() {
         await this.createValidatorTest();
-        await this.postCreate();
-        await this.postEdit();
-        await this.postDelete();
-        await this.postPage();
+        await this.createTest();
+        await this.editTest();
+        await this.deleteTest();
+        await this.pageTest();
         // await this.postLike();
     }
 
@@ -56,7 +56,7 @@ export class TestPost extends TestTools {
     /**
     * Tests post.create()
     */
-    async postCreate() {
+    async createTest() {
 
         const post: POST = {
             category: settings.TEST_CATEGORY,
@@ -109,7 +109,7 @@ export class TestPost extends TestTools {
     /**
     * Tests post.edit()
     */
-    async postEdit() {
+    async editTest() {
         const post: POST = { category: settings.TEST_CATEGORY, title: 'Successful post', content: 'Successful posted in the dateabase.' };
         const editData: POST = { title: 'Updated!' };
         const id = 'post' + (new Date).getTime();
@@ -172,7 +172,7 @@ export class TestPost extends TestTools {
     /**
     * Tests post.delete().
     */
-    async postDelete() {
+    async deleteTest() {
         const data: POST = { category: settings.TEST_CATEGORY, title: 'Delete post Test', content: 'Successful posted in the dateabase.' };
         const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
         const id = 'post' + (new Date).getTime();
@@ -235,7 +235,7 @@ export class TestPost extends TestTools {
     /**
     * Tests post.page()
     */
-    async postPage() {
+    async pageTest() {
         /**Create 2 categories and populate each with 10 post */
         let cat;
         const category = <CATEGORY>{};
@@ -337,7 +337,7 @@ export class TestPost extends TestTools {
         // emulate next page.
     }
 
-    async postLike() {
+    async postLikeTest() {
         const post: POST = {
             title: 'Post for like testing',
             content: 'this post is for testing post::like functionality.',
