@@ -3,6 +3,7 @@ export const ADMIN_PASSWORD = '12345a,*u';
 
 export const MEMBER_EMAIL = 'tester123@test.com';
 export const MEMBER_PASSWORD = '12345test';
+export const MEMBER_DISPLAY_NAME = 'IAMTESTER';
 
 export const TEST_CATEGORY = 'test';
 

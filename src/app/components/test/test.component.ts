@@ -64,21 +64,27 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
     await (new TestInstall).run();
 
     await this.prepareTest()
-      .then(() => { console.log('Preparation done... test starts!'); })
+      .then(() => { // register member with displayname
+        return this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD, settings.MEMBER_DISPLAY_NAME);
+      })
+      .then(() => { // logout
+        return this.logout();
+      })
       .then(() => {
         // this.run();
+        console.log('Preparation done... test starts!');
       })
       .catch(e => this.bad('Error preparing test...', e));
 
-    // this.version();
-    // this.library();
-    // this.translate();
+    this.version();
+    this.library();
+    this.translate();
 
-    // await (new TestRules()).run();
-    // await (new TestError()).run();
-    // await (new TestUser()).run();
-    // await (new TestCategory()).run();
-    // await (new TestPost()).run();
+    await (new TestRules()).run();
+    await (new TestError()).run();
+    await (new TestUser()).run();
+    await (new TestCategory()).run();
+    await (new TestPost()).run();
     await (new TestComment()).run();
 
   }

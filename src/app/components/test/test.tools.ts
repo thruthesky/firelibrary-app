@@ -1,6 +1,5 @@
-import { Base } from './../../modules/firelibrary/providers/etc/base';
 import {
-    FireService, RESPONSE, EMAIL_ALREADY_IN_USE
+    FireService, Base, RESPONSE, EMAIL_ALREADY_IN_USE,  USER
 } from '../../modules/firelibrary/core';
 import * as settings from './test.settings';
 import * as firebase from 'firebase';
@@ -69,7 +68,7 @@ export class TestTools {
     /**
     * Returns Promise<true> if logged in. Otherwise Promise<false>
     */
-    private async registerOrLoginAs(email, password): Promise<Boolean> {
+    private async registerOrLoginAs(email, password, displayName?): Promise<Boolean> {
 
         let re = await this.fire.user.login(email, password)
         .then(() => {
@@ -81,7 +80,10 @@ export class TestTools {
 
         if (re) {
         } else {
-            const data = { email: email, password: password };
+            const data: USER = { email: email, password: password };
+            if (displayName) {
+                data.displayName = displayName;
+            }
             re = await this.fire.user.register(data)
             .then(res => {
                 return true;
@@ -140,8 +142,9 @@ export class TestTools {
     *
     * @endcode
     */
-    async loginAs(email: string, password, $deprecated?) {
-        const login = await this.registerOrLoginAs(email, password);
+    async loginAs(email: string, password, displayName?) {
+        const login = (displayName) ? await this.registerOrLoginAs(email, password, displayName)
+                                    : await this.registerOrLoginAs(email, password);
         if (!login) {
             // return this.bad('Failed to login as ' + email);
             return false;

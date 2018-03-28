@@ -1,5 +1,5 @@
 import {
-    FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE
+    FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED
 } from '../../../../public_api';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -32,19 +32,77 @@ export class TestComment extends TestTools {
         comment.id = id;
         await this.fire.comment.create(comment)
         .then(re => {
-            this.good('Create post expect success.');
-            return re;
-        })
-        .then(re => {
+            this.good('Create comment expect success. Goin to check data.');
             this.test(re.code === null, 'Test if return code is correct.');
             this.test(re.data.id === id, 'Check comment ID if correct.');
             this.test(comment.id === undefined, 'comment.id should be deleted before set.');
             this.test(comment.uid === this.fire.user.uid, 'check comment author.');
             this.test(comment.displayName === this.fire.user.displayName, 'Check  comment author display name', this.fire.user.displayName);
+            this.test(
+                comment.depth === 0 && comment.parentId === undefined,
+                'Parent comment depth should be `0` and parentID is `undefined`'
+            );
+            this.good('Create comment success.');
+            return re;
+        })
+        .then(async parent => {
+            await this.fire.comment.load(post.data.id); // load comments
+            console.log('Create child comment');
+            comment.content = 'This comment should be under ' + parent.data.id;
+            comment.id = parent.data.id + '-child';
+            comment.parentId = parent.data.id;
+        })
+        .then(() => { // create child comment
+            return this.fire.comment.create(comment);
+        })
+        .then(async child => {
+            await this.fire.comment.load(post.data.id); // load comment
+            this.good('Create child comment success');
+            this.test(child.code === null, 'Create child comment return code is null');
+            this.test(child.data.id.indexOf('child') !== -1, 'Test child comment ID');
+            this.test(comment.id === undefined, 'Comment ID should be deleted. to avoid adding it as a field.');
+            this.test(comment.parentId !== undefined, 'parentID is not `undefined`');
+            this.test(comment.depth === 1, 'Depth should be equal to 1 comment is first degree child.');
+            return child;
+        })
+        .then(async fristChild => { // form grand comment
+            console.log('Create 2nd level child comment');
+            comment.content = 'This comment should be under ' + fristChild.data.id;
+            comment.id = fristChild.data.id + '-grand';
+            comment.parentId = fristChild.data.id;
+        })
+        .then(() => { // create child comment
+            return this.fire.comment.create(comment);
+        })
+        .then(async grandChild => {
+            await this.fire.comment.load(post.data.id); // load comment
+            this.good('Create child comment success');
+            this.test(grandChild.code === null, 'Create grand child comment return code is null');
+            this.test(grandChild.data.id.indexOf('grand') !== -1, 'Test grand child comment ID');
+            this.test(comment.id === undefined, 'Comment ID should be deleted. to avoid adding it as a field.');
+            this.test(comment.parentId !== undefined, 'parentID is not `undefined`');
+            this.test(comment.depth === 2, 'Depth should be equal to 2 comment is second degree child.');
         })
         .catch(e => {
             this.bad('Create post should be success.', e);
         });
+        /**
+         * Create test as Anonymous
+         */
+        const isLogout = await this.logout();
+        if (isLogout) {
+            comment.postId = post.data.id;
+            comment.content = 'This is for Anonymous comment test.';
+            comment.id = 'anonymous-comment' + (new Date).getTime();
+            await this.fire.comment.create(comment)
+            .then(a => {
+                this.bad('Should fail, Anonymous users cannot comment.');
+            })
+            .catch(e => {
+                this.test(e.code === PERMISSION_DENIED, 'Anonymous cannot comment.');
+                // console.log('CATCH => ', e);
+            });
+        }
 
     }
 
@@ -61,7 +119,6 @@ export class TestComment extends TestTools {
     }
 
     async loadTest() {
-
     }
 
     async deleteTest() {
@@ -69,20 +126,28 @@ export class TestComment extends TestTools {
     }
 
     private async createPost(): Promise<POST_CREATE> {
+        const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
         const post: POST = {
             title: 'Test Post for creating comment',
             content: 'This post should contain test comments',
             category: settings.TEST_CATEGORY
         };
         post.id = 'post-' + (new Date).getTime();
-        return await this.fire.post.create(post)
-        .then( re => {
-            console.log('Post created for comment test.');
-            return re;
-        })
-        .catch(e => {
-            this.bad('Creating post for comment test fails', e);
-            return e;
-        });
+
+        if (isLogin) {
+            return await this.fire.post.create(post)
+            .then( re => {
+                console.log('Post created for comment test.');
+                return re;
+            })
+            .catch(e => {
+                this.bad('Creating post for comment test fails', e);
+                return e;
+            });
+        } else {
+            this.bad('Fail to login as member.');
+            return this.fire.failure(USER_NOT_FOUND);
+        }
+
     }
 }
