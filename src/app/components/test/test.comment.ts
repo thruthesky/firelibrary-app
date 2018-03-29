@@ -1,5 +1,5 @@
 import {
-    FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED
+    FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED, POST_DELETED
 } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -13,11 +13,12 @@ export class TestComment extends TestTools {
 
     async run() {
         await this.createTest();
-
+        await this.editTest();
+        await this.deleteTest();
     }
 
     async createTest() {
-        const post = await this.createPost();
+        const post = await this.createPost(); // create post
         if (_.isEmpty(post.data)) {
             this.bad('Post data is missing for create comment test');
             return false;
@@ -26,7 +27,6 @@ export class TestComment extends TestTools {
             postId: post.data.id,
             content: 'This post should belong to' + '"' + post.data.post.title + '"'
         };
-
         /**
         * Comment Create and Nesting Test.
         */
@@ -36,14 +36,17 @@ export class TestComment extends TestTools {
             const id = 'comment-' + (new Date).getTime();
             comment.id = id;
             await this.fire.comment.create(comment)
-            .then(re => {
-                this.good('Create comment expect success. Goin to check data.');
+            .then(async re => {
                 this.test(re.code === null, 'Test if return code is correct.');
                 this.test(re.data.id === id, 'Check comment ID if correct.');
+                return await this.loadGetComment(post.data.id, re.data.id);
+            })
+            .then((re: COMMENT) => {
+                this.good('Create comment expect success. Goin to check data.');
                 this.test(comment.id === undefined, 'comment.id should be deleted before set.');
-                this.test(comment.uid === this.fire.user.uid, 'check comment author.');
+                this.test(re.uid === this.fire.user.uid, 'check comment author.');
                 this.test(
-                    comment.displayName === this.fire.user.displayName,
+                    re.displayName === this.fire.user.displayName,
                     'Check  comment author display name',
                 );
                 this.test(
@@ -55,10 +58,9 @@ export class TestComment extends TestTools {
             })
             .then(async parent => {
                 await this.fire.comment.load(post.data.id); // load comments
-                console.log('Create child comment');
-                comment.content = 'This comment should be under ' + parent.data.id;
-                comment.id = parent.data.id + '-child';
-                comment.parentId = parent.data.id;
+                comment.content = 'This comment should be under ' + parent.id;
+                comment.id = parent.id + '-child';
+                comment.parentId = parent.id;
             })
             .then(() => { // create child comment
                 return this.fire.comment.create(comment);
@@ -74,7 +76,6 @@ export class TestComment extends TestTools {
                 return child;
             })
             .then(async fristChild => { // form grand comment
-                console.log('Create 2nd level child comment');
                 comment.content = 'This comment should be under ' + fristChild.data.id;
                 comment.id = fristChild.data.id + '-grand';
                 comment.parentId = fristChild.data.id;
@@ -101,6 +102,7 @@ export class TestComment extends TestTools {
             const badUid = 'wrong-uid';
             const badName = 'Bad Name';
             const badDepth = 24;
+            const badID = 'bad-comment' + (new Date).getTime();
             const test: COMMENT = {
                 postId: post.data.id,
                 content: 'This comment has bad inputs',
@@ -108,24 +110,27 @@ export class TestComment extends TestTools {
                 displayName: badName,
                 depth: badDepth,
             };
-            test.id = 'bad-comment' + (new Date).getTime();
+            test.id = badID;
             await this.fire.comment.create(test)
+            .then(async re => {
+                return await this.loadGetComment(post.data.id, re.data.id);
+            })
             .then(re => {
                 this.test(
-                    test.uid !== badUid && test.uid === this.fire.user.uid,
+                    re.uid !== badUid && re.uid === this.fire.user.uid,
                     'UID should be changed into real UID.'
                 );
                 this.test(
-                    test.displayName !== badName && test.displayName === this.fire.user.displayName,
+                    re.displayName !== badName && re.displayName === this.fire.user.displayName,
                     'Display Name should changed into current user\'s Display name',
                 );
                 this.test(
-                    test.depth !== badDepth,
+                    re.depth !== badDepth,
                     'Depth should be automatic based on parent\'s depth',
                 );
             })
             .catch(e => {
-                console.log('ERROR => ', e);
+                this.bad('Error on Comment.create() validator', e);
 
             });
 
@@ -153,16 +158,91 @@ export class TestComment extends TestTools {
     }
 
     async editTest() {
+        const comment: COMMENT = {
+            content: 'This comment will be used for edit test',
+        };
+        const newContent = 'Comment is edited.';
         const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
         if (isLogin) {
-            //
+            const post: POST_CREATE = await this.createPost(); // create post
+            const commentID = 'comment-' + (new Date).getTime();
+            comment.id = commentID;
+            comment.postId = post.data.id;
+
+            await this.fire.comment.create(comment) // create comment
+            .then(async re => {
+                return await this.loadGetComment(post.data.id, re.data.id);
+            })
+            .then(re => {
+                comment.content = newContent;
+                comment.id = re.id;
+                return this.fire.comment.edit(comment);
+            })
+            .then(async re => {
+                return await this.loadGetComment(post.data.id, re.data.id);
+            })
+            .then(com => {
+                this.test(com.created !== undefined, '`created` field still exists after update.');
+                this.test(com.updated !== undefined, '`updated` field is now existing.');
+                this.test(com.content === newContent, '`content` has been updated with correct content.');
+                this.test(comment.id === undefined, '`comment.id` should be deleted.');
+            })
+            .catch(e => {
+                this.bad('Error on edit test', e);
+            });
         } else {
-            //
+            this.bad('Error logging in.');
         }
     }
 
-    async getTest() {
 
+    async deleteTest() {
+        const time = (new Date).getTime().toString();
+        const postID = 'post-comment-delete' + time;
+        const commentID = 'comment-delete-' + time;
+        const post: POST = {
+            title: 'Post for delete test',
+            content: 'This post is for deleting test.',
+            category: settings.TEST_CATEGORY
+        };
+        const comment: COMMENT = { content: 'This comment is for comment delete test.' };
+        const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
+
+        if (isLogin) {
+            post.id = postID;
+            await this.createPost(post)
+            .then(re => {
+                comment.postId = re.data.id;
+                comment.id = commentID;
+                return this.fire.comment.create(comment);
+            })
+            .then(async re => {
+                return await this.loadGetComment(postID, re.data.id);
+            })
+            .then(com => {
+                return this.fire.comment.delete(com.id);
+            })
+            .then(async del => {
+                return await this.loadGetComment(postID, del.data.id);
+            })
+            .then(com => {
+                this.test(com.deleted, 'Delete field should exist and equal to true', com.deleted);
+                this.test(com.content === POST_DELETED, `Content should be '${POST_DELETED}'`, com.content);
+                // return this.fire.comment.delete(com.id);
+            })
+            // .then(re => {
+            //     console.log(re);
+            // })
+            .catch(e => {
+                this.bad('Failure in deleteTest()', e);
+            });
+        } else {
+            this.bad('Login fails in deleteTest()');
+        }
+
+    }
+
+    async getTest() {
     }
 
     async sortTest() {
@@ -172,23 +252,21 @@ export class TestComment extends TestTools {
     async loadTest() {
     }
 
-    async deleteTest() {
-
-    }
-
-    private async createPost(): Promise<POST_CREATE> {
+    private async createPost(post?: POST): Promise<POST_CREATE> {
         const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
-        const post: POST = {
-            title: 'Test Post for creating comment',
-            content: 'This post should contain test comments',
-            category: settings.TEST_CATEGORY
-        };
-        post.id = 'post-' + (new Date).getTime();
+        if (_.isEmpty(post)) {
+            post = {
+                title: 'Test Post for creating comment',
+                content: 'This post should contain test comments',
+                category: settings.TEST_CATEGORY
+            };
+            post.id = 'post-' + (new Date).getTime();
+        }
 
         if (isLogin) {
             return await this.fire.post.create(post)
             .then( re => {
-                console.log('Post created for comment test.');
+                this.good('Post created for comment test.');
                 return re;
             })
             .catch(e => {
@@ -200,5 +278,16 @@ export class TestComment extends TestTools {
             return this.fire.failure(USER_NOT_FOUND);
         }
 
+    }
+
+    private async loadGetComment(postID, commentID) {
+        if ( _.isEmpty(postID) || ! _.isString(postID) ) {
+            this.bad('Load Get comment error postID is falsy');
+        }
+        if (_.isEmpty(commentID) || ! _.isString(commentID)) {
+            this.bad('Load Get comment error commentID is falsy');
+        }
+        await this.fire.comment.load(postID);
+        return this.fire.comment.getComment(commentID);
     }
 }

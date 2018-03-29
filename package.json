@@ -10,7 +10,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "doc": "compodoc -p src/tsconfig.app.json --output ~/www/tmp/firelibrary-doc",
-    "doc-gem" : "compodoc -p src/tsconfig.app.json --output C:\\www\\firelibrary-doc"
+    "doc-gem": "compodoc -p src/tsconfig.app.json --output C:\\www\\firelibrary-doc"
   },
   "private": false,
   "dependencies": {
