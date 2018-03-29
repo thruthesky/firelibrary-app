@@ -25,14 +25,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
      */
     fire.auth.onAuthStateChanged(user => {
       if (user) {
-        fire.user.data().then(re => {
+        fire.user.data().then(re => {   // get user data
           this.user = re.data.user;
           console.log('user: ', this.user);
-          if (this.user.profilePhoto) {
-            // this.data.push(this.user.profilePhoto);
+          if (this.user.profilePhoto) {   // if user has profile photo.
             this.data[0] = this.user.profilePhoto; // save profile photo at data[0]
           }
         }).catch(e => alert(e.message));
+
 
         /**
          * When profile photo is uploaded/changed/deleted, the new profile data will be arrived here.
@@ -101,38 +101,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
      */
     this.data[0].thumbnailUrl = null;
     this.countCheckThumbnail = 0;
-    // this.checkThumbnail();
   }
-  /**
-   * Runs every 2 secodns until it gets url of thumbnail or it only repeat 20 times.
-   */
-  // checkThumbnail() {
-  // if (this.data[0].thumbnailUrl || this.countCheckThumbnail > 20) {
-  //   return;
-  // }
 
-  // this.fire.data.thumbnailDocumentRef.get().then(doc => {
-  //   if (doc && doc.exists) {
-  //     console.log('Got thumbnail url: ', doc.data());
-  //   }
-  // });
-
-  // this.fire.storage.ref(this.fire.data.getThumbnailPath(this.data[0].fullPath))
-  //   .getDownloadURL()
-  //   .then(url => {
-  //     console.log('I got thumbnail url: ', url);
-  //     this.data[0].thumbnailUrl = url;
-  //     this.updateProfilePhoto();
-  //   })
-  //   .catch(e => { // failed to get thumbnail.
-  //     this.countCheckThumbnail++;
-  //     console.log('Failed to get thumbnail: repeat: ', this.countCheckThumbnail);
-  //     setTimeout(() => {
-  //       this.checkThumbnail();
-  //     }, 2000);
-  //   });
-
-  // }
   onProgress(percentage) {
     this.percentage = percentage;
   }
