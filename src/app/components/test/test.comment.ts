@@ -1,5 +1,6 @@
 import {
-    FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED, POST_DELETED
+    FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED,
+    DELETED_MARKER
 } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -227,7 +228,7 @@ export class TestComment extends TestTools {
             })
             .then(com => {
                 this.test(com.deleted, 'Delete field should exist and equal to true', com.deleted);
-                this.test(com.content === POST_DELETED, `Content should be '${POST_DELETED}'`, com.content);
+                this.test(com.content === DELETED_MARKER, `Content should be '${DELETED_MARKER}'`, com.content);
                 // return this.fire.comment.delete(com.id);
             })
             // .then(re => {
