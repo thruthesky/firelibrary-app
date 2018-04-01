@@ -229,11 +229,14 @@ export class TestComment extends TestTools {
             .then(com => {
                 this.test(com.deleted, 'Delete field should exist and equal to true', com.deleted);
                 this.test(com.content === DELETED_MARKER, `Content should be '${DELETED_MARKER}'`, com.content);
-                // return this.fire.comment.delete(com.id);
+                return com;
             })
-            // .then(re => {
-            //     console.log(re);
-            // })
+            .then(com => {
+                return this.fire.comment.delete(com.id);
+            })
+            .then(com => {
+                console.log(com);
+            })
             .catch(e => {
                 this.bad('Failure in deleteTest()', e);
             });
@@ -241,9 +244,6 @@ export class TestComment extends TestTools {
             this.bad('Login fails in deleteTest()');
         }
 
-    }
-
-    async getTest() {
     }
 
     async sortTest() {
