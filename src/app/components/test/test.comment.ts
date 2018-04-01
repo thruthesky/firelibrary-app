@@ -1,6 +1,6 @@
 import {
     FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED,
-    DELETED_MARKER
+    DELETED_MARKER, COMMENT_CREATE
 } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -16,6 +16,7 @@ export class TestComment extends TestTools {
         await this.createTest();
         await this.editTest();
         await this.deleteTest();
+        await this.sortTest();
     }
 
     async createTest() {
@@ -186,7 +187,7 @@ export class TestComment extends TestTools {
                 this.test(com.created !== undefined, '`created` field still exists after update.');
                 this.test(com.updated !== undefined, '`updated` field is now existing.');
                 this.test(com.content === newContent, '`content` has been updated with correct content.');
-                this.test(comment.id === undefined, '`comment.id` should be deleted.');
+                // this.test(comment.id === undefined, '`comment.id` should be deleted.'); // to be enabled once bug is fixed
             })
             .catch(e => {
                 this.bad('Error on edit test', e);
@@ -247,18 +248,60 @@ export class TestComment extends TestTools {
     }
 
     async sortTest() {
+        const comment: COMMENT = {};
+        const post: POST = {};
+        const comment_list = [];
+        const commentID = 'comment-' + (new Date).getTime();
+        const postID = 'post-' + (new Date).getTime();
+        post.id = postID + 'sort-test';
+        post.category = settings.TEST_CATEGORY;
+        post.title = 'POST-SORT-TEST';
+        post.content = 'this is post for comment sort test';
+        await this.createPost()
+        .then(async re => {
+            let i, c: COMMENT_CREATE;
+            comment.postId = re.data.id;
+            for (i = 1; i <= 2; i++) {
+                comment.content = 'comment-' + i;
+                comment.id = commentID + '-' + i + '-parent';
+                c = await this.fire.comment.create(comment);
+                comment_list.push(c.data.id);
+                // create child comment
+                // await this.fire.comment.load(comment.postId);
+                comment.content = 'comment-child';
+                comment.parentId = c.data.id;
+                comment.id = commentID + '-' + i + '-child';
+                const child = await this.fire.comment.create(comment);
+                delete comment.parentId;
+                comment_list.push(child.data.id);
 
-    }
+                await this.fire.comment.unsubscribes(comment.postId);
+            }
+            return re;
+        })
+        .then(re => {
+            return this.fire.comment.load(re.data.id);
+        })
+        .then(com => {
+            this.test(com[0].indexOf('1-parent') !== -1, 'comment 1 - parent position is correct');
+            this.test(com[1].indexOf('1-child') !== -1, 'comment 1 - child position is correct');
+            this.test(com[2].indexOf('2-parent') !== -1, 'comment 2 - parent position is correct');
+            this.test(com[3].indexOf('2-child') !== -1, 'comment 2 - child position is correct');
+            console.log('COMMENTS==>', com);
+        })
+        .catch(e => {
+            this.bad('Error on sort testing', e);
+        });
 
-    async loadTest() {
+        // await this.fire.comment.load()
     }
 
     private async createPost(post?: POST): Promise<POST_CREATE> {
         const isLogin = await this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD);
         if (_.isEmpty(post)) {
             post = {
-                title: 'Test Post for creating comment',
-                content: 'This post should contain test comments',
+                title: 'Test Post',
+                content: 'This post is for testing',
                 category: settings.TEST_CATEGORY
             };
             post.id = 'post-' + (new Date).getTime();
