@@ -87,6 +87,7 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
     await (new TestPost()).run();
     await (new TestComment()).run();
 
+    // await (new TestComment()).sortTest();
     // await (new TestComment()).createTest();
     // await (new TestComment()).editTest();
     // await (new TestComment()).deleteTest();
