@@ -1,6 +1,6 @@
 import {
     FireService, _, UNKNOWN, POST, COMMENT, POST_CREATE, USER_NOT_FOUND, PERMISSION_DENIED,
-    DELETED_MARKER, COMMENT_CREATE
+    DELETED_MARKER, COMMENT_CREATE, COMMENT_EDIT
 } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
@@ -172,25 +172,28 @@ export class TestComment extends TestTools {
             comment.postId = post.data.id;
 
             await this.fire.comment.create(comment) // create comment
-            .then(async re => {
+            .then(async (re: COMMENT_CREATE) => {
+                this.test( re.data.id, 'Comment create must success', re.data);
                 return await this.loadGetComment(post.data.id, re.data.id);
             })
-            .then(re => {
+            .then((re: COMMENT) => {
+                this.test( re.id, 'Comment has been created. Going to edit.');
                 comment.content = newContent;
                 comment.id = re.id;
                 return this.fire.comment.edit(comment);
             })
-            .then(async re => {
+            .then(async (re: COMMENT_EDIT) => {
+                this.test( re.data.id, 'comment edit must success', re );
                 return await this.loadGetComment(post.data.id, re.data.id);
             })
             .then(com => {
-                this.test(com.created !== undefined, '`created` field still exists after update.');
-                this.test(com.updated !== undefined, '`updated` field is now existing.');
+                this.test(com.created !== undefined, '`created` field must exist after update.');
+                this.test(com.updated !== undefined, '`updated` field must now exist.');
                 this.test(com.content === newContent, '`content` has been updated with correct content.');
                 // this.test(comment.id === undefined, '`comment.id` should be deleted.'); // to be enabled once bug is fixed
             })
             .catch(e => {
-                this.bad('Error on edit test', e);
+                this.bad('Caught in editTest() ', e);
             });
         } else {
             this.bad('Error logging in.');
@@ -324,14 +327,19 @@ export class TestComment extends TestTools {
 
     }
 
-    private async loadGetComment(postID, commentID) {
+    private async loadGetComment(postID, commentID): Promise<COMMENT> {
+        console.log('loadGetComment', postID, commentID);
         if ( _.isEmpty(postID) || ! _.isString(postID) ) {
             this.bad('Load Get comment error postID is falsy');
         }
         if (_.isEmpty(commentID) || ! _.isString(commentID)) {
             this.bad('Load Get comment error commentID is falsy');
         }
-        await this.fire.comment.load(postID);
-        return this.fire.comment.getComment(commentID);
+        await this.fire.comment.load(postID)
+            .then( ids => console.log('comment ids: ', ids) )
+            .catch( e => this.bad('Failed to get comments', e));
+        const comment = this.fire.comment.getComment(commentID);
+        console.log('Got comment: ', comment);
+        return comment;
     }
 }
