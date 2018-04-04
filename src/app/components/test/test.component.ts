@@ -1,6 +1,7 @@
 ﻿import { TestUser } from './test.user';
 import { POST, USER } from './../../modules/firelibrary/providers/etc/interface';
 import { Component, OnInit, OnDestroy } from '@angular/core';
+
 import {
   FireService,
   _,
@@ -20,6 +21,7 @@ import { TestComment } from './test.comment';
 import * as firebase from 'firebase';
 import * as settings from './test.settings';
 import { TestInstall } from './test.install';
+import { en } from '../../modules/firelibrary/providers/etc/languages/en';
 
 
 @Component({
@@ -61,31 +63,33 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
   * Runs the all service testing.
   */
   async run() {
-    await (new TestInstall).run();
 
-    await this.prepareTest()
-      .then(() => { // register member with displayname
-        return this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD, settings.MEMBER_DISPLAY_NAME);
-      })
-      .then(() => { // logout
-        return this.logout();
-      })
-      .then(() => {
-        // this.run();
-        console.log('Preparation done... test starts!');
-      })
-      .catch(e => this.bad('Error preparing test...', e));
-
-    this.version();
-    this.library();
     this.translate();
 
-    await (new TestRules()).run();
-    await (new TestError()).run();
-    await (new TestUser()).run();
-    await (new TestCategory()).run();
-    await (new TestPost()).run();
-    await (new TestComment()).run();
+    // await (new TestInstall).run();
+
+    // await this.prepareTest()
+    //   .then(() => { // register member with displayname
+    //     return this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD, settings.MEMBER_DISPLAY_NAME);
+    //   })
+    //   .then(() => { // logout
+    //     return this.logout();
+    //   })
+    //   .then(() => {
+    //     // this.run();
+    //     console.log('Preparation done... test starts!');
+    //   })
+    //   .catch(e => this.bad('Error preparing test...', e));
+
+    // this.version();
+    // this.library();
+
+    // await (new TestRules()).run();
+    // await (new TestError()).run();
+    // await (new TestUser()).run();
+    // await (new TestCategory()).run();
+    // await (new TestPost()).run();
+    // await (new TestComment()).run();
 
     // await (new TestComment()).sortTest();
     // await (new TestComment()).createTest();
@@ -115,6 +119,7 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
     re = _.getBrowserLanguage(true);
     this.test(re.length === 5, 'Language hould be 5 letter', re);
   }
+
   /**
   * Tests Language Translator
   */
@@ -135,6 +140,33 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
     this.test(this.fire.getText('HOME') === 'Home', 'code `home` should be `Home` in text.', 're: ' + this.fire.getText('HOME'));
     // this.test( this.fire.translate('home') === 'Home', 'Translate home to Home', this.fire.translate('home') );
     //
+
+    /**
+     * Adding language code dynamically.
+     */
+    const testText = 'This is test text. #no';
+    const testCode = 'test-code';
+    en[testCode] = testText;
+    this.fire.addText(testCode, testText);
+    this.test(this.fire.t(testCode) === testText, 'Inserting a text dynamically.', this.fire.t(testCode));
+    this.test(this.fire.t(testCode, { no: 5 }) === testText.replace('#no', '5'),
+      'Patching information on dynamic text', this.fire.t(testCode, { no: 5 }));
+
+    /**
+     * Loading another language (JSON file) by setting URL to load from.
+     */
+    this.fire.setLanguage('cn', '/assets/cn.json')
+      .then(re => {
+        this.good('External JSON langauge file loaded.', this.fire.t(NOT_FOUND));
+        /**
+         * Adding text dynamically on externally loadded language.
+         */
+        this.fire.addText('count-123', '一二三 #no');
+        this.test(this.fire.t('count-123', { no: 5 }) === '一二三 #no'.replace('#no', '5'),
+          'Patching information on externally loaded language', this.fire.t('count-123', { no: 5 }));
+      })
+      .catch(e => this.bad('Failed to set a Language'));
+
   }
 
 
