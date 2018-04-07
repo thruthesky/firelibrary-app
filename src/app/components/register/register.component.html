@@ -1,4 +1,9 @@
+<h2>Registration</h2>
+<p>
+  If you are going to let user to upload profile photo on registration, read `README.md` file.
+</p>
 <h2 *ngIf="fire.user.isLogin">You have registered already.</h2>
+
 <form (ngSubmit)=" onSubmitRegisterForm( $event ) " *ngIf=" fire.user.isLogout ">
   <div>
     <label>Email:</label>

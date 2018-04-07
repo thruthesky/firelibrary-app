@@ -36,6 +36,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         /**
          * When profile photo is uploaded/changed/deleted, the new profile data will be arrived here.
+         * You can make it simpler here !!
+         * When user profile is changed, just update/change the thumbnail url. No need to have complicated computation.
          */
         fire.user.listen(data => {
           console.log('user data:', data);
