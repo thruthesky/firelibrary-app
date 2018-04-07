@@ -86,7 +86,9 @@ export class TestRules extends TestTools {
                 this.bad('Must failed due to NOT Logged in');
             })
             .catch(e => {
-                this.test(e.code === PERMISSION_DENIED, 'User has not logged in', e);
+                console.log('Caught on postRulesAsAnonymous(): error: e', e);
+                this.fire.convertFirebaseError(e);
+                this.test(e.code === PERMISSION_DENIED, 'User has not logged in', e.code, e, e.info);
             });
         } else {
             this.bad('postRulesAsAnonymous: User still logged in.');

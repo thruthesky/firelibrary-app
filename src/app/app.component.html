@@ -1,7 +1,7 @@
 <section class="layout">
   <header>
     <nav>
-      <button type="button" [routerLink]="['/']">{{ fire.translate('HOME') }}</button>
+      <button type="button" [routerLink]="['/']">{{ fire.ln.HOME }}</button>
       <button type="button" [routerLink]="['/register']" *ngIf="fire.user.isLogout">Register</button>
       <button type="button" [routerLink]="'login'" *ngIf="fire.user.isLogout">Login</button>
       <button type="button" (click)="fire.user.logout()" *ngIf="fire.user.isLogin">Logout</button>
@@ -22,3 +22,5 @@
   </div>
 
 </section>
+
+

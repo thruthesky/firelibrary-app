@@ -5,7 +5,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FireService,
   _,
-  CATEGORY_ID_EMPTY, CATEGORY_DOES_NOT_EXIST, UNKNOWN, INVALID_EMAIL,
+  CATEGORY_DOES_NOT_EXIST, UNKNOWN, INVALID_EMAIL,
   WEAK_PASSWORD, EMAIL_ALREADY_IN_USE, USER_NOT_FOUND, CATEGORY_EXISTS,
   USER_IS_NOT_LOGGED_IN, NOT_FOUND, DOCUMENT_ID_TOO_LONG, DOCUMENT_ID_CANNOT_CONTAIN_SLASH, Base
 } from '../../modules/firelibrary/core';
@@ -21,7 +21,6 @@ import { TestComment } from './test.comment';
 import * as firebase from 'firebase';
 import * as settings from './test.settings';
 import { TestInstall } from './test.install';
-import { en } from '../../modules/firelibrary/providers/etc/languages/en';
 
 
 @Component({
@@ -66,30 +65,30 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
 
     this.translate();
 
-    // await (new TestInstall).run();
+    await (new TestInstall).run();
 
-    // await this.prepareTest()
-    //   .then(() => { // register member with displayname
-    //     return this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD, settings.MEMBER_DISPLAY_NAME);
-    //   })
-    //   .then(() => { // logout
-    //     return this.logout();
-    //   })
-    //   .then(() => {
-    //     // this.run();
-    //     console.log('Preparation done... test starts!');
-    //   })
-    //   .catch(e => this.bad('Error preparing test...', e));
+    await this.prepareTest()
+      .then(() => { // register member with displayname
+        return this.loginAs(settings.MEMBER_EMAIL, settings.MEMBER_PASSWORD, settings.MEMBER_DISPLAY_NAME);
+      })
+      .then(() => { // logout
+        return this.logout();
+      })
+      .then(() => {
+        // this.run();
+        console.log('Preparation done... test starts!');
+      })
+      .catch(e => this.bad('Error preparing test...', e));
 
-    // this.version();
-    // this.library();
+    this.version();
+    this.library();
 
-    // await (new TestRules()).run();
-    // await (new TestError()).run();
-    // await (new TestUser()).run();
-    // await (new TestCategory()).run();
-    // await (new TestPost()).run();
-    // await (new TestComment()).run();
+    await (new TestRules()).run();
+    await (new TestError()).run();
+    await (new TestUser()).run();
+    await (new TestCategory()).run();
+    await (new TestPost()).run();
+    await (new TestComment()).run();
 
     // await (new TestComment()).sortTest();
     // await (new TestComment()).createTest();
@@ -125,7 +124,8 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
   */
   async translate() {
     const old = this.fire.getLanguage();
-    this.fire.setLanguage('en');
+    await this.fire.setLanguage('en').then( re => console.log('setLanguage(en) re: ', re));
+
     // console.log(`getLanguage() after setLanguage('en')`, this.fire.getLanguage());
     this.test(this.fire.getLanguage() === 'en', `getLanguage() after setLanguage('en')`);
     try {
@@ -146,8 +146,8 @@ export class TestComponent extends TestTools implements OnInit, OnDestroy {
      */
     const testText = 'This is test text. #no';
     const testCode = 'test-code';
-    en[testCode] = testText;
-    this.fire.addText(testCode, testText);
+  //  Base.texts['en'][testCode] = testText; /// Warning. no uppercase.
+    this.fire.addText(testCode, testText);  /// It is now saved as uppercase.
     this.test(this.fire.t(testCode) === testText, 'Inserting a text dynamically.', this.fire.t(testCode));
     this.test(this.fire.t(testCode, { no: 5 }) === testText.replace('#no', '5'),
       'Patching information on dynamic text', this.fire.t(testCode, { no: 5 }));

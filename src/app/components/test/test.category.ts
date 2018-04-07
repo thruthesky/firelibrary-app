@@ -1,6 +1,6 @@
 import {
     FireService,
-    UNKNOWN, CATEGORY_ID_EMPTY, DOCUMENT_ID_CANNOT_CONTAIN_SLASH, DOCUMENT_ID_TOO_LONG,
+    UNKNOWN, DOCUMENT_ID_CANNOT_CONTAIN_SLASH, DOCUMENT_ID_TOO_LONG,
     CATEGORY_DOES_NOT_EXIST, CATEGORY_EXISTS, NOT_FOUND, NO_DOCUMENT_ID, COLLECTION_NOT_EMPTY
 } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
@@ -29,7 +29,7 @@ export class TestCategory extends TestTools {
                 this.bad('Creating category should be failed with empty data');
             })
             .catch(e => {
-                this.test(e.code === CATEGORY_ID_EMPTY, 'Expect error with empty data. no category id.');
+                this.test(e.code === NO_DOCUMENT_ID, 'Expect error with empty data. no category id.');
                 // console.log('error code: ', e.code);
                 // console.log('error message: ', e.message);
                 // console.error('error stack log: ', e);
@@ -41,7 +41,7 @@ export class TestCategory extends TestTools {
             .catch(e => {
                 this.fire.setLanguage('ko');
                 console.log(this.fire.getLanguage());
-                this.test(e.code === CATEGORY_ID_EMPTY, 'Expect error with empty category id', this.fire.translate(CATEGORY_ID_EMPTY));
+                this.test(e.code === NO_DOCUMENT_ID, 'Expect error with empty category id', this.fire.translate(NO_DOCUMENT_ID));
             });
             this.fire.category.create({ id: undefined })
             .then(() => this.bad('Must be error with `undefined` category id'))

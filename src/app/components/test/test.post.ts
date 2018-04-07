@@ -1,7 +1,7 @@
 import {
     FireService, _, UNKNOWN, POST, CATEGORY_DOES_NOT_EXIST, CATEGORY,
     PERMISSION_DENIED, USER_IS_NOT_LOGGED_IN, POST_ID_NOT_EMPTY,
-    CATEGORY_ID_EMPTY, POST_ID_EMPTY, CATEGORY_EXISTS, POST_ALREADY_DELETED, COLLECTIONS
+    POST_ID_EMPTY, CATEGORY_EXISTS, POST_ALREADY_DELETED, COLLECTIONS
 } from './../../modules/firelibrary/core';
 import { TestTools } from './test.tools';
 import * as settings from './test.settings';
