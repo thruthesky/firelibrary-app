@@ -41,18 +41,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
          */
         fire.user.listen(data => {
           console.log('user data:', data);
-          if (data.profilePhoto !== void 0 && data.profilePhoto.created !== void 0) { // new data.
-            if (!this.data.length || !this.data[0] || !this.data[0].url
-              || this.data[0].created !== data.profilePhoto.created) {
-              console.log('Change/Update new photo.');
-              /**
-               * need to re-render page?
-               */
-              this.data[0] = data.profilePhoto;
-            }
-          } else {
-            this.data[0] = {};
-          }
+          this.data[0] = data.profilePhoto ? data.profilePhoto : {};
+
+          // if (data.profilePhoto !== void 0 && data.profilePhoto.created !== void 0) { // new data.
+          //   if (!this.data.length || !this.data[0] || !this.data[0].url
+          //     || this.data[0].created !== data.profilePhoto.created) {
+          //     console.log('Change/Update new photo.');
+          //     /**
+          //      * need to re-render page?
+          //      */
+          //     this.data[0] = data.profilePhoto;
+          //   }
+          // } else {
+          //   this.data[0] = {};
+          // }
         });
       }
     });
