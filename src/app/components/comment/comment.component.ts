@@ -29,6 +29,10 @@ export class CommentComponent implements OnInit, OnDestroy {
   //   return this.fire.comment.commentIds[this.post.id];
   // }
 
+
+  /**
+   * Prepare `this.form` with an 'Temporary Comment ID` to crate.
+   */
   initComment() {
     this.form = { id: this.fire.comment.getId(), data: [] };
   }
