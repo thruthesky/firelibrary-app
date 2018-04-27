@@ -39,7 +39,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
         }
         this.loader.commentList = true;
         this.fire.comment.load(this.post.id).then(comments => {
-            console.log(`comments: `, comments);
+            // console.log(`comments: `, comments);
             this.loader.commentList = false;
             setTimeout(() => this.ngZone.run(() => {}), 2000);
         }).catch(e => alert(e.message));

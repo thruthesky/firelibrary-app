@@ -27,6 +27,15 @@ export class PostComponent implements OnInit, OnDestroy {
   constructor(
     public fire: FireService
   ) {
+    fire.post.created.subscribe( (post: POST) => {
+      console.log('post created subscription: ', post);
+    });
+    // fire.post.updated.subscribe( (post: POST) => {
+    //   console.log('post updated subscription: ', post);
+    // });
+    // fire.post.deleted.subscribe( (post: POST) => {
+    //   console.log('post deleted subscription: ', post);
+    // });
     this.initPost();
     this.fire.category.categories().then(re => {
       if (re.length) {
@@ -90,7 +99,7 @@ export class PostComponent implements OnInit, OnDestroy {
    */
   loadPage(category: string) {
     this.fire.post.page({ category: category, limit: 5 }).then(posts => {
-      console.log('posts: ', posts);
+      // console.log('posts: ', posts);
     });
   }
 
@@ -114,7 +123,7 @@ export class PostComponent implements OnInit, OnDestroy {
     } else {
       this.loader.creating = true;
       this.fire.post.create(this.post).then(re => {
-        console.log('postId:', re.data.id);
+        // console.log('postId:', re.data.id);
         // this.post.id = re.data.id;
         // this.fire.post.addPostOnTop( this.post );
         this.initPost();
@@ -152,7 +161,7 @@ export class PostComponent implements OnInit, OnDestroy {
     if (post.deleted) {
       return alert('Post is already deleted.');
     }
-    console.log('Update edit form: ', post);
+    // console.log('Update edit form: ', post);
     if (this.fire.user.isLogout) {
       alert('Please login first');
       return;
@@ -164,9 +173,9 @@ export class PostComponent implements OnInit, OnDestroy {
   }
 
   onClickDelete(id: string) {
-    console.log('Going to delete: ', id);
+    // console.log('Going to delete: ', id);
     this.fire.post.delete(id).then(re => {
-      console.log('deleted: ', re.data.id);
+      // console.log('deleted: ', re.data.id);
     }).catch(e => alert(e.message));
   }
   onClickLike(id: string) {
