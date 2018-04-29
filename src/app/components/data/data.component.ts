@@ -1,3 +1,8 @@
+/**
+ * There are good examples.
+ * @see README##Examples
+ */
+
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import * as firebase from 'firebase';
 import { DATA_UPLOAD, FireService, POST } from './../../modules/firelibrary/core';

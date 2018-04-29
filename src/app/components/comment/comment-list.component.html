@@ -1,3 +1,7 @@
+<!--
+  There are good examples.
+  @see README##Examples
+-->
 <form (ngSubmit)=" onSubmit( $event ) ">
   <input type="text" name="content" [(ngModel)]="comment.content" [disabled]="loader.creating">
   <app-data [path]=" 'posts/' + post.id + '/comments/' + comment.id " [data]=" comment.data "></app-data>

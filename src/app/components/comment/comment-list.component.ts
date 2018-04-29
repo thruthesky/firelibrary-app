@@ -1,3 +1,7 @@
+/**
+ * There are good examples.
+ * @see README##Examples
+ */
 import { Component, Input, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { FireService, POST, COMMENT } from '../../modules/firelibrary/core';
 
